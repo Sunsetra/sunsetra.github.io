@@ -1,0 +1,34 @@
+﻿@font-face {					/* 萝莉体 */
+  font-family: "Lolita";
+  src: url("../font/Lolita.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {					/* 用于哥特式中文 */
+  font-family: "Gothic-zh-CN";
+  src: url("../font/Gothic-zh-CN.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {					/* 用于哥特式英文 */
+  font-family: "Medici Text";
+  src: url("../font/Medici-Text.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {					/* 用于恐怖类字体中文 */
+  font-family: "onryou";
+  src: url("../font/onryou.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {					/* 用于简体中文正文 */
+  font-family: "MFYueHei";
+  src: url("../font/MFYueHei.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
