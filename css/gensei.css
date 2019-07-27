@@ -42,7 +42,7 @@ main {
 }
 
 h1,
-.intro-head p {                        /* 用于介绍标题 */
+.intro-head p { /* 用于介绍标题 */
   font-family: "Gothic-zh-CN", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   margin-bottom: 30px;
   text-align: center;
@@ -55,21 +55,21 @@ section {
   border-radius: 50px;
 }
 
-.main-context {             /* 正文框架 */
+.main-context { /* 正文框架 */
   width: 65%;
   margin: auto;
   color: rgb(118, 148, 139);
   text-align: center;
 }
 
-.main-context p {           /* 正文文本 */
+.main-context p { /* 正文文本 */
   line-height: 2.5;
   font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 0.9em;
   text-align: left;
 }
 
-.gensei-img {               /* 正文图片 */
+.gensei-img { /* 正文图片 */
   width: 80%;
   max-width: 500px;
   min-width: 350px;
@@ -78,7 +78,7 @@ section {
   border-width: 4px;
 }
 
-.art-title {                /* 正文标题 */
+.art-title { /* 正文标题 */
   margin: 1% auto 3%;
   text-align: center;
   font-family: "onryou", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;

@@ -1,25 +1,29 @@
-﻿@font-face {					/* 萝莉体 */
+﻿@font-face {
+  /* 萝莉体 */
   font-family: "Lolita";
   src: url("../font/Lolita.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-@font-face {					/* 用于哥特式中文 */
+@font-face {
+  /* 用于哥特式中文 */
   font-family: "Gothic-zh-CN";
   src: url("../font/Gothic-zh-CN.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-@font-face {					/* 用于哥特式英文 */
+@font-face {
+  /* 用于哥特式英文 */
   font-family: "Medici Text";
   src: url("../font/Medici-Text.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-@font-face {					/* 用于恐怖类字体中文 */
+@font-face {
+  /* 用于恐怖类字体中文 */
   font-family: "onryou";
   src: url("../font/onryou.ttf") format("truetype");
   font-weight: normal;
@@ -27,12 +31,12 @@
 }
 
 /* 文本的不同样式 */
-.crying span {                  /* 突出强调 */
+.crying span { /* 突出强调 */
   font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 1.5em;
 }
 
-.hide span {                    /* 隐藏文本 */
+.hide span { /* 隐藏文本 */
   color: rgb(20, 22, 25);
   display: inline;
 }

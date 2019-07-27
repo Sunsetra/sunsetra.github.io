@@ -15,7 +15,9 @@ const eyeEffect = () => {
     eye.css('left', `${e.pageX - centerOffset}px`);
     eye.css('top', `${e.pageY - centerOffset}px`);
     eye.show();
-    setTimeout(() => { eye.fadeOut(250); }, 100);
+    setTimeout(() => {
+      eye.fadeOut(250);
+    }, 100);
   });
 };
 
@@ -50,9 +52,15 @@ const main = () => {
 
   // 使所有导航栏元素点击后变成红色，鼠标松/离开该按钮时变成原色
   navi.on({
-    mouseover() { $(this).css('cursor', 'pointer'); },
-    mousedown() { $(this).css('color', 'red'); },
-    'mouseout mouseup': function () { $(this).css('color', '#CCCCCC'); },
+    mouseover() {
+      $(this).css('cursor', 'pointer');
+    },
+    mousedown() {
+      $(this).css('color', 'red');
+    },
+    'mouseout mouseup': function () {
+      $(this).css('color', '#CCCCCC');
+    },
   });
 };
 

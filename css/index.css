@@ -14,10 +14,10 @@ a {
 }
 
 a {
-  text-decoration: none;      /* delete underline */
+  text-decoration: none; /* delete underline */
 }
 
-#title-hide {                 /* Only use for hide message in the index */
+#title-hide { /* Only use for hide message in the index */
   color: rgb(162, 255, 53);
   background-color: rgb(162, 255, 53);
   font-size: 0.8em;
@@ -34,7 +34,7 @@ a {
   padding: 2% 0;
 }
 
-#ver {                        /* version in the bottom of page */
+#ver { /* version in the bottom of page */
   font-size: 0.7em;
   text-align: center;
 }
