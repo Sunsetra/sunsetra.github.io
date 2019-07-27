@@ -1,9 +1,5 @@
-﻿* {
+﻿body {
   margin: 0;
-  padding: 0;
-}
-
-body {
   background-image: url("../images/background.jpg");
   background-repeat: no-repeat;
   background-size: cover;
@@ -12,39 +8,33 @@ body {
 p,
 a {
   font-family: "MFYueHei", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  font-size: 1.03em;
   width: 70%;
   margin: auto;
+  line-height: 2.5;
 }
 
 a {
-  text-decoration: none;    /* delete underline */
+  text-decoration: none;      /* delete underline */
 }
 
-strong {    /* display a hide warning */
-  color: #fff;
-  font-size: 1.7em;
-}
-
-#title-hide {   /* Only use for hide message in the index */
-  color: #a2ff35;
-  background-color: #a2ff35;
+#title-hide {                 /* Only use for hide message in the index */
+  color: rgb(162, 255, 53);
+  background-color: rgb(162, 255, 53);
   font-size: 0.8em;
   width: 100%;
   text-align: center;
+  line-height: 1;
 }
 
 #main-title {
   color: rgba(255, 12, 136, 0.8);
   font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 2.5em;
-  width: 60%;
   text-align: center;
-  padding: 50px 0 10px 0;
-  margin: auto;
+  padding: 2% 0;
 }
 
-#ver {    /* version in the bottom of page */
+#ver {                        /* version in the bottom of page */
   font-size: 0.7em;
   text-align: center;
 }

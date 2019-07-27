@@ -8,9 +8,9 @@ const eyeEffect = () => {
   text.on('click', (e) => {
     let centerOffset;
     if (window.outerWidth <= 1023) {
-      centerOffset = 30;
+      centerOffset = 20;
     } else {
-      centerOffset = 37;
+      centerOffset = 20;
     }
     eye.css('left', `${e.pageX - centerOffset}px`);
     eye.css('top', `${e.pageY - centerOffset}px`);
@@ -35,16 +35,16 @@ const clickFadeIn = () => {
     } else {
       naviId = `#gensei${naviNum}`;
     }
-    $('#info').hide();
+    $('.introduction').hide();
     $('.zukan').hide();
     $(naviId).fadeIn(350);
   });
 };
 
-// 这里是开启网页时隐藏zukan显示info，并设置点击渐入的传入参数
+// 这里是开启网页时隐藏zukan显示introduction，并设置点击渐入的传入参数
 const main = () => {
   $('.zukan').hide();
-  $('#info').show();
+  $('#introduction').show();
   clickFadeIn();
   eyeEffect();
 

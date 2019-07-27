@@ -1,90 +1,76 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
 body {
-  background-color: #030303;
+  margin: 0;
+  background-color: rgb(3, 3, 3);
 }
 
-p {
-  padding: 8px 0;
+ul {
+  padding: 0;
+  margin: 0;
 }
 
 li {
-  margin: 15%;
+  margin: 15% 20%;
   list-style-type: none;
-  color: #ccc;
+  color: rgb(204, 204, 204);
 }
 
-h1,
-h3 {                        /* 用于介绍标题 */
-  font-family: "Gothic-zh-CN", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  text-align: center;
-  color: #0cf;
-}
-
-/* 文本的不同样式 */
-.crying span {              /* 突出强调 */
-  font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  font-size: 1.5em;
-}
-
-.hide span {               /* 隐藏文本 */
-  color: #141619;
-  display: inline;
-}
-
-/* 左侧导航栏样式 */
+/* 导航栏样式 */
 .navigation {
-  display: block;
-  background-color: #141619;
-  font-family: "MFYueHei", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  background-color: rgb(20, 22, 25);
+  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 0.9rem;
-  text-align: left;
-  width: 13%;
-  min-width: 195px;
+  width: 180px;
   height: 100%;
   position: fixed;
-  z-index: 1;
+  top: 0;
 }
 
-.media-navigation {
-  display: none;
-  background-color: #141619;
-  font-family: "MFYueHei", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  font-size: 1.1rem;
-  text-align: center;
-  width: 100%;
-  position: fixed;
-  z-index: 3;
+/* 导航栏标题样式 */
+.navi {
+  font-family: "Medici Text", serif;
+  font-size: 1.9em;
+  color: rgb(0, 204, 255);
+  padding: 0;
+  margin: 15% 20%;
 }
 
 /* 正文区域样式 */
-.all-text {
-  width: 67%;
-  height: 100%;
-  margin: auto;
-  background-color: #141619;
-  position: relative;
-  float: right;
-  z-index: 2;
-  border: 1px solid #141619;
+
+main {
+  width: 65%;
+  margin: 4% 25%;
+}
+
+h1,
+.intro-head p {                        /* 用于介绍标题 */
+  font-family: "Gothic-zh-CN", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  margin-bottom: 30px;
+  text-align: center;
+  color: rgb(0, 204, 255);
+}
+
+section {
+  background-color: rgb(20, 22, 25);
+  border: 1px solid rgb(20, 22, 25);
   border-radius: 50px;
 }
 
-.main-context {             /* 正文文本 */
-  font-family: "MFYueHei", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  font-size: 0.9em;
+.main-context {             /* 正文框架 */
   width: 65%;
   margin: auto;
-  color: #76948b;
+  color: rgb(118, 148, 139);
+  text-align: center;
+}
+
+.main-context p {           /* 正文文本 */
+  line-height: 2.5;
+  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-size: 0.9em;
+  text-align: left;
 }
 
 .gensei-img {               /* 正文图片 */
-  width: 60%;
+  width: 80%;
   max-width: 500px;
   min-width: 350px;
   border-radius: 100%;
@@ -93,70 +79,64 @@ h3 {                        /* 用于介绍标题 */
 }
 
 .art-title {                /* 正文标题 */
-  margin: auto;
+  margin: 1% auto 3%;
   text-align: center;
   font-family: "onryou", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 1.7em;
   font-weight: bold;
 }
 
-/* 导航栏样式 */
-#navi {
-  font-family: "Medici Text", serif;
-  font-size: 1.9em;
-  color: #0cf;
-  margin: 15%;
-}
-
-#navi-blank {
-  float: right;
-  width: 9%;
-  min-height: 100px;
-}
-
 /* 杂项素材样式 */
 #eye {
-  width: 74px;
-  height: 74px;
-  z-index: 3;
+  width: 40px;
+  height: 40px;
+  z-index: 1;
   display: none;
   position: absolute;
 }
 
-/* 分辨率宽度在1023px以下时的排版 */
-@media only screen and (max-width: 1023px) {
-  .all-text {
+/* 响应式导航栏 */
+.media-navigation {
+  display: none;
+  position: sticky;
+  top: 0;
+  background-color: rgb(20, 22, 25);
+  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-size: 1.1rem;
+}
+
+/* 响应式排版：宽度小于800px */
+@media only screen and (max-width: 800px) {
+  body {
+    min-width: 500px;
+  }
+
+  main {
     width: 80%;
-    margin: 8% auto;
-    float: none;
-    display: block;
+    margin: 5% auto;
+  }
+
+  li {
+    margin: 0 auto;
+    width: 50px;
+    text-align: center;
   }
 
   .navigation {
     display: none;
   }
 
-  .gensei-img {
-    max-width: 400px;
-  }
-
   .media-navigation {
-    display: inline;
+    display: block;
   }
 
-  #navi-blank {
-    display: none;
+  .media-navigation ul {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr 1fr;
   }
 
-  #eye {
-    height: 60px;
-    width: 60px;
-  }
-
-  li {
-    margin: 0 35px;
-    width: 50px;
-    display: inline-block;
-    text-align: center;
+  .gensei-img {
+    min-width: 250px;
   }
 }
