@@ -8,12 +8,6 @@ ul {
   margin: 0;
 }
 
-li {
-  margin: 15% 20%;
-  list-style-type: none;
-  color: rgb(204, 204, 204);
-}
-
 /* 导航栏样式 */
 .navigation {
   background-color: rgb(20, 22, 25);
@@ -32,6 +26,14 @@ li {
   color: rgb(0, 204, 255);
   padding: 0;
   margin: 15% 20%;
+}
+
+/* 导航栏列表样式 */
+.navigation li {
+  margin: 15% 20%;
+  list-style-type: none;
+  color: rgb(204, 204, 204);
+  cursor: pointer;
 }
 
 /* 正文区域样式 */
@@ -84,6 +86,87 @@ section {
   font-family: "onryou", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 1.7em;
   font-weight: bold;
+}
+
+/* 各章标题及图片样式 */
+#gensei4 header {
+  color: rgb(159, 85, 74);
+}
+
+#gensei4 img {
+  border-color: rgb(159, 85, 74);
+}
+
+#gensei12 header {
+  color: rgb(130, 19, 117);
+}
+
+#gensei12 img {
+  border-color: rgb(130, 19, 117);
+}
+
+#gensei13 header {
+  color: rgb(56, 112, 110);
+}
+
+#gensei13 img {
+  border-color: rgb(56, 112, 110);
+}
+
+#gensei14 header {
+  color: rgb(255, 161, 115);
+}
+
+#gensei14 img {
+  border-color: rgb(255, 161, 115);
+}
+
+#gensei15 header {
+  color: rgb(254, 254, 244);
+}
+
+#gensei15 img {
+  border-color: rgb(254, 254, 244);
+}
+
+#gensei16 header {
+  color: rgb(163, 163, 3);
+}
+
+#gensei16 img {
+  border-color: rgb(163, 163, 3);
+}
+
+#gensei17 header {
+  color: rgb(245, 196, 155);
+}
+
+#gensei17 img {
+  border-color: rgb(245, 196, 155);
+}
+
+#gensei18 header {
+  color: rgb(255, 216, 46);
+}
+
+#gensei18 img {
+  border-color: rgb(255, 216, 46);
+}
+
+#gensei19 header {
+  color: rgb(104, 89, 84);
+}
+
+#gensei19 img {
+  border-color: rgb(104, 89, 84);
+}
+
+#shinkai header {
+  color: rgb(40, 127, 172);
+}
+
+#shinkai img {
+  border-color: rgb(40, 127, 172);
 }
 
 /* 杂项素材样式 */
