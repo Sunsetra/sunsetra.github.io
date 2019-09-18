@@ -1,5 +1,3 @@
-'use strict';
-
 // 首先声明所需的jQuery变量
 const text = $('.all-text'); // 整个内容版面
 const eye = $('#eye'); // 鼠标点击红眼
