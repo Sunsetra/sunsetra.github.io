@@ -55,18 +55,24 @@ class HighBlock extends Block {
 class Construction {
   /**
    * 定义地图建筑的位置及网格实体。
-   * @param row: 建筑左上角格所在行，从1开始。
-   * @param column: 建筑左上角格所在列，从1开始。
    * @param width: 建筑跨越的列数。
    * @param height: 建筑跨越的行数。
    * @param mesh: 建筑使用的网格实体。
    */
-  constructor(row, column, width, height, mesh = null) {
-    this.row = row;
-    this.column = column;
+  constructor(width, height, mesh = null) {
     this.width = width;
     this.height = height;
     this.mesh = mesh;
+  }
+
+  /**
+   * 设置建筑所在的位置，应在绑定时设置。
+   * @param row: 建筑所在的行，从1开始。
+   * @param column: 建筑所在的列，从1开始。
+   */
+  setLocation(row, column) {
+    this.row = row;
+    this.column = column;
   }
 
   /**
@@ -75,11 +81,13 @@ class Construction {
    * @param block: 绑定的首个（左上角）砖块。
    */
   calcConPosition(block) {
-    const blockGap = 0.2;
-    this.position = {
-      x: (this.column - 1) * (block.width + blockGap) + block.width / 2,
-      y: block.height / 2 + block.width / 2 - 0.01,
-      z: (this.row - 1) * (block.depth + blockGap) + block.depth / 2,
+    const gap = 0.2;
+    this.mesh.geometry.computeBoundingBox();
+    const { max, min } = this.mesh.geometry.boundingBox;
+    this.position = { // 调整居中放置
+      x: (this.column - 1) * (block.width + gap) + ((block.width + gap) * this.width - gap) / 2,
+      y: (max.y - min.y) / 2 + block.height / 2 - 0.01,
+      z: (this.row - 1) * (block.depth + gap) + ((block.depth + gap) * this.height - gap) / 2,
       * [Symbol.iterator]() {
         yield this.x;
         yield this.y;
@@ -90,8 +98,9 @@ class Construction {
 }
 
 
+/* 预设目标点建筑 */
 class Destination extends Construction {
-  constructor(row, column) {
+  constructor() {
     const loader = new THREE.TextureLoader();
     const topMat = new THREE.MeshBasicMaterial({
       alphaTest: 0.7,
@@ -109,10 +118,34 @@ class Destination extends Construction {
     const cube = new THREE.BoxBufferGeometry(10, 10, 10);
     const mesh = new THREE.Mesh(cube, destMaterials);
 
-    super(row, column, 1, 1, mesh);
+    super(1, 1, mesh);
   }
 }
 
+
+/* 预设出怪点建筑 */
+class Entry extends Construction {
+  constructor() {
+    const loader = new THREE.TextureLoader();
+    const topMat = new THREE.MeshBasicMaterial({
+      alphaTest: 0.7,
+      map: loader.load('texture/entryTop.png'),
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+    const sideMat = new THREE.MeshBasicMaterial({
+      alphaTest: 0.7,
+      map: loader.load('texture/entrySide.png'),
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+    const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+    const cube = new THREE.BoxBufferGeometry(10, 10, 10);
+    const mesh = new THREE.Mesh(cube, destMaterials);
+
+    super(1, 1, mesh);
+  }
+}
 
 /* 地图信息类 */
 class MapInfo {
@@ -170,18 +203,12 @@ class MapInfo {
    * 向地图中添加绑定建筑。若添加位置存在建筑则删除它。
    * @param row: 建筑（首格）所在的行，从1开始。
    * @param column: 建筑（首格）所在的列，从1开始。
-   * @param width: 建筑跨越的列数（自定义建筑用）。
-   * @param height: 建筑跨越的行数（自定义建筑用）。
-   * @param obj: 自定义建筑的网格实体或预定义建筑实例。
+   * @param con: 自定义或预定义建筑实例。
    * @returns {boolean|Array<Construction>}: 成功添加时返回建筑数组，失败时返回false。
    */
-  addCon(row, column, obj, width = 1, height = 1) {
+  addCon(row, column, con) {
     if (this.getCon(row, column)) { this.removeCon(row, column); }
     const block = this.getBlock(row, column); // 获取建筑所在砖块
-    let con = obj;
-    if (!(obj instanceof Construction)) { // 不是预定义建筑则创建建筑实例
-      con = new Construction(row, column, width, height, obj);
-    }
 
     const verifyLocation = (r, c, w, h) => {
       const firstHeight = block.height;
@@ -202,11 +229,13 @@ class MapInfo {
             this._cons[index] = con;
           }
         }
+        con.setLocation(row, column);
         con.calcConPosition(block);
         return this._cons;
       }
       return false;
     }
+    con.setLocation(row, column);
     con.calcConPosition(block); // 添加的建筑只占1格
     const index = (row - 1) * this.width + (column - 1);
     this._cons[index] = con;
@@ -235,5 +264,6 @@ class MapInfo {
 }
 
 export {
-  MapInfo, BasicBlock, HighBlock, Destination,
+  MapInfo, BasicBlock, HighBlock,
+  Construction, Destination, Entry,
 };

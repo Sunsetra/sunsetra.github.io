@@ -90,20 +90,31 @@ for (let height = 0; height < mapHeight; height += 1) {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    const x = width * block.size.width + block.size.width / 2 + width / 5;
-    const z = height * block.size.depth + block.size.depth / 2 + height / 5;
+    const x = width * block.width + block.width / 2 + width / 5;
+    const z = height * block.depth + block.depth / 2 + height / 5;
     mesh.position.set(x, 0, z);
     scene.add(mesh);
   }
 }
 
-// TODO: 在这里添加测试
-/* 添加终点 */
-const dest = new Basic.Destination(2, 1);
-console.log(zeroOne.addCon(2, 1, dest, 2, 1));
-dest.mesh.position.set(...dest.position);
-scene.add(dest.mesh);
-staticRender();
+/* 添加入口和出口 */
+const dest = new Basic.Destination();
+console.log(zeroOne.addCon(2, 1, dest));
+const entry = new Basic.Entry();
+console.log(zeroOne.addCon(3, 9, entry));
+
+// const cube = new THREE.BoxBufferGeometry(10, 10, 10);
+// const material = new THREE.MeshPhongMaterial({ color: 'green', transparent: true, opacity: 0.5 });
+// const mesh = new THREE.Mesh(cube, material);
+// const test1 = new Basic.Construction(2, 1, mesh);
+// console.log(zeroOne.addCon(1, 3, test1));
+
+zeroOne.getCons().forEach((con) => {
+  if (con) {
+    con.mesh.position.set(...con.position);
+    scene.add(con.mesh);
+  }
+});
 
 /* 灯光定义 */
 // 定义环境光
@@ -115,7 +126,8 @@ staticRender();
   scene.add(light);
 }
 // 定义平行阳光
-const color = 0xE6CDB4;
+// const color = 0xE6CDB4;
+const color = 0xFFFFFF;
 const intensity = 1.2;
 const sunLight = new THREE.DirectionalLight(color, intensity);
 const lightY = 50;
