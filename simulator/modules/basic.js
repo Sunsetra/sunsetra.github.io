@@ -82,11 +82,12 @@ class Construction {
    */
   calcConPosition(block) {
     const gap = 0.2;
-    this.mesh.geometry.computeBoundingBox();
-    const { max, min } = this.mesh.geometry.boundingBox;
+    const box = new THREE.Box3().setFromObject(this.mesh);
+    const conSize = box.getSize(new THREE.Vector3());
+
     this.position = { // 调整居中放置
       x: (this.column - 1) * (block.width + gap) + ((block.width + gap) * this.width - gap) / 2,
-      y: (max.y - min.y) / 2 + block.height / 2 - 0.01,
+      y: (conSize.y + block.height) / 2 - 0.01,
       z: (this.row - 1) * (block.depth + gap) + ((block.depth + gap) * this.height - gap) / 2,
       * [Symbol.iterator]() {
         yield this.x;

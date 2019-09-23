@@ -18,6 +18,7 @@ const cameraX = 0;
 const cameraY = 80;
 const cameraZ = 0;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+// const camera = new THREE.OrthographicCamera(-50, 50, 50, -50, near, far);
 camera.position.set(cameraX, cameraY, cameraZ);
 
 const controls = new THREE.OrbitControls(camera, canvas);
@@ -57,6 +58,8 @@ lightFolder.open();
 const meshFolder = gui.addFolder('网格');
 
 /* 定义地图 */
+const blockGap = 0.2; // 砖块间隙固定值
+const blockPix = 10; // 砖块边长像素
 const mapWidth = 9;
 const mapHeight = 4;
 const zeroOne = new Basic.MapInfo(mapWidth, mapHeight, new Basic.HighBlock());
@@ -76,7 +79,6 @@ zeroOne.setBlock(3, 8, new Basic.BasicBlock());
 zeroOne.setBlock(3, 9, new Basic.BasicBlock());
 
 // 生成场景
-const blockGap = 0.2;
 for (let height = 0; height < mapHeight; height += 1) {
   for (let width = 0; width < mapWidth; width += 1) {
     // 生成地面
@@ -97,23 +99,39 @@ for (let height = 0; height < mapHeight; height += 1) {
   }
 }
 
-/* 添加入口和出口 */
-const dest = new Basic.Destination();
-console.log(zeroOne.addCon(2, 1, dest));
-const entry = new Basic.Entry();
-console.log(zeroOne.addCon(3, 9, entry));
+/* 测试添加装饰 */
+const gltfLoader = new THREE.GLTFLoader();
+const url = 'texture/test1.glb';
+gltfLoader.load(url, (gltf) => {
+  const root = gltf.scene;
 
-// const cube = new THREE.BoxBufferGeometry(10, 10, 10);
-// const material = new THREE.MeshPhongMaterial({ color: 'green', transparent: true, opacity: 0.5 });
-// const mesh = new THREE.Mesh(cube, material);
-// const test1 = new Basic.Construction(2, 1, mesh);
-// console.log(zeroOne.addCon(1, 3, test1));
+  /* 处理导入的网格几何体 */
+  root.children.forEach((obj) => {
+    obj.geometry.center();
+    obj.geometry.computeBoundingBox();
+    obj.geometry.boundingBox.getCenter(obj.position);
+    const deco = new THREE.Object3D().add(obj);
 
-zeroOne.getCons().forEach((con) => {
-  if (con) {
-    con.mesh.position.set(...con.position);
-    scene.add(con.mesh);
-  }
+    const box = new THREE.Box3().setFromObject(deco);
+    const boxSize = box.getSize(new THREE.Vector3());
+    deco.scale.set(10 / boxSize.x, 10 / boxSize.x, 10 / boxSize.x);
+
+    const test = new Basic.Construction(1, 1, deco);
+    zeroOne.addCon(1, 1, test);
+
+    /* 添加入口和出口 */
+    const dest = new Basic.Destination();
+    zeroOne.addCon(2, 1, dest);
+    const entry = new Basic.Entry();
+    zeroOne.addCon(3, 9, entry);
+
+    zeroOne.getCons().forEach((con) => {
+      if (con) {
+        con.mesh.position.set(...con.position);
+        scene.add(con.mesh);
+      }
+    });
+  });
 });
 
 /* 灯光定义 */
@@ -125,27 +143,50 @@ zeroOne.getCons().forEach((con) => {
   lightFolder.add(light, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(staticRender);
   scene.add(light);
 }
+
 // 定义平行阳光
-// const color = 0xE6CDB4;
-const color = 0xFFFFFF;
-const intensity = 1.2;
+const color = 0xE6CDB4;
+let intensity = 1.2;
 const sunLight = new THREE.DirectionalLight(color, intensity);
-const lightY = 50;
-const lightZ = (mapHeight * 10 + blockGap * (mapHeight - 1)) / 2;
-sunLight.position.set(0, lightY, lightZ);
-const lightTargetX = (mapWidth * 10 + blockGap * (mapWidth - 1)) / 2;
-sunLight.target.position.set(lightTargetX, 0, lightZ);
+
+// 阳光终点位置
+const lightTargetZ = (mapHeight * blockPix + blockGap * (mapHeight - 1)) / 2;
+const lightTargetX = (mapWidth * blockPix + blockGap * (mapWidth - 1)) / 2;
+sunLight.target.position.set(lightTargetX, 0, lightTargetZ);
 sunLight.target.updateMatrixWorld();
 scene.add(sunLight);
 scene.add(sunLight.target);
+
+const lightRad = Math.max(mapHeight * 10, mapWidth * 10); // 阳光半径
+const phi = Math.floor(Math.random() * 360) + 1; // 随机初始角度
+const hour = new Date().getHours();
+let theta = 0;
+if (hour <= 12) { // 光强度及角度随当前时间变化
+  intensity = hour <= 6 ? 1.8 : 2.6 - hour * 0.13;
+  theta = hour <= 6 ? 70 : 140 - hour * 12;
+} else {
+  intensity = hour >= 18 ? 1.8 : hour * 0.13 - 0.6;
+  theta = hour >= 18 ? 70 : 140 - hour * 12;
+}
+
+const cosTheta = Math.cos(THREE.Math.degToRad(theta));
+const sinTheta = Math.sin(THREE.Math.degToRad(theta));
+const cosPhi = Math.cos(THREE.Math.degToRad(phi));
+const sinPhi = Math.sin(THREE.Math.degToRad(phi));
+const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
+const lightPosY = lightRad * cosTheta;
+const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
+sunLight.intensity = intensity;
+sunLight.position.set(lightPosX, lightPosY, lightPosZ);
+
 // 定义平行光阴影
 sunLight.castShadow = true;
-sunLight.shadow.camera.left = -80;
-sunLight.shadow.camera.right = 80;
-sunLight.shadow.camera.top = 80;
-sunLight.shadow.camera.bottom = -80;
+sunLight.shadow.camera.left = -100;
+sunLight.shadow.camera.right = 100;
+sunLight.shadow.camera.top = 100;
+sunLight.shadow.camera.bottom = -100;
 sunLight.shadow.bias = 0.0001;
-sunLight.shadow.mapSize.set(2048, 2048);
+sunLight.shadow.mapSize.set(8192, 8192);
 sunLight.shadow.camera.updateProjectionMatrix();
 
 const helper = new THREE.DirectionalLightHelper(sunLight);
@@ -180,10 +221,8 @@ class AxisGridHelper {
     this.axes.visible = v;
   }
 }
-const sceneHelper = new AxisGridHelper(scene, 100);
+const sceneHelper = new AxisGridHelper(scene, 500);
 meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(staticRender);
-// const blockHelper = new AxisGridHelper(mesh, 50);
-// meshFolder.add(blockHelper, 'visible').name('实体网格').onChange(staticRender);
 
 renderer.render(scene, camera);
 staticRender();
