@@ -1,5 +1,8 @@
 /* global THREE */
 
+const blockGap = 0.2; // 砖块间隙固定值
+const blockUnit = 10; // 砖块单位长度
+
 class Block {
   /**
    * 砖块对象的抽象基类。
@@ -36,7 +39,7 @@ class BasicBlock extends Block {
    * 定义最基本的普通砖块，XYZ方向的尺寸固定。
    */
   constructor() {
-    super(10, 20, 10);
+    super(blockUnit, 2 * blockUnit, blockUnit);
   }
 }
 
@@ -46,7 +49,7 @@ class HighBlock extends Block {
    * @param height：定义高台砖块的高度。
    */
   constructor(height = 25) {
-    super(10, height, 10);
+    super(blockUnit, height, blockUnit);
   }
 }
 
@@ -81,20 +84,32 @@ class Construction {
    * @param block: 绑定的首个（左上角）砖块。
    */
   calcConPosition(block) {
-    const gap = 0.2;
     const box = new THREE.Box3().setFromObject(this.mesh);
     const conSize = box.getSize(new THREE.Vector3());
 
     this.position = { // 调整居中放置
-      x: (this.column - 1) * (block.width + gap) + ((block.width + gap) * this.width - gap) / 2,
+      x: (this.column - 1) * (block.width + blockGap) + ((block.width + blockGap) * this.width - blockGap) / 2,
       y: (conSize.y + block.height) / 2 - 0.01,
-      z: (this.row - 1) * (block.depth + gap) + ((block.depth + gap) * this.height - gap) / 2,
+      z: (this.row - 1) * (block.depth + blockGap) + ((block.depth + blockGap) * this.height - blockGap) / 2,
       * [Symbol.iterator]() {
         yield this.x;
         yield this.y;
         yield this.z;
       },
     };
+  }
+
+  /* 标准化添加的自定义模型。 */
+  normalize() {
+    this.mesh.geometry.center(); // 重置原点为几何中心
+    this.mesh.geometry.computeBoundingBox();
+    this.mesh.geometry.boundingBox.getCenter(this.mesh.position);
+    const wrapper = new THREE.Object3D().add(this.mesh);
+    const box = new THREE.Box3().setFromObject(wrapper);
+    const boxSize = box.getSize(new THREE.Vector3());
+    const mag = (blockUnit * this.width) / boxSize.x;
+    wrapper.scale.set(mag, mag, mag); // 按X方向的比例缩放
+    this.mesh = wrapper;
   }
 }
 

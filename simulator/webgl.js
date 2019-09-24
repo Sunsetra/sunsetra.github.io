@@ -2,6 +2,11 @@ import * as Basic from './modules/basic.js';
 
 /* global THREE, dat */
 
+/**
+ * TODO: 处理外部导入问题；
+ * TODO: 解决gap问题；
+ */
+
 /* 全局变量定义 */
 const canvas = document.querySelector('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas });
@@ -59,7 +64,7 @@ const meshFolder = gui.addFolder('网格');
 
 /* 定义地图 */
 const blockGap = 0.2; // 砖块间隙固定值
-const blockPix = 10; // 砖块边长像素
+const blockUnit = 10; // 砖块边长像素
 const mapWidth = 9;
 const mapHeight = 4;
 const zeroOne = new Basic.MapInfo(mapWidth, mapHeight, new Basic.HighBlock());
@@ -107,30 +112,21 @@ gltfLoader.load(url, (gltf) => {
 
   /* 处理导入的网格几何体 */
   root.children.forEach((obj) => {
-    obj.geometry.center();
-    obj.geometry.computeBoundingBox();
-    obj.geometry.boundingBox.getCenter(obj.position);
-    const deco = new THREE.Object3D().add(obj);
-
-    const box = new THREE.Box3().setFromObject(deco);
-    const boxSize = box.getSize(new THREE.Vector3());
-    deco.scale.set(10 / boxSize.x, 10 / boxSize.x, 10 / boxSize.x);
-
-    const test = new Basic.Construction(1, 1, deco);
+    const test = new Basic.Construction(1, 1, obj);
+    test.normalize();
     zeroOne.addCon(1, 1, test);
+  });
+  /* 添加入口和出口 */
+  const dest = new Basic.Destination();
+  zeroOne.addCon(2, 1, dest);
+  const entry = new Basic.Entry();
+  zeroOne.addCon(3, 9, entry);
 
-    /* 添加入口和出口 */
-    const dest = new Basic.Destination();
-    zeroOne.addCon(2, 1, dest);
-    const entry = new Basic.Entry();
-    zeroOne.addCon(3, 9, entry);
-
-    zeroOne.getCons().forEach((con) => {
-      if (con) {
-        con.mesh.position.set(...con.position);
-        scene.add(con.mesh);
-      }
-    });
+  zeroOne.getCons().forEach((con) => {
+    if (con) {
+      con.mesh.position.set(...con.position);
+      scene.add(con.mesh);
+    }
   });
 });
 
@@ -143,56 +139,57 @@ gltfLoader.load(url, (gltf) => {
   lightFolder.add(light, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(staticRender);
   scene.add(light);
 }
+{
+  // 定义平行阳光
+  const color = 0xE6CDB4;
+  let intensity = 1.2;
+  const sunLight = new THREE.DirectionalLight(color, intensity);
 
-// 定义平行阳光
-const color = 0xE6CDB4;
-let intensity = 1.2;
-const sunLight = new THREE.DirectionalLight(color, intensity);
+  // 阳光终点位置
+  const lightTargetZ = (mapHeight * blockUnit + blockGap * (mapHeight - 1)) / 2;
+  const lightTargetX = (mapWidth * blockUnit + blockGap * (mapWidth - 1)) / 2;
+  sunLight.target.position.set(lightTargetX, 0, lightTargetZ);
+  sunLight.target.updateMatrixWorld();
+  scene.add(sunLight);
+  scene.add(sunLight.target);
 
-// 阳光终点位置
-const lightTargetZ = (mapHeight * blockPix + blockGap * (mapHeight - 1)) / 2;
-const lightTargetX = (mapWidth * blockPix + blockGap * (mapWidth - 1)) / 2;
-sunLight.target.position.set(lightTargetX, 0, lightTargetZ);
-sunLight.target.updateMatrixWorld();
-scene.add(sunLight);
-scene.add(sunLight.target);
+  const lightRad = Math.max(mapHeight * 10, mapWidth * 10); // 阳光半径
+  const phi = Math.floor(Math.random() * 360) + 1; // 随机初始角度
+  const hour = new Date().getHours();
+  let theta = 0;
+  if (hour <= 12) { // 光强度及角度随当前时间变化
+    intensity = hour <= 6 ? 1.8 : 2.6 - hour * 0.13;
+    theta = hour <= 6 ? 70 : 140 - hour * 12;
+  } else {
+    intensity = hour >= 18 ? 1.8 : hour * 0.13 - 0.6;
+    theta = hour >= 18 ? 70 : 140 - hour * 12;
+  }
 
-const lightRad = Math.max(mapHeight * 10, mapWidth * 10); // 阳光半径
-const phi = Math.floor(Math.random() * 360) + 1; // 随机初始角度
-const hour = new Date().getHours();
-let theta = 0;
-if (hour <= 12) { // 光强度及角度随当前时间变化
-  intensity = hour <= 6 ? 1.8 : 2.6 - hour * 0.13;
-  theta = hour <= 6 ? 70 : 140 - hour * 12;
-} else {
-  intensity = hour >= 18 ? 1.8 : hour * 0.13 - 0.6;
-  theta = hour >= 18 ? 70 : 140 - hour * 12;
+  const cosTheta = Math.cos(THREE.Math.degToRad(theta));
+  const sinTheta = Math.sin(THREE.Math.degToRad(theta));
+  const cosPhi = Math.cos(THREE.Math.degToRad(phi));
+  const sinPhi = Math.sin(THREE.Math.degToRad(phi));
+  const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
+  const lightPosY = lightRad * cosTheta;
+  const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
+  sunLight.intensity = intensity;
+  sunLight.position.set(lightPosX, lightPosY, lightPosZ);
+
+  // 定义平行光阴影
+  sunLight.castShadow = true;
+  sunLight.shadow.camera.left = -100;
+  sunLight.shadow.camera.right = 100;
+  sunLight.shadow.camera.top = 100;
+  sunLight.shadow.camera.bottom = -100;
+  sunLight.shadow.bias = 0.0001;
+  sunLight.shadow.mapSize.set(8192, 8192);
+  sunLight.shadow.camera.updateProjectionMatrix();
+
+  const helper = new THREE.DirectionalLightHelper(sunLight);
+  lightFolder.add(sunLight, 'intensity', 0, 2, 0.05).name('阳光强度').onChange(staticRender);
+  helper.update();
+  scene.add(helper);
 }
-
-const cosTheta = Math.cos(THREE.Math.degToRad(theta));
-const sinTheta = Math.sin(THREE.Math.degToRad(theta));
-const cosPhi = Math.cos(THREE.Math.degToRad(phi));
-const sinPhi = Math.sin(THREE.Math.degToRad(phi));
-const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
-const lightPosY = lightRad * cosTheta;
-const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
-sunLight.intensity = intensity;
-sunLight.position.set(lightPosX, lightPosY, lightPosZ);
-
-// 定义平行光阴影
-sunLight.castShadow = true;
-sunLight.shadow.camera.left = -100;
-sunLight.shadow.camera.right = 100;
-sunLight.shadow.camera.top = 100;
-sunLight.shadow.camera.bottom = -100;
-sunLight.shadow.bias = 0.0001;
-sunLight.shadow.mapSize.set(8192, 8192);
-sunLight.shadow.camera.updateProjectionMatrix();
-
-const helper = new THREE.DirectionalLightHelper(sunLight);
-lightFolder.add(sunLight, 'intensity', 0, 2, 0.05).name('阳光强度').onChange(staticRender);
-helper.update();
-scene.add(helper);
 
 
 /* 辅助对象定义 */
