@@ -1,26 +1,27 @@
 import * as Basic from './modules/basic.js';
+import * as Block from './modules/block.js';
+import * as Cons from './modules/cons.js';
 
 /* global THREE, dat */
 
-/**
- * TODO: 处理外部导入问题；
- * TODO: 规范化地图生成（json文件）；
- */
+const blockUnit = 10; // 砖块边长像素
 
+/* 加载资源文件 */
 const loadManager = new THREE.LoadingManager();
-const gltfLoader = new THREE.GLTFLoader(loadManager);
+// const gltfLoader = new THREE.GLTFLoader(loadManager);
 const loader = new THREE.TextureLoader(loadManager);
 
-let externalModel = null;
-gltfLoader.load('res/model/destination.glb', (gltf) => {
-  externalModel = gltf.scene;
-});
+// let externalModel = null;
+// gltfLoader.load('res/model/destination.glb', (gltf) => {
+//   externalModel = gltf.scene;
+// });
 
 const blockTop = loader.load('res/texture/blockTop.png');
 const destinationSide = loader.load('res/texture/destinationSide.png');
 const destinationTop = loader.load('res/texture/destinationTop.png');
 const entrySide = loader.load('res/texture/entrySide.png');
 const entryTop = loader.load('res/texture/entryTop.png');
+
 
 function main() {
   /* 全局变量定义 */
@@ -55,10 +56,10 @@ function main() {
   function staticRender() {
     needRender = false;
     // 每帧更新相机宽高比
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    const needResize = canvas.width !== width || canvas.height !== height;
+    const canv = renderer.domElement;
+    const width = canv.clientWidth;
+    const height = canv.clientHeight;
+    const needResize = canv.width !== width || canv.height !== height;
     if (needResize) {
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
@@ -81,31 +82,27 @@ function main() {
   lightFolder.open();
   const meshFolder = gui.addFolder('网格');
 
-  /* 定义地图 */
-  const blockUnit = 10; // 砖块边长像素
-  const mapWidth = 9;
-  const mapHeight = 4;
-  const zeroOne = new Basic.MapInfo(mapWidth, mapHeight, new Basic.HighBlock());
-  zeroOne.setBlock(2, 1, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 2, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 2, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 3, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 4, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 4, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 5, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 6, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 7, new Basic.BasicBlock());
-  zeroOne.setBlock(2, 8, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 6, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 7, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 8, new Basic.BasicBlock());
-  zeroOne.setBlock(3, 9, new Basic.BasicBlock());
 
-  /* 生成场景 */
-  for (let height = 0; height < mapHeight; height += 1) {
-    for (let width = 0; width < mapWidth; width += 1) {
-      // 生成地面
-      const block = zeroOne.getBlock(height + 1, width + 1);
+  function createMap(data) {
+    const blockShop = {
+      basicBlock: new Block.BasicBlock(),
+      highBlock: new Block.HighBlock(),
+    };
+    const consShop = {
+      destination: new Cons.IOPoint(destinationTop, destinationSide),
+      entry: new Cons.IOPoint(entryTop, entrySide),
+    };
+
+    const mapWidth = data.width;
+    const mapHeight = data.height;
+    const map = new Basic.MapInfo(mapWidth, mapHeight, blockShop.basicBlock);
+
+    data.blockInfo.forEach((item) => {
+      /* 生成地面 */
+      const block = map.setBlock(item.row, item.column, blockShop[item.block]);
+      if (item.height) { // 定义砖块高度
+        block.height = item.height;
+      }
       const geometry = new THREE.BoxBufferGeometry(...block.size);
       const material = new THREE.MeshPhysicalMaterial({
         color: 0xFFFFFF,
@@ -116,33 +113,34 @@ function main() {
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      const x = width * block.width + block.width / 2;
+      const x = (item.column + 0.5) * block.width;
       const y = block.height / 2;
-      const z = height * block.depth + block.depth / 2;
+      const z = (item.row + 0.5) * block.depth;
       mesh.position.set(x, y, z);
       scene.add(mesh);
-    }
+
+      /* 添加建筑 */
+      if (item.construction) {
+        const con = map.addCon(item.row, item.column, consShop[item.construction]);
+        con.mesh.position.set(...con.position);
+        scene.add(con.mesh);
+      }
+    });
   }
 
+  fetch('maps/0-1.json')
+    .then((data) => data.json())
+    .then((data) => {
+      createMap(data);
+      requestRender();
+    });
 
-  /* 处理导入的网格几何体 */
-  externalModel.children.forEach((obj) => {
-    const test = new Basic.Construction(1, 1, obj);
-    test.normalize();
-    zeroOne.addCon(2, 2, test);
-  });
-  /* 添加入口和出口 */
-  const dest = new Basic.IOPoint(destinationTop, destinationSide);
-  zeroOne.addCon(2, 1, dest);
-  const entry = new Basic.IOPoint(entryTop, entrySide);
-  zeroOne.addCon(3, 9, entry);
-
-  zeroOne.getCons().forEach((con) => {
-    if (con) {
-      con.mesh.position.set(...con.position);
-      scene.add(con.mesh);
-    }
-  });
+  // /* 处理导入的网格几何体 */
+  // externalModel.children.forEach((obj) => {
+  //   const test = new Cons.Construction(1, 1, obj);
+  //   test.normalize();
+  //   zeroOne.addCon(2, 2, test);
+  // });
 
 
   /* 灯光定义 */
@@ -151,7 +149,7 @@ function main() {
     const color = 0xFFFFFF;
     const intensity = 0.1;
     const light = new THREE.AmbientLight(color, intensity);
-    lightFolder.add(light, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(staticRender);
+    lightFolder.add(light, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(requestRender);
     scene.add(light);
   }
   {
@@ -159,14 +157,14 @@ function main() {
     let intensity = 1.2;
     const sunLight = new THREE.DirectionalLight(color, intensity); // 定义平行阳光
 
-    const lightTargetZ = (mapHeight * blockUnit) / 2;
-    const lightTargetX = (mapWidth * blockUnit) / 2;
+    const lightTargetZ = (4 * blockUnit) / 2;
+    const lightTargetX = (9 * blockUnit) / 2;
     sunLight.target.position.set(lightTargetX, 0, lightTargetZ); // 阳光终点位置
     sunLight.target.updateMatrixWorld();
     scene.add(sunLight);
     scene.add(sunLight.target);
 
-    const lightRad = Math.max(mapHeight * 10, mapWidth * 10); // 阳光半径
+    const lightRad = Math.max(4 * 10, 9 * 10); // 阳光半径
     const phi = Math.floor(Math.random() * 360) + 1; // 随机初始角度
     const hour = new Date().getHours();
     let theta = 0;
@@ -199,7 +197,7 @@ function main() {
     sunLight.shadow.camera.updateProjectionMatrix();
 
     const helper = new THREE.DirectionalLightHelper(sunLight);
-    lightFolder.add(sunLight, 'intensity', 0, 2, 0.05).name('阳光强度').onChange(staticRender);
+    lightFolder.add(sunLight, 'intensity', 0, 2, 0.05).name('阳光强度').onChange(requestRender);
     helper.update();
     scene.add(helper);
   }
@@ -231,11 +229,11 @@ function main() {
       this.axes.visible = v;
     }
   }
-  const sceneHelper = new AxisGridHelper(scene, 500);
-  meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(staticRender);
+  const sceneHelper = new AxisGridHelper(scene, 300);
+  meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestRender);
 
   renderer.render(scene, camera);
-  staticRender();
+  requestRender();
   controls.addEventListener('change', requestRender);
   window.addEventListener('resize', requestRender);
 }

@@ -1,144 +1,3 @@
-/* global THREE */
-
-const blockUnit = 10; // 砖块单位长度
-
-class Block {
-  /**
-   * 砖块对象的抽象基类。
-   * @param width: 定义砖块在X方向上的宽度。
-   * @param height: 定义砖块在Y方向上的高度。
-   * @param depth: 定义砖块在Z方向上的宽度。
-   * @param mesh: 定义砖块的网格实体。
-   */
-  constructor(width, height, depth, mesh = null) {
-    this.width = width;
-    this.height = height;
-    this.depth = depth;
-    this.mesh = mesh;
-  }
-
-  get size() {
-    return {
-      width: this.width,
-      height: this.height,
-      depth: this.depth,
-      * [Symbol.iterator]() {
-        yield this.width;
-        yield this.height;
-        yield this.depth;
-      },
-    };
-  }
-}
-
-
-/* 普通砖块类 */
-class BasicBlock extends Block {
-  /* 定义最基本的普通砖块，XYZ方向的尺寸固定。 */
-  constructor() {
-    super(blockUnit, 0.5 * blockUnit, blockUnit);
-  }
-}
-
-class HighBlock extends Block {
-  /**
-   * 定义最基本的高台砖块。
-   * @param height：定义高台砖块的高度。
-   */
-  constructor(height = 0.8 * blockUnit) {
-    super(blockUnit, height, blockUnit);
-  }
-}
-
-
-/* 基本建筑类 */
-class Construction {
-  /**
-   * 定义地图建筑的位置及网格实体。
-   * @param width: 建筑跨越的列数。
-   * @param height: 建筑跨越的行数。
-   * @param mesh: 建筑使用的网格实体。
-   */
-  constructor(width, height, mesh = null) {
-    this.width = width;
-    this.height = height;
-    this.mesh = mesh;
-  }
-
-  /**
-   * 设置建筑所在的位置，应在绑定时设置。
-   * @param row: 建筑所在的行，从1开始。
-   * @param column: 建筑所在的列，从1开始。
-   */
-  setLocation(row, column) {
-    this.row = row;
-    this.column = column;
-  }
-
-  /**
-   * 返回建筑所在的实际坐标。
-   * 在绑定砖块后，应手动调用以更新建筑应放置的实际位置。
-   * @param block: 绑定的首个（左上角）砖块。
-   */
-  calcConPosition(block) {
-    const box = new THREE.Box3().setFromObject(this.mesh);
-    const conSize = box.getSize(new THREE.Vector3());
-
-    this.position = { // 调整居中放置
-      x: (this.column - 1) * (block.width) + (block.width * this.width) / 2,
-      y: conSize.y / 2 + block.height - 0.01,
-      z: (this.row - 1) * (block.depth) + (block.depth * this.height) / 2,
-      * [Symbol.iterator]() {
-        yield this.x;
-        yield this.y;
-        yield this.z;
-      },
-    };
-  }
-
-  /* 标准化添加的自定义模型。 */
-  normalize() {
-    this.mesh.geometry.center(); // 重置原点为几何中心
-    this.mesh.geometry.computeBoundingBox();
-    this.mesh.geometry.boundingBox.getCenter(this.mesh.position);
-    const wrapper = new THREE.Object3D().add(this.mesh);
-    const box = new THREE.Box3().setFromObject(wrapper);
-    const boxSize = box.getSize(new THREE.Vector3());
-    const mag = (blockUnit * this.width) / boxSize.x;
-    wrapper.scale.set(mag, mag, mag); // 按X方向的比例缩放
-    this.mesh = wrapper;
-  }
-}
-
-
-class IOPoint extends Construction {
-  /**
-   * 预设进入/目标点建筑。
-   * @param textureTop: 建筑的顶部贴图。
-   * @param textureSide：建筑的侧向贴图。
-   */
-  constructor(textureTop, textureSide) {
-    const topMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
-      map: textureTop,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const sideMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
-      map: textureSide,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
-    const cube = new THREE.BoxBufferGeometry(9.99, 9.99, 9.99);
-    const mesh = new THREE.Mesh(cube, destMaterials);
-
-    super(1, 1, mesh);
-  }
-}
-
-
 /* 地图信息类 */
 class MapInfo {
   /**
@@ -147,7 +6,7 @@ class MapInfo {
    * @param height：定义地图在Z方向的宽度。
    * @param block：提供一个砖块实例，将地图初始化为该类型砖块。
    */
-  constructor(width, height, block = new BasicBlock()) {
+  constructor(width, height, block) {
     this.width = width > 0 ? width : 2;
     this.height = height > 0 ? height : 2;
     this._blocks = new Array(width * height).fill(block);
@@ -169,13 +28,15 @@ class MapInfo {
 
   /**
    * 替换地图中指定行/列的砖块。
-   * @param row: 要替换的块所在的行，从1开始。
-   * @param column: 要替换的块所在的列，从1开始。
-   * @param block: 要替换为的块对象。
+   * @param row: 要替换的砖块所在的行，从1开始。
+   * @param column: 要替换的砖块所在的列，从1开始。
+   * @param block: 要替换为的砖块对象。
+   * @returns {Block}: 返回新设置的砖块对象。
    */
   setBlock(row, column, block) {
     const index = (row - 1) * this.width + (column - 1);
     this._blocks[index] = block;
+    return this._blocks[index];
   }
 
   /**
@@ -196,7 +57,7 @@ class MapInfo {
    * @param row: 建筑（首格）所在的行，从1开始。
    * @param column: 建筑（首格）所在的列，从1开始。
    * @param con: 自定义或预定义建筑实例。
-   * @returns {boolean|Array<Construction>}: 成功添加时返回建筑数组，失败时返回false。
+   * @returns {boolean|Construction}: 成功添加时返回新添加的建筑，失败时返回false。
    */
   addCon(row, column, con) {
     if (this.getCon(row, column)) { this.removeCon(row, column); }
@@ -223,7 +84,7 @@ class MapInfo {
         }
         con.setLocation(row, column);
         con.calcConPosition(block);
-        return this._cons;
+        return this._cons[index];
       }
       return false;
     }
@@ -231,7 +92,7 @@ class MapInfo {
     con.calcConPosition(block); // 添加的建筑只占1格
     const index = (row - 1) * this.width + (column - 1);
     this._cons[index] = con;
-    return this._cons;
+    return this._cons[index];
   }
 
   /**
@@ -255,7 +116,4 @@ class MapInfo {
   }
 }
 
-export {
-  MapInfo, BasicBlock, HighBlock,
-  Construction, IOPoint,
-};
+export default { MapInfo };
