@@ -1,6 +1,5 @@
 /* global THREE */
 
-const blockGap = 0.2; // 砖块间隙固定值
 const blockUnit = 10; // 砖块单位长度
 
 class Block {
@@ -35,11 +34,9 @@ class Block {
 
 /* 普通砖块类 */
 class BasicBlock extends Block {
-  /**
-   * 定义最基本的普通砖块，XYZ方向的尺寸固定。
-   */
+  /* 定义最基本的普通砖块，XYZ方向的尺寸固定。 */
   constructor() {
-    super(blockUnit, 2 * blockUnit, blockUnit);
+    super(blockUnit, 0.5 * blockUnit, blockUnit);
   }
 }
 
@@ -48,7 +45,7 @@ class HighBlock extends Block {
    * 定义最基本的高台砖块。
    * @param height：定义高台砖块的高度。
    */
-  constructor(height = 25) {
+  constructor(height = 0.8 * blockUnit) {
     super(blockUnit, height, blockUnit);
   }
 }
@@ -88,9 +85,9 @@ class Construction {
     const conSize = box.getSize(new THREE.Vector3());
 
     this.position = { // 调整居中放置
-      x: (this.column - 1) * (block.width + blockGap) + ((block.width + blockGap) * this.width - blockGap) / 2,
-      y: (conSize.y + block.height) / 2 - 0.01,
-      z: (this.row - 1) * (block.depth + blockGap) + ((block.depth + blockGap) * this.height - blockGap) / 2,
+      x: (this.column - 1) * (block.width) + (block.width * this.width) / 2,
+      y: conSize.y / 2 + block.height - 0.01,
+      z: (this.row - 1) * (block.depth) + (block.depth * this.height) / 2,
       * [Symbol.iterator]() {
         yield this.x;
         yield this.y;
@@ -114,54 +111,33 @@ class Construction {
 }
 
 
-/* 预设目标点建筑 */
-class Destination extends Construction {
-  constructor() {
-    const loader = new THREE.TextureLoader();
+class IOPoint extends Construction {
+  /**
+   * 预设进入/目标点建筑。
+   * @param textureTop: 建筑的顶部贴图。
+   * @param textureSide：建筑的侧向贴图。
+   */
+  constructor(textureTop, textureSide) {
     const topMat = new THREE.MeshBasicMaterial({
       alphaTest: 0.7,
-      map: loader.load('texture/destinationTop.png'),
+      map: textureTop,
       side: THREE.DoubleSide,
       transparent: true,
     });
     const sideMat = new THREE.MeshBasicMaterial({
       alphaTest: 0.7,
-      map: loader.load('texture/destinationSide.png'),
+      map: textureSide,
       side: THREE.DoubleSide,
       transparent: true,
     });
     const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
-    const cube = new THREE.BoxBufferGeometry(10, 10, 10);
+    const cube = new THREE.BoxBufferGeometry(9.99, 9.99, 9.99);
     const mesh = new THREE.Mesh(cube, destMaterials);
 
     super(1, 1, mesh);
   }
 }
 
-
-/* 预设出怪点建筑 */
-class Entry extends Construction {
-  constructor() {
-    const loader = new THREE.TextureLoader();
-    const topMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
-      map: loader.load('texture/entryTop.png'),
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const sideMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
-      map: loader.load('texture/entrySide.png'),
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
-    const cube = new THREE.BoxBufferGeometry(10, 10, 10);
-    const mesh = new THREE.Mesh(cube, destMaterials);
-
-    super(1, 1, mesh);
-  }
-}
 
 /* 地图信息类 */
 class MapInfo {
@@ -281,5 +257,5 @@ class MapInfo {
 
 export {
   MapInfo, BasicBlock, HighBlock,
-  Construction, Destination, Entry,
+  Construction, IOPoint,
 };
