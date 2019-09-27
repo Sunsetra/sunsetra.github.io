@@ -82,6 +82,13 @@ function main() {
   lightFolder.open();
   const meshFolder = gui.addFolder('网格');
 
+  /* 定义环境光 */
+  const color = 0xFFFFFF;
+  const intensity = 0.1;
+  const envLight = new THREE.AmbientLight(color, intensity);
+  lightFolder.add(envLight, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(requestRender).listen();
+  scene.add(envLight);
+
 
   function createMap(data) {
     const blockShop = {
@@ -100,7 +107,7 @@ function main() {
     data.blockInfo.forEach((item) => {
       /* 生成地面 */
       const block = map.setBlock(item.row, item.column, blockShop[item.block]);
-      if (item.height) { // 定义砖块高度
+      if (item.height) { // 自定义砖块高度
         block.height = item.height;
       }
       const geometry = new THREE.BoxBufferGeometry(...block.size);
@@ -126,68 +133,46 @@ function main() {
         scene.add(con.mesh);
       }
     });
-  }
-
-  fetch('maps/0-1.json')
-    .then((data) => data.json())
-    .then((data) => {
-      createMap(data);
-      requestRender();
-    });
-
-  // /* 处理导入的网格几何体 */
-  // externalModel.children.forEach((obj) => {
-  //   const test = new Cons.Construction(1, 1, obj);
-  //   test.normalize();
-  //   zeroOne.addCon(2, 2, test);
-  // });
 
 
-  /* 灯光定义 */
-  {
-    /* 定义环境光 */
-    const color = 0xFFFFFF;
-    const intensity = 0.1;
-    const light = new THREE.AmbientLight(color, intensity);
-    lightFolder.add(light, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(requestRender);
-    scene.add(light);
-  }
-  {
-    const color = 0xE6CDB4;
-    let intensity = 1.2;
-    const sunLight = new THREE.DirectionalLight(color, intensity); // 定义平行阳光
+    /* 灯光定义 */
+    envLight.intensity = data.light.envIntensity; // 调整环境光强度
+    envLight.color.set(data.light.envColor);
+    const sunLight = new THREE.DirectionalLight(); // 定义平行阳光
+    sunLight.color.set(data.light.color);
+    sunLight.intensity = data.light.intensity;
 
-    const lightTargetZ = (4 * blockUnit) / 2;
-    const lightTargetX = (9 * blockUnit) / 2;
+    const lightTargetZ = (mapHeight * blockUnit) / 2;
+    const lightTargetX = (mapWidth * blockUnit) / 2;
     sunLight.target.position.set(lightTargetX, 0, lightTargetZ); // 阳光终点位置
     sunLight.target.updateMatrixWorld();
     scene.add(sunLight);
     scene.add(sunLight.target);
 
-    const lightRad = Math.max(4 * 10, 9 * 10); // 阳光半径
-    const phi = Math.floor(Math.random() * 360) + 1; // 随机初始角度
-    const hour = new Date().getHours();
-    let theta = 0;
-    if (hour <= 12) { // 光强度及角度随当前时间变化
-      intensity = hour <= 6 ? 1.8 : 2.6 - hour * 0.13;
-      theta = hour <= 6 ? 70 : 140 - hour * 12;
+    const lightRad = Math.max(mapHeight * blockUnit, mapWidth * blockUnit); // 定义阳光半径
+    const hasHour = Object.prototype.hasOwnProperty.call(data.light, 'hour');
+    const hour = hasHour ? data.light.hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
+
+    const hasPhi = Object.prototype.hasOwnProperty.call(data.light, 'phi');
+    const randomDeg = Math.floor(Math.random() * 360) + 1;
+    const phi = hasPhi ? data.light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
+    let theta = 0; // 天顶角
+
+    if (hour < 6 || hour > 18) {
+      sunLight.intensity = 0;
     } else {
-      intensity = hour >= 18 ? 1.8 : hour * 0.13 - 0.6;
-      theta = hour >= 18 ? 70 : 140 - hour * 12;
+      theta = 140 - hour * 12;
+      const cosTheta = Math.cos(THREE.Math.degToRad(theta)); // 计算光源位置
+      const sinTheta = Math.sin(THREE.Math.degToRad(theta));
+      const cosPhi = Math.cos(THREE.Math.degToRad(phi));
+      const sinPhi = Math.sin(THREE.Math.degToRad(phi));
+      const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
+      const lightPosY = lightRad * cosTheta;
+      const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
+      sunLight.position.set(lightPosX, lightPosY, lightPosZ);
     }
 
-    const cosTheta = Math.cos(THREE.Math.degToRad(theta));
-    const sinTheta = Math.sin(THREE.Math.degToRad(theta));
-    const cosPhi = Math.cos(THREE.Math.degToRad(phi));
-    const sinPhi = Math.sin(THREE.Math.degToRad(phi));
-    const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
-    const lightPosY = lightRad * cosTheta;
-    const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
-    sunLight.intensity = intensity;
-    sunLight.position.set(lightPosX, lightPosY, lightPosZ);
-
-    /* 定义平行光阴影 */
-    sunLight.castShadow = true;
+    sunLight.castShadow = true; // 定义光源阴影
     sunLight.shadow.camera.left = -100;
     sunLight.shadow.camera.right = 100;
     sunLight.shadow.camera.top = 100;
@@ -202,6 +187,20 @@ function main() {
     scene.add(helper);
   }
 
+  /* 通过json数据构建地图 */
+  fetch('maps/0-1.json')
+    .then((data) => data.json())
+    .then((data) => {
+      createMap(data);
+      requestRender();
+    });
+
+  // /* 处理导入的网格几何体 */
+  // externalModel.children.forEach((obj) => {
+  //   const test = new Cons.Construction(1, 1, obj);
+  //   test.normalize();
+  //   zeroOne.addCon(2, 2, test);
+  // });
 
   /* 辅助对象定义 */
   class AxisGridHelper {

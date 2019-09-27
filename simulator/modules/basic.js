@@ -116,4 +116,4 @@ class MapInfo {
   }
 }
 
-export default { MapInfo };
+export { MapInfo };

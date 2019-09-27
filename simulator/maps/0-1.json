@@ -148,5 +148,13 @@
     "row": 3,
     "column": 8,
     "block": "highBlock"
-  }]
+  }],
+  "light": {
+    "envIntensity": 0.6,
+    "envColor": "rgb(230,205,180)",
+    "color": "rgb(230,205,180)",
+    "intensity": 1.2,
+    "hour": 18,
+    "phi": 180
+  }
 }
