@@ -28,7 +28,7 @@ class Construction {
 
   /**
    * 返回建筑所在的实际坐标。
-   * 在绑定砖块后，应手动调用以更新建筑应放置的实际位置。
+   * 在绑定状态发生变化后，应手动调用以更新建筑应放置的实际位置。
    * @param block: 绑定的首个（左上角）砖块。
    */
   calcConPosition(block) {
@@ -47,12 +47,15 @@ class Construction {
     };
   }
 
-  /* 标准化添加的自定义模型。 */
+  /**
+   * 标准化添加的自定义模型。
+   * 注：对于自身有大小需求的模型不应调用该函数。
+   */
   normalize() {
     this.mesh.geometry.center(); // 重置原点为几何中心
     this.mesh.geometry.computeBoundingBox();
     this.mesh.geometry.boundingBox.getCenter(this.mesh.position);
-    const wrapper = new THREE.Object3D().add(this.mesh);
+    const wrapper = new THREE.Object3D().add(this.mesh); // 使用外部对象包裹
     const box = new THREE.Box3().setFromObject(wrapper);
     const boxSize = box.getSize(new THREE.Vector3());
     const mag = (blockUnit * this.width) / boxSize.x;
@@ -84,9 +87,18 @@ class IOPoint extends Construction {
     const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
     const cube = new THREE.BoxBufferGeometry(9.99, 9.99, 9.99);
     const mesh = new THREE.Mesh(cube, destMaterials);
-
     super(1, 1, mesh);
   }
 }
 
-export { Construction, IOPoint };
+
+class DecoRing extends Construction {
+  constructor(mesh) {
+    super(1, 1, mesh);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
+    this.normalize();
+  }
+}
+
+export { Construction, IOPoint, DecoRing };

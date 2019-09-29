@@ -9,15 +9,30 @@
   }, {
     "row": 0,
     "column": 1,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 0,
     "column": 2,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "2",
+      "rotation": ""
+    }
   }, {
     "row": 0,
     "column": 3,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": ""
+    }
   }, {
     "row": 0,
     "column": 4,
@@ -42,7 +57,11 @@
     "row": 1,
     "column": 0,
     "block": "basicBlock",
-    "construction": "destination"
+    "consInfo": {
+      "desc": "destination",
+      "type": "",
+      "rotation": ""
+    }
   }, {
     "row": 1,
     "column": 1,
@@ -111,7 +130,11 @@
     "row": 2,
     "column": 8,
     "block": "basicBlock",
-    "construction": "entry"
+    "consInfo": {
+      "desc": "entry",
+      "type": "",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 0,
@@ -153,7 +176,7 @@
     "envIntensity": 0.6,
     "envColor": "rgb(230,205,180)",
     "color": "rgb(230,205,180)",
-    "intensity": 1.2,
+    "intensity": 2,
     "hour": 18,
     "phi": 180
   }
