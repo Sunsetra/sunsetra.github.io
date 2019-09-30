@@ -5,7 +5,12 @@
   "blockInfo": [{
     "row": 0,
     "column": 0,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "consTomb",
+      "type": "0",
+      "rotation": ""
+    }
   }, {
     "row": 0,
     "column": 1,
@@ -36,23 +41,48 @@
   }, {
     "row": 0,
     "column": 4,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 0,
     "column": 5,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "2",
+      "rotation": ""
+    }
   }, {
     "row": 0,
     "column": 6,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 0,
     "column": 7,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": ""
+    }
   }, {
     "row": 0,
     "column": 8,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "consTomb",
+      "type": "0",
+      "rotation": ""
+    }
   }, {
     "row": 1,
     "column": 0,
@@ -138,35 +168,75 @@
   }, {
     "row": 3,
     "column": 0,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "consTomb",
+      "type": "0",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 1,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 3,
     "column": 2,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "2",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 3,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 4,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 3,
     "column": 5,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 6,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": 180
+    }
   }, {
     "row": 3,
     "column": 7,
-    "block": "highBlock"
+    "block": "highBlock",
+    "consInfo": {
+      "desc": "decoRing",
+      "type": "3",
+      "rotation": ""
+    }
   }, {
     "row": 3,
     "column": 8,
@@ -177,7 +247,7 @@
     "envColor": "rgb(230,205,180)",
     "color": "rgb(230,205,180)",
     "intensity": 2,
-    "hour": 18,
+    "hour": 16,
     "phi": 180
   }
 }

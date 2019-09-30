@@ -18,6 +18,13 @@ gltfLoader.load('res/model/deco_ring.glb', (g) => {
     decoRingModel.set(type, obj);
   });
 });
+const consTombModel = new Map();
+gltfLoader.load('res/model/cons_tomb.glb', (g) => {
+  g.scene.children.forEach((obj) => {
+    const type = obj.name.split('_').pop(); // 命名规则：描述+类型
+    consTombModel.set(type, obj);
+  });
+});
 
 const blockTop = loader.load('res/texture/blockTop.png');
 const destinationSide = loader.load('res/texture/destinationSide.png');
@@ -25,13 +32,20 @@ const destinationTop = loader.load('res/texture/destinationTop.png');
 const entrySide = loader.load('res/texture/entrySide.png');
 const entryTop = loader.load('res/texture/entryTop.png');
 
-/* TODO: 处理建筑旋转角度 */
 function getModel(consInfo) { // 对象中只包含函数需要的信息，则将对象交给函数处理
   const { desc, type, rotation } = consInfo;
   const consShop = {
     destination: () => new Cons.IOPoint(destinationTop, destinationSide),
     entry: () => new Cons.IOPoint(entryTop, entrySide),
-    decoRing: (t) => new Cons.DecoRing(decoRingModel.get(t).clone()),
+    decoRing: (t) => {
+      const mesh = decoRingModel.get(t).clone();
+      mesh.rotation.y = THREE.Math.degToRad(rotation);
+      return new Cons.DecoRing(mesh);
+    },
+    consTomb: (t) => {
+      const mesh = consTombModel.get(t).clone();
+      return new Cons.DecoRing(mesh);
+    },
   };
   return consShop[desc](type);
 }
@@ -39,7 +53,7 @@ function getModel(consInfo) { // 对象中只包含函数需要的信息，则�
 function main() {
   /* 全局变量定义 */
   const canvas = document.querySelector('canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.shadowMap.enabled = true;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('black');
@@ -143,7 +157,6 @@ function main() {
       if (consInfo) {
         const obj = map.addCon(row, column, getModel(consInfo));
         obj.mesh.position.set(...obj.position);
-        console.log(obj);
         scene.add(obj.mesh);
       }
     });
@@ -171,7 +184,7 @@ function main() {
     const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
 
     if (hour < 6 || hour > 18) { // 定义夜间光源
-      hour = (hour % 12) + 12;
+      hour = hour < 6 ? hour + 12 : hour % 12;
       sunLight.intensity = 0.6;
       sunLight.color.set(0xffffff);
       envLight.color.set(0x5C6C85);
