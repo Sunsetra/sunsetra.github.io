@@ -8,6 +8,33 @@ const blockUnit = 10; // 砖块边长像素
 
 const loadManager = new THREE.LoadingManager();
 
+const bar = document.querySelector('#progressbar');
+const tip = document.querySelector('#progresstip');
+loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+  console.log(`Progress: ${itemsLoaded}/${itemsTotal}: ${url}`);
+  bar.style.width = `${(1 - itemsLoaded / itemsTotal) * 100}%`;
+  tip.textContent = `正在加载... (${itemsLoaded}/${itemsTotal})`;
+};
+
+loadManager.onError = (url) => {
+  tip.textContent = `加载${url}时发生错误`;
+};
+
+/* 加载外部贴图 */
+const textures = {
+  blockTop: { url: 'res/texture/blockTop.png' },
+  destTop: { url: 'res/texture/destinationTop.png' },
+  destSide: { url: 'res/texture/destinationSide.png' },
+  entryTop: { url: 'res/texture/entryTop.png' },
+  entrySide: { url: 'res/texture/entrySide.png' },
+};
+{
+  const texLoader = new THREE.TextureLoader(loadManager);
+  for (const texture of Object.values(textures)) {
+    texture.tex = texLoader.load(texture.url);
+  }
+}
+
 /* 加载外部模型 */
 const models = {
   ring: { url: 'res/model/decoration/ring.glb' },
@@ -23,21 +50,6 @@ const models = {
         model.gltf[type] = obj;
       });
     });
-  }
-}
-
-/* 加载外部贴图 */
-const textures = {
-  blockTop: { url: 'res/texture/blockTop.png' },
-  destTop: { url: 'res/texture/destinationTop.png' },
-  destSide: { url: 'res/texture/destinationSide.png' },
-  entryTop: { url: 'res/texture/entryTop.png' },
-  entrySide: { url: 'res/texture/entrySide.png' },
-};
-{
-  const texLoader = new THREE.TextureLoader(loadManager);
-  for (const texture of Object.values(textures)) {
-    texture.tex = texLoader.load(texture.url);
   }
 }
 
@@ -66,6 +78,9 @@ function getModel(consInfo) {
 
 
 function main() {
+  const loadingBar = document.querySelector('#loading');
+  loadingBar.style.display = 'none';
+
   /* 全局变量定义 */
   const canvas = document.querySelector('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
