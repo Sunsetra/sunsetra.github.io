@@ -6,49 +6,64 @@ import * as Cons from './modules/cons.js';
 
 const blockUnit = 10; // 砖块边长像素
 
-/* 加载资源文件 */
 const loadManager = new THREE.LoadingManager();
-const gltfLoader = new THREE.GLTFLoader(loadManager);
-const loader = new THREE.TextureLoader(loadManager);
 
-const decoRingModel = new Map();
-gltfLoader.load('res/model/deco_ring.glb', (g) => {
-  g.scene.children.forEach((obj) => {
-    const type = obj.name.split('_').pop(); // 命名规则：描述+类型
-    decoRingModel.set(type, obj);
-  });
-});
-const consTombModel = new Map();
-gltfLoader.load('res/model/cons_tomb.glb', (g) => {
-  g.scene.children.forEach((obj) => {
-    const type = obj.name.split('_').pop(); // 命名规则：描述+类型
-    consTombModel.set(type, obj);
-  });
-});
+/* 加载外部模型 */
+const models = {
+  ring: { url: 'res/model/decoration/ring.glb' },
+  tomb: { url: 'res/model/construction/tomb.glb' },
+};
+{
+  const gltfLoader = new THREE.GLTFLoader(loadManager);
+  for (const model of Object.values(models)) {
+    gltfLoader.load(model.url, (gltf) => {
+      model.gltf = {};
+      gltf.scene.children.forEach((obj) => {
+        const type = obj.name.split('_').pop();
+        model.gltf[type] = obj;
+      });
+    });
+  }
+}
 
-const blockTop = loader.load('res/texture/blockTop.png');
-const destinationSide = loader.load('res/texture/destinationSide.png');
-const destinationTop = loader.load('res/texture/destinationTop.png');
-const entrySide = loader.load('res/texture/entrySide.png');
-const entryTop = loader.load('res/texture/entryTop.png');
+/* 加载外部贴图 */
+const textures = {
+  blockTop: { url: 'res/texture/blockTop.png' },
+  destTop: { url: 'res/texture/destinationTop.png' },
+  destSide: { url: 'res/texture/destinationSide.png' },
+  entryTop: { url: 'res/texture/entryTop.png' },
+  entrySide: { url: 'res/texture/entrySide.png' },
+};
+{
+  const texLoader = new THREE.TextureLoader(loadManager);
+  for (const texture of Object.values(textures)) {
+    texture.tex = texLoader.load(texture.url);
+  }
+}
 
-function getModel(consInfo) { // 对象中只包含函数需要的信息，则将对象交给函数处理
+/**
+ * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
+ * @param consInfo: 模型信息对象。
+ * @returns {Construction}: 返回建筑实例。
+ */
+function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
   const consShop = {
-    destination: () => new Cons.IOPoint(destinationTop, destinationSide),
-    entry: () => new Cons.IOPoint(entryTop, entrySide),
-    decoRing: (t) => {
-      const mesh = decoRingModel.get(t).clone();
+    destination: () => new Cons.IOPoint(textures.destTop.tex, textures.destSide.tex),
+    entry: () => new Cons.IOPoint(textures.entryTop.tex, textures.entrySide.tex),
+    ring: (t) => {
+      const mesh = models.ring.gltf[t].clone();
       mesh.rotation.y = THREE.Math.degToRad(rotation);
       return new Cons.DecoRing(mesh);
     },
-    consTomb: (t) => {
-      const mesh = consTombModel.get(t).clone();
+    tomb: (t) => {
+      const mesh = models.tomb.gltf[t].clone();
       return new Cons.DecoRing(mesh);
     },
   };
   return consShop[desc](type);
 }
+
 
 function main() {
   /* 全局变量定义 */
@@ -142,7 +157,7 @@ function main() {
         color: 0xFFFFFF,
         metalness: 0.1,
         roughness: 0.6,
-        map: blockTop,
+        map: textures.blockTop.tex,
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;

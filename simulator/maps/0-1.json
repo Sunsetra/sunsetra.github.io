@@ -7,7 +7,7 @@
     "column": 0,
     "block": "highBlock",
     "consInfo": {
-      "desc": "consTomb",
+      "desc": "tomb",
       "type": "0",
       "rotation": ""
     }
@@ -16,7 +16,7 @@
     "column": 1,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -25,7 +25,7 @@
     "column": 2,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "2",
       "rotation": ""
     }
@@ -34,7 +34,7 @@
     "column": 3,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": ""
     }
@@ -43,7 +43,7 @@
     "column": 4,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -52,7 +52,7 @@
     "column": 5,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "2",
       "rotation": ""
     }
@@ -61,7 +61,7 @@
     "column": 6,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -70,7 +70,7 @@
     "column": 7,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": ""
     }
@@ -79,7 +79,7 @@
     "column": 8,
     "block": "highBlock",
     "consInfo": {
-      "desc": "consTomb",
+      "desc": "tomb",
       "type": "0",
       "rotation": ""
     }
@@ -170,7 +170,7 @@
     "column": 0,
     "block": "highBlock",
     "consInfo": {
-      "desc": "consTomb",
+      "desc": "tomb",
       "type": "0",
       "rotation": ""
     }
@@ -179,7 +179,7 @@
     "column": 1,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -188,7 +188,7 @@
     "column": 2,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "2",
       "rotation": ""
     }
@@ -197,7 +197,7 @@
     "column": 3,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": ""
     }
@@ -206,7 +206,7 @@
     "column": 4,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -215,7 +215,7 @@
     "column": 5,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": ""
     }
@@ -224,7 +224,7 @@
     "column": 6,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": 180
     }
@@ -233,7 +233,7 @@
     "column": 7,
     "block": "highBlock",
     "consInfo": {
-      "desc": "decoRing",
+      "desc": "ring",
       "type": "3",
       "rotation": ""
     }
