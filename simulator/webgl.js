@@ -8,14 +8,26 @@ const blockUnit = 10; // 砖块边长像素
 
 const loadManager = new THREE.LoadingManager();
 
-const bar = document.querySelector('#progressbar');
-const tip = document.querySelector('#progresstip');
+/* 进度条UI相关设置 */
+const bar = document.querySelector('#bar');
+const left = document.querySelector('#left');
+const right = document.querySelector('#right');
+bar.style.top = `${-left.clientHeight * 1.5}px`;
+bar.style.height = `${left.clientHeight * 1.5 + 3}px`;
+left.style.left = `${-left.clientWidth / 2}px`;
+right.style.right = `${-right.clientWidth / 2}px`;
+
 loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-  console.log(`Progress: ${itemsLoaded}/${itemsTotal}: ${url}`);
-  bar.style.width = `${(1 - itemsLoaded / itemsTotal) * 100}%`;
-  tip.textContent = `正在加载... (${itemsLoaded}/${itemsTotal})`;
+  const percent = (itemsLoaded / itemsTotal) * 100;
+  bar.style.width = `${100 - percent}%`;
+  if (itemsLoaded / itemsTotal === 1) {
+    right.style.display = 'none';
+  }
+  left.textContent = `${Math.round(percent)}%`;
+  right.textContent = `${Math.round(percent)}%`;
 };
 
+const tip = document.querySelector('#progresstip');
 loadManager.onError = (url) => {
   tip.textContent = `加载${url}时发生错误`;
 };
