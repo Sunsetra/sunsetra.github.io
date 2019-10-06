@@ -1,0 +1,125 @@
+body {
+  background-color: #CCCCFF;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  margin: 1.2em auto 0.8em;
+  font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  color: #8246E8;
+}
+
+hr {
+  width: 60%;
+  min-width: 600px;
+}
+
+main {
+  margin: 1.5em auto;
+  min-width: 600px;
+}
+
+table {
+  margin: 0 auto;
+  border-spacing: 0 0.8em;
+  min-width: 550px;
+}
+
+tr {
+  border-radius: 3px; /* 边框样式只影响阴影效果 */
+  box-shadow: 0 0 3px grey;
+}
+
+tbody tr {
+  transition: box-shadow 0.5s;
+}
+
+tbody tr:hover div {
+  height: 100px;
+  visibility: visible;
+  opacity: 0.8;
+  transition: height 0.4s, opacity ease-out 1s, visibility ease-out 1s;
+}
+
+td {
+  padding: 1em;
+  vertical-align: top;
+}
+
+.crit td{
+  text-align: center;
+}
+
+tbody td:nth-child(4n+2) {
+  text-align: center;
+}
+
+th {
+  background-color: #FFFFCC;
+  padding: 0.5em;
+}
+
+thead th:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+thead th:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+tbody tr:nth-child(even) td {
+  background-color: #CCFFFF;
+}
+
+tbody tr:nth-child(odd) td {
+  background-color: #CCFFCC;
+}
+
+tbody tr:nth-child(even) td:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+tbody tr:nth-child(even) td:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+tbody tr:nth-child(odd) td:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+tbody tr:nth-child(odd) td:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+tbody tr:nth-child(even):hover {
+  box-shadow: 0.5em 0.5em 0.5em 1px, 0 0 0.5em 0.1em #CCFFFF;
+}
+
+tbody tr:nth-child(odd):hover {
+  box-shadow: 0.5em 0.5em 0.5em 1px, 0 0 0.5em 0.1em #CCFFCC;
+}
+
+.intro {
+  width: 50%;
+  min-width: 600px;
+  padding: 0.8em;
+  margin: 1.2em auto;
+  font-size: small;
+  text-align: center;
+  background-color: #FFCCCC;
+  border-radius: 3px;
+  box-shadow: 0 0 5px grey;
+}
+
+.detail {
+  height: 0;
+  visibility: hidden;
+  opacity: 0;
+  font-size: small;
+  transition: height 0.5s, opacity ease-out 0.2s, visibility ease-out 0.2s;
+}
+
+.detail p {
+  margin: 0.5em;
+}

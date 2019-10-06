@@ -12,18 +12,18 @@ const loadManager = new THREE.LoadingManager();
 const bar = document.querySelector('#bar');
 const left = document.querySelector('#left');
 const right = document.querySelector('#right');
-bar.style.top = `${-left.clientHeight * 1.5}px`;
+bar.style.top = `${-left.clientHeight * 1.5}px`; // 定位百分比位置
 bar.style.height = `${left.clientHeight * 1.5 + 3}px`;
 left.style.left = `${-left.clientWidth / 2}px`;
 right.style.right = `${-right.clientWidth / 2}px`;
 
 loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
   const percent = (itemsLoaded / itemsTotal) * 100;
-  bar.style.width = `${100 - percent}%`;
+  bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
   if (itemsLoaded / itemsTotal === 1) {
     right.style.display = 'none';
   }
-  left.textContent = `${Math.round(percent)}%`;
+  left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
   right.textContent = `${Math.round(percent)}%`;
 };
 

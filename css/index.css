@@ -17,9 +17,13 @@ a {
   text-decoration: none; /* delete underline */
 }
 
+article {
+  margin: 30px auto;
+}
+
 #title-hide { /* Only use for hide message in the index */
-  color: rgb(162, 255, 53);
-  background-color: rgb(162, 255, 53);
+  color: pink;
+  background-color: pink;
   font-size: 0.8em;
   width: 100%;
   text-align: center;
@@ -27,14 +31,14 @@ a {
 }
 
 #main-title {
-  color: rgba(255, 12, 136, 0.8);
+  color: hotpink;
   font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   font-size: 2.5em;
   text-align: center;
   padding: 2% 0;
 }
 
-#ver { /* version in the bottom of page */
+#ver { /* version at the bottom of page */
   font-size: 0.7em;
   text-align: center;
 }
