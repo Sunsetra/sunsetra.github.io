@@ -108,11 +108,15 @@ tbody tr:nth-child(odd) td:last-child {
 }
 
 tbody tr:nth-child(even):hover {
-  box-shadow: 0.5rem 0.5rem 0.5rem 1px, 0 0 0.5rem 0.1rem #CCFFFF;
+  box-shadow:
+    0.5rem 0.5rem 0.5rem 1px rgba(0, 0, 0, 0.7),
+    0 0 0.5rem 0.1rem #CCFFFF;
 }
 
 tbody tr:nth-child(odd):hover {
-  box-shadow: 0.5rem 0.5rem 0.5rem 1px, 0 0 0.5rem 0.1rem #CCFFCC;
+  box-shadow:
+    0.5rem 0.5rem 0.5rem 1px rgba(0, 0, 0, 0.7),
+    0 0 0.5rem 0.1rem #CCFFCC;
 }
 
 td img {
@@ -134,11 +138,13 @@ td img:hover {
 }
 
 #viewer iframe {
-  width: 70%;
+  width: 80%;
   height: 80%;
-  background: white;
   margin: 5rem auto;
   display: block;
+  border: 1px solid #8246E8;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #8246E8;
 }
 
 .intro {
