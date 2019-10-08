@@ -29,14 +29,3 @@
   font-weight: normal;
   font-style: normal;
 }
-
-/* 文本的不同样式 */
-.emp { /* 突出强调 */
-  font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  font-size: 1.5em;
-}
-
-.hide { /* 隐藏文本 */
-  color: rgb(20, 22, 25);
-  display: inline;
-}

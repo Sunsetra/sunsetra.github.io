@@ -1,0 +1,25 @@
+aside {
+  background-color: #F288A4;
+  border-top-color: #F288A4;
+  border-right-color: #F288A4;
+  border-bottom-color: #F288A4;
+}
+
+.bar {
+  background-color: #EEBACB;
+}
+
+main {
+  background-color: #F2DFE6;
+}
+
+header {
+  font-family: "Lolita", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  color: #F288A4;
+}
+
+.cg_middle {
+  display: block;
+  margin: 0 auto;
+  width: 80%;
+}
