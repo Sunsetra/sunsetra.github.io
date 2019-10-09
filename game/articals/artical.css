@@ -1,3 +1,7 @@
+html, body {
+  scroll-behavior: smooth;
+}
+
 body {
   background: #F0F1F2;
 }
@@ -43,12 +47,23 @@ aside > div {
   box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
-.rating span {
+.rating a {
   position: absolute;
   white-space: nowrap;
   z-index: 1;
   left: 50%;
   transform: translateX(-50%);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 1s;
+}
+
+.rating a:link, .rating a:visited {
+  color: black;
+}
+
+.rating a:focus, .rating a:active {
+  transition: color 0s;
 }
 
 .bar {
@@ -66,20 +81,24 @@ aside > div {
     1px 0 2px rgba(0, 0, 0, 0.5);
 }
 
-#cg{
+#cg {
   width: 70%;
 }
 
-#music{
+#music {
   width: 60%;
 }
 
-#sys{
+#sys {
   width: 40%;
 }
 
-#scen{
+#story {
   width: 80%;
+}
+
+#total {
+  width: 76%;
 }
 
 main {
@@ -90,5 +109,83 @@ main {
   min-width: 36rem;
   padding: 2rem 2rem;
   border-radius: 2rem;
-  box-shadow: 0 0 2px grey;
+  box-shadow: 0 1px 4px grey;
+  line-height: 2;
+}
+
+h1 {
+  margin: 0;
+}
+
+p {
+  text-indent: 2rem;
+}
+
+.tags {
+  display: inline-block;
+  width: 4rem;
+  margin: 0 0.5rem;
+  text-align: center;
+  border: 1px solid;
+  border-radius: 1.5rem;
+  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+.cg_middle {
+  display: block;
+  margin: 0 auto;
+  width: 80%;
+  border: 1px solid #F2DFE6;
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
+  transform-origin: center;
+  transform: rotate(-3deg);
+}
+
+#game_type {
+  margin: 2rem 0;
+}
+
+#game_type span {
+  font-size: large;
+  font-weight: bold;
+}
+
+#thriller {
+  background-color: grey;
+  border-color: grey;
+  color: white;
+}
+
+#suspense {
+  background-color: indianred;
+  border-color: indianred;
+}
+
+#love {
+  background-color: hotpink;
+  border-color: hotpink;
+}
+
+@media (max-width: 900px) {
+  aside {
+    transform: translateX(-90%);
+    transition: transform 1s;
+  }
+
+  aside:hover {
+    transform: translateX(0);
+  }
+
+  main {
+    margin: 1rem auto;
+    width: 80%;
+    left: 0;
+    min-width: 25rem;
+  }
+
+  .cg_middle {
+    display: block;
+    margin: 0 auto;
+    width: 90%;
+  }
 }

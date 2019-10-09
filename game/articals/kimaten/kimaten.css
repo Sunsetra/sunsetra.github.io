@@ -18,8 +18,6 @@ header {
   color: #F288A4;
 }
 
-.cg_middle {
-  display: block;
-  margin: 0 auto;
-  width: 80%;
+.rating a:focus, .rating a:active {
+  color: #FF3396;
 }
