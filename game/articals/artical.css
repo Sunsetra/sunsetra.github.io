@@ -6,6 +6,7 @@ body {
   background: #F0F1F2;
 }
 
+/* 侧边栏样式 */
 aside {
   top: 12%;
   width: 20%;
@@ -101,6 +102,7 @@ aside > div {
   width: 76%;
 }
 
+/* 正文样式 */
 main {
   position: relative;
   margin: 1rem 0;
@@ -131,16 +133,6 @@ p {
   box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.5);
 }
 
-.cg_middle {
-  display: block;
-  margin: 0 auto;
-  width: 80%;
-  border: 1px solid #F2DFE6;
-  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
-  transform-origin: center;
-  transform: rotate(-3deg);
-}
-
 #game_type {
   margin: 2rem 0;
 }
@@ -166,6 +158,26 @@ p {
   border-color: hotpink;
 }
 
+.cg_middle {
+  display: block;
+  margin: 0 auto;
+  width: 80%;
+  border: 1rem solid white;
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
+  transform-origin: center;
+  transform: rotate(-3deg);
+}
+
+.hide {
+  transition: color 0.5s;
+  padding: 0 0.5rem;
+}
+
+.hide:hover {
+  color: black;
+}
+
+/* 响应式布局 */
 @media (max-width: 900px) {
   aside {
     transform: translateX(-90%);
