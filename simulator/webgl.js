@@ -44,6 +44,8 @@ const textures = {
   const texLoader = new THREE.TextureLoader(loadManager);
   for (const texture of Object.values(textures)) {
     texture.tex = texLoader.load(texture.url);
+    texture.tex.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = 16;
   }
 }
 
@@ -89,6 +91,12 @@ function getModel(consInfo) {
 }
 
 
+/**
+ * 主动画函数。
+ * 函数全局变量包括：画布canvas，渲染器renderer，场景scene，摄影机camera，
+ * 控制器controls
+ * 全局函数包括：动画循环staticRender()，启动动画循环requestRender()，创建地图createMap()
+ */
 function main() {
   const loadingBar = document.querySelector('#loading');
   loadingBar.style.display = 'none';
@@ -96,7 +104,11 @@ function main() {
   /* 全局变量定义 */
   const canvas = document.querySelector('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.gammaFactor = 2.2;
+  renderer.gammaOutput = true; // 伽玛输出
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.enabled = true;
+  renderer.physicallyCorrectLights = true;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('black');
 
@@ -124,14 +136,13 @@ function main() {
   let needRender = false;
   function staticRender() {
     needRender = false;
-    // 每帧更新相机宽高比
     const canv = renderer.domElement;
     const width = canv.clientWidth;
     const height = canv.clientHeight;
     const needResize = canv.width !== width || canv.height !== height;
     if (needResize) {
       renderer.setSize(width, height, false);
-      camera.aspect = width / height;
+      camera.aspect = width / height; // 每帧更新相机宽高比
       camera.updateProjectionMatrix();
     }
     controls.update();
@@ -155,7 +166,7 @@ function main() {
   const color = 0xFFFFFF;
   const intensity = 0.1;
   const envLight = new THREE.AmbientLight(color, intensity);
-  lightFolder.add(envLight, 'intensity', 0, 1, 0.05).name('环境光强度').onChange(requestRender).listen();
+  lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestRender).listen();
   scene.add(envLight);
 
 
@@ -205,8 +216,9 @@ function main() {
 
 
     /* 灯光定义 */
-    envLight.intensity = light.envIntensity; // 调整环境光
-    envLight.color.set(light.envColor);
+    const { envIntensity, envColor } = light;
+    envLight.intensity = envIntensity; // 调整环境光
+    envLight.color.set(envColor);
     const sunLight = new THREE.DirectionalLight(); // 定义平行光源
     sunLight.color.set(light.color);
     sunLight.intensity = light.intensity;
@@ -251,7 +263,7 @@ function main() {
     sunLight.shadow.camera.updateProjectionMatrix();
 
     const helper = new THREE.DirectionalLightHelper(sunLight);
-    lightFolder.add(sunLight, 'intensity', 0, 2, 0.05).name('阳光强度').onChange(requestRender);
+    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestRender);
     helper.update();
     scene.add(helper);
   }
