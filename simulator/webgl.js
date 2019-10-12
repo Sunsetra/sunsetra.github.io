@@ -33,7 +33,7 @@ loadManager.onError = (url) => {
 };
 
 /* 加载外部贴图 */
-const textures = {
+const textureList = {
   blockTop: { url: 'res/texture/blockTop.png' },
   destTop: { url: 'res/texture/destinationTop.png' },
   destSide: { url: 'res/texture/destinationSide.png' },
@@ -42,7 +42,7 @@ const textures = {
 };
 {
   const texLoader = new THREE.TextureLoader(loadManager);
-  for (const texture of Object.values(textures)) {
+  for (const texture of Object.values(textureList)) {
     texture.tex = texLoader.load(texture.url);
     texture.tex.encoding = THREE.sRGBEncoding;
     texture.anisotropy = 16;
@@ -50,13 +50,13 @@ const textures = {
 }
 
 /* 加载外部模型 */
-const models = {
+const modelList = {
   ring: { url: 'res/model/decoration/ring.glb' },
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
 {
   const gltfLoader = new THREE.GLTFLoader(loadManager);
-  for (const model of Object.values(models)) {
+  for (const model of Object.values(modelList)) {
     gltfLoader.load(model.url, (gltf) => {
       model.gltf = {};
       gltf.scene.children.forEach((obj) => {
@@ -75,15 +75,15 @@ const models = {
 function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
   const consShop = {
-    destination: () => new Cons.IOPoint(textures.destTop.tex, textures.destSide.tex),
-    entry: () => new Cons.IOPoint(textures.entryTop.tex, textures.entrySide.tex),
+    destination: () => new Cons.IOPoint(textureList.destTop.tex, textureList.destSide.tex),
+    entry: () => new Cons.IOPoint(textureList.entryTop.tex, textureList.entrySide.tex),
     ring: (t) => {
-      const mesh = models.ring.gltf[t].clone();
+      const mesh = modelList.ring.gltf[t].clone();
       mesh.rotation.y = THREE.Math.degToRad(rotation);
       return new Cons.DecoRing(mesh);
     },
     tomb: (t) => {
-      const mesh = models.tomb.gltf[t].clone();
+      const mesh = modelList.tomb.gltf[t].clone();
       return new Cons.DecoRing(mesh);
     },
   };
@@ -136,10 +136,10 @@ function main() {
   let needRender = false;
   function staticRender() {
     needRender = false;
-    const canv = renderer.domElement;
-    const width = canv.clientWidth;
-    const height = canv.clientHeight;
-    const needResize = canv.width !== width || canv.height !== height;
+    const container = renderer.domElement;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    const needResize = container.width !== width || container.height !== height;
     if (needResize) {
       renderer.setSize(width, height, false);
       camera.aspect = width / height; // 每帧更新相机宽高比
@@ -195,7 +195,7 @@ function main() {
         color: 0xFFFFFF,
         metalness: 0.1,
         roughness: 0.6,
-        map: textures.blockTop.tex,
+        map: textureList.blockTop.tex,
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;

@@ -31,8 +31,8 @@ viewer.addEventListener('click', () => { // 渐隐框架
   }, 500);
 });
 
-const articalEntry = document.querySelectorAll('td img');
-for (const entry of articalEntry) {
+const articleEntry = document.querySelectorAll('td img');
+for (const entry of articleEntry) {
   entry.addEventListener('click', (event) => {
     const { url } = entry.dataset;
     const frame = document.querySelector('#viewer iframe');
