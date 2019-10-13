@@ -6,7 +6,9 @@ html, body {
 canvas {
   width: 100%;
   height: 100%;
-  display: block;
+  display: none;
+  opacity: 0;
+  transition: opacity 1s;
 }
 
 #loading {
@@ -15,11 +17,12 @@ canvas {
   width: 100%;
   height: 100%;
   display: flex;
+  opacity: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: white;
-  transition: display 0.5s;
+  transition: opacity 1s;
 }
 
 #container {

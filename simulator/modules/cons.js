@@ -92,13 +92,14 @@ class IOPoint extends Construction {
 }
 
 
-class DecoRing extends Construction {
+class BuiltinCons extends Construction {
   constructor(mesh) {
     super(1, 1, mesh);
+    this.mesh.material.side = THREE.FrontSide;
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
     this.normalize();
   }
 }
 
-export { Construction, IOPoint, DecoRing };
+export { Construction, IOPoint, BuiltinCons };

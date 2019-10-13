@@ -20,14 +20,11 @@ right.style.right = `${-right.clientWidth / 2}px`;
 loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
   const percent = (itemsLoaded / itemsTotal) * 100;
   bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-  if (itemsLoaded / itemsTotal === 1) {
-    right.style.display = 'none';
-  }
   left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
   right.textContent = `${Math.round(percent)}%`;
 };
 
-const tip = document.querySelector('#progresstip');
+const tip = document.querySelector('#progress_tip');
 loadManager.onError = (url) => {
   tip.textContent = `加载${url}时发生错误`;
 };
@@ -77,14 +74,14 @@ function getModel(consInfo) {
   const consShop = {
     destination: () => new Cons.IOPoint(textureList.destTop.tex, textureList.destSide.tex),
     entry: () => new Cons.IOPoint(textureList.entryTop.tex, textureList.entrySide.tex),
-    ring: (t) => {
+    ring: (t) => { // 环状装饰：
       const mesh = modelList.ring.gltf[t].clone();
       mesh.rotation.y = THREE.Math.degToRad(rotation);
-      return new Cons.DecoRing(mesh);
+      return new Cons.BuiltinCons(mesh);
     },
     tomb: (t) => {
       const mesh = modelList.tomb.gltf[t].clone();
-      return new Cons.DecoRing(mesh);
+      return new Cons.BuiltinCons(mesh);
     },
   };
   return consShop[desc](type);
@@ -98,9 +95,6 @@ function getModel(consInfo) {
  * 全局函数包括：动画循环staticRender()，启动动画循环requestRender()，创建地图createMap()
  */
 function main() {
-  const loadingBar = document.querySelector('#loading');
-  loadingBar.style.display = 'none';
-
   /* 全局变量定义 */
   const canvas = document.querySelector('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -264,6 +258,7 @@ function main() {
 
     const helper = new THREE.DirectionalLightHelper(sunLight);
     lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestRender);
+    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
     helper.update();
     scene.add(helper);
   }
@@ -312,4 +307,22 @@ function main() {
   window.addEventListener('resize', requestRender);
 }
 
-loadManager.onLoad = main;
+function LoadingFinished() {
+  right.style.display = 'none';
+
+  const loadingBar = document.querySelector('#loading');
+  loadingBar.style.opacity = '0'; // 渐隐加载进度条
+  setTimeout(() => {
+    loadingBar.style.display = 'none';
+  }, 1000);
+
+  const canvas = document.querySelector('canvas');
+  canvas.style.display = 'block'; // 渐显画布
+  setTimeout(() => {
+    canvas.style.opacity = '1';
+  }, 1000);
+
+  main(); // 启动主函数
+}
+
+loadManager.onLoad = LoadingFinished;
