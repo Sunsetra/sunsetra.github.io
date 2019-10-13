@@ -3,43 +3,11 @@ import * as Block from './modules/block.js';
 import * as Cons from './modules/cons.js';
 
 /* global THREE, dat */
-// TODO: 优化结构
+// TODO: 优化结构（全局作用域已完成）
 
-const blockUnit = 10; // 砖块边长像素
-
+/* 全局变量 */
 const loadManager = new THREE.LoadingManager();
-let errorCounter = 0; // 错误计数
-
-/* 进度条UI相关设置 */
-const loadingBar = document.querySelector('#loading');
-const bar = document.querySelector('#bar');
-const left = document.querySelector('#left');
-const right = document.querySelector('#right');
-bar.style.top = `${-left.clientHeight * 1.5}px`; // 定位百分比位置
-bar.style.height = `${left.clientHeight * 1.5 + 3}px`;
-left.style.left = `${-left.clientWidth / 2}px`;
-right.style.right = `${-right.clientWidth / 2}px`;
-
-loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-  if (!errorCounter) {
-    const percent = (itemsLoaded / itemsTotal) * 100;
-    bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-    left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
-    right.textContent = `${Math.round(percent)}%`;
-    if (percent >= 100) {
-      right.style.display = 'none';
-    }
-  }
-};
-
-const tip = document.querySelector('#progress_tip');
-loadManager.onError = (url) => {
-  errorCounter += 1;
-  tip.textContent = `加载${url}时发生错误`;
-};
-
-/* 加载外部贴图 */
-const texList = {
+const texList = { // 总贴图列表
   blockTop: {
     blackConcrete: { url: 'res/texture/black_concrete.png' },
     whiteTile: { url: 'res/texture/white_tile.png' },
@@ -56,9 +24,18 @@ const texList = {
   entryTop: { url: 'res/texture/entryTop.png' },
   entrySide: { url: 'res/texture/entrySide.png' },
 };
+const modelList = { // 总模型列表
+  ring: { url: 'res/model/decoration/ring.glb' },
+  tomb: { url: 'res/model/construction/tomb.glb' },
+};
 
-const texLoader = new THREE.TextureLoader(loadManager);
+
+/**
+ * 从贴图列表中加载贴图。
+ * @param list: 贴图列表。
+ */
 function loadTexture(list) {
+  const texLoader = new THREE.TextureLoader(loadManager);
   for (const item of Object.values(list)) {
     if (item.url) {
       item.tex = texLoader.load(item.url);
@@ -69,16 +46,14 @@ function loadTexture(list) {
     }
   }
 }
-loadTexture(texList);
 
-/* 加载外部模型 */
-const modelList = {
-  ring: { url: 'res/model/decoration/ring.glb' },
-  tomb: { url: 'res/model/construction/tomb.glb' },
-};
-{
+/**
+ * 从模型列表中加载模型。
+ * @param list: 模型列表。
+ */
+function loadModel(list) {
   const gltfLoader = new THREE.GLTFLoader(loadManager);
-  for (const model of Object.values(modelList)) {
+  for (const model of Object.values(list)) {
     gltfLoader.load(model.url, (gltf) => {
       model.gltf = {};
       gltf.scene.children.forEach((obj) => {
@@ -88,6 +63,69 @@ const modelList = {
     });
   }
 }
+
+/* 设置加载管理器的回调函数 */
+function setLoading() {
+  const loadingBar = document.querySelector('#loading');
+  const bar = document.querySelector('#bar');
+  const left = document.querySelector('#left');
+  const right = document.querySelector('#right');
+  let errorCounter = 0; // 错误计数
+
+  /* 加载进度监控函数 */
+  function loadingProgress(url, itemsLoaded, itemsTotal) {
+    if (itemsLoaded) { // 开始加载后的百分比样式
+      left.style.margin = '0';
+      left.style.transform = 'translateX(-50%)';
+      right.style.margin = '0';
+      right.style.transform = 'translateX(50%)';
+    }
+    if (!errorCounter) {
+      const percent = (itemsLoaded / itemsTotal) * 100;
+      bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
+      left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
+      right.textContent = `${Math.round(percent)}%`;
+      if (percent >= 100) {
+        right.style.display = 'none';
+      }
+    }
+  }
+
+  /* 加载错误处理函数 */
+  function loadingError(url) {
+    const tip = document.querySelector('#progress_tip');
+    errorCounter += 1;
+    tip.textContent = `加载${url}时发生错误`;
+  }
+
+  /* 加载完成回调函数 */
+  function LoadingFinished() {
+    if (!errorCounter) {
+      const canvas = document.querySelector('canvas');
+
+      loadingBar.style.opacity = '0'; // 渐隐加载进度条
+      setTimeout(() => {
+        loadingBar.style.display = 'none';
+      }, 1000);
+
+      canvas.style.display = 'block'; // 渐显画布
+      setTimeout(() => {
+        canvas.style.opacity = '1';
+      }, 1000);
+
+      main(); // 启动主函数
+    }
+  }
+
+  loadManager.onProgress = loadingProgress;
+  loadManager.onError = loadingError;
+  loadManager.onLoad = LoadingFinished;
+}
+
+setLoading();
+loadTexture(texList);
+loadModel(modelList);
+
 
 /**
  * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
@@ -121,6 +159,7 @@ function getModel(consInfo) {
  */
 function main() {
   /* 全局变量定义 */
+  const blockUnit = 10; // 砖块边长
   const canvas = document.querySelector('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.gammaFactor = 2.2;
@@ -346,22 +385,3 @@ function main() {
   controls.addEventListener('change', requestRender);
   window.addEventListener('resize', requestRender);
 }
-
-function LoadingFinished() {
-  if (!errorCounter) {
-    loadingBar.style.opacity = '0'; // 渐隐加载进度条
-    setTimeout(() => {
-      loadingBar.style.display = 'none';
-    }, 1000);
-
-    const canvas = document.querySelector('canvas');
-    canvas.style.display = 'block'; // 渐显画布
-    setTimeout(() => {
-      canvas.style.opacity = '1';
-    }, 1000);
-
-    main(); // 启动主函数
-  }
-}
-
-loadManager.onLoad = LoadingFinished;
