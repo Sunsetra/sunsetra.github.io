@@ -3,12 +3,15 @@ import * as Block from './modules/block.js';
 import * as Cons from './modules/cons.js';
 
 /* global THREE, dat */
+// TODO: 优化结构
 
 const blockUnit = 10; // 砖块边长像素
 
 const loadManager = new THREE.LoadingManager();
+let errorCounter = 0; // 错误计数
 
 /* 进度条UI相关设置 */
+const loadingBar = document.querySelector('#loading');
 const bar = document.querySelector('#bar');
 const left = document.querySelector('#left');
 const right = document.querySelector('#right');
@@ -18,33 +21,55 @@ left.style.left = `${-left.clientWidth / 2}px`;
 right.style.right = `${-right.clientWidth / 2}px`;
 
 loadManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-  const percent = (itemsLoaded / itemsTotal) * 100;
-  bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-  left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
-  right.textContent = `${Math.round(percent)}%`;
+  if (!errorCounter) {
+    const percent = (itemsLoaded / itemsTotal) * 100;
+    bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
+    left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
+    right.textContent = `${Math.round(percent)}%`;
+    if (percent >= 100) {
+      right.style.display = 'none';
+    }
+  }
 };
 
 const tip = document.querySelector('#progress_tip');
 loadManager.onError = (url) => {
+  errorCounter += 1;
   tip.textContent = `加载${url}时发生错误`;
 };
 
 /* 加载外部贴图 */
-const textureList = {
-  blockTop: { url: 'res/texture/blockTop.png' },
+const texList = {
+  blockTop: {
+    blackConcrete: { url: 'res/texture/black_concrete.png' },
+    whiteTile: { url: 'res/texture/white_tile.png' },
+    default: { url: 'res/texture/default_top.png' },
+  },
+  blockSide: {
+    default: { url: 'res/texture/default_side.png' },
+  },
+  blockBottom: {
+    default: { url: 'res/texture/default_bottom.png' },
+  },
   destTop: { url: 'res/texture/destinationTop.png' },
   destSide: { url: 'res/texture/destinationSide.png' },
   entryTop: { url: 'res/texture/entryTop.png' },
   entrySide: { url: 'res/texture/entrySide.png' },
 };
-{
-  const texLoader = new THREE.TextureLoader(loadManager);
-  for (const texture of Object.values(textureList)) {
-    texture.tex = texLoader.load(texture.url);
-    texture.tex.encoding = THREE.sRGBEncoding;
-    texture.anisotropy = 16;
+
+const texLoader = new THREE.TextureLoader(loadManager);
+function loadTexture(list) {
+  for (const item of Object.values(list)) {
+    if (item.url) {
+      item.tex = texLoader.load(item.url);
+      item.tex.encoding = THREE.sRGBEncoding;
+      item.anisotropy = 16;
+    } else {
+      loadTexture(item);
+    }
   }
 }
+loadTexture(texList);
 
 /* 加载外部模型 */
 const modelList = {
@@ -72,8 +97,8 @@ const modelList = {
 function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
   const consShop = {
-    destination: () => new Cons.IOPoint(textureList.destTop.tex, textureList.destSide.tex),
-    entry: () => new Cons.IOPoint(textureList.entryTop.tex, textureList.entrySide.tex),
+    destination: () => new Cons.IOPoint(texList.destTop.tex, texList.destSide.tex),
+    entry: () => new Cons.IOPoint(texList.entryTop.tex, texList.entrySide.tex),
     ring: (t) => { // 环状装饰：
       const mesh = modelList.ring.gltf[t].clone();
       mesh.rotation.y = THREE.Math.degToRad(rotation);
@@ -177,7 +202,7 @@ function main() {
     /* 构建地图实体 */
     blockInfo.forEach((item) => {
       const {
-        row, column, height, consInfo,
+        row, column, height, texture, consInfo,
       } = item;
       /* 生成地面 */
       const block = map.setBlock(row, column, blockShop[item.block]);
@@ -185,12 +210,27 @@ function main() {
         block.height = height;
       }
       const geometry = new THREE.BoxBufferGeometry(...block.size);
-      const material = new THREE.MeshPhysicalMaterial({
-        color: 0xFFFFFF,
+
+      const { top, side, bottom } = texture;
+      const topTex = top ? texList.blockTop[top].tex : texList.blockTop.default.tex;
+      const topMat = new THREE.MeshPhysicalMaterial({ // 定义地砖顶部贴图材质
         metalness: 0.1,
         roughness: 0.6,
-        map: textureList.blockTop.tex,
+        map: topTex,
       });
+      const sideTex = side ? texList.blockSide[side].tex : texList.blockSide.default.tex;
+      const sideMat = new THREE.MeshPhysicalMaterial({ // 定义地砖侧面贴图材质
+        metalness: 0.1,
+        roughness: 0.6,
+        map: sideTex,
+      });
+      const bottomTex = bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex;
+      const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义地砖底部贴图材质
+        metalness: 0.1,
+        roughness: 0.6,
+        map: bottomTex,
+      });
+      const material = [sideMat, sideMat, topMat, bottomMat, sideMat, sideMat];
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -308,21 +348,20 @@ function main() {
 }
 
 function LoadingFinished() {
-  right.style.display = 'none';
+  if (!errorCounter) {
+    loadingBar.style.opacity = '0'; // 渐隐加载进度条
+    setTimeout(() => {
+      loadingBar.style.display = 'none';
+    }, 1000);
 
-  const loadingBar = document.querySelector('#loading');
-  loadingBar.style.opacity = '0'; // 渐隐加载进度条
-  setTimeout(() => {
-    loadingBar.style.display = 'none';
-  }, 1000);
+    const canvas = document.querySelector('canvas');
+    canvas.style.display = 'block'; // 渐显画布
+    setTimeout(() => {
+      canvas.style.opacity = '1';
+    }, 1000);
 
-  const canvas = document.querySelector('canvas');
-  canvas.style.display = 'block'; // 渐显画布
-  setTimeout(() => {
-    canvas.style.opacity = '1';
-  }, 1000);
-
-  main(); // 启动主函数
+    main(); // 启动主函数
+  }
 }
 
 loadManager.onLoad = LoadingFinished;
