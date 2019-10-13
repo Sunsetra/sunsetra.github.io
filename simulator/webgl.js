@@ -7,7 +7,7 @@ import * as Cons from './modules/cons.js';
 
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
-const texList = { // 总贴图列表
+const texList = { // 总导入贴图列表
   blockTop: {
     blackConcrete: { url: 'res/texture/black_concrete.png' },
     whiteTile: { url: 'res/texture/white_tile.png' },
@@ -24,7 +24,7 @@ const texList = { // 总贴图列表
   entryTop: { url: 'res/texture/entryTop.png' },
   entrySide: { url: 'res/texture/entrySide.png' },
 };
-const modelList = { // 总模型列表
+const modelList = { // 总导入模型列表
   ring: { url: 'res/model/decoration/ring.glb' },
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
@@ -64,69 +64,6 @@ function loadModel(list) {
   }
 }
 
-/* 设置加载管理器的回调函数 */
-function setLoading() {
-  const loadingBar = document.querySelector('#loading');
-  const bar = document.querySelector('#bar');
-  const left = document.querySelector('#left');
-  const right = document.querySelector('#right');
-  let errorCounter = 0; // 错误计数
-
-  /* 加载进度监控函数 */
-  function loadingProgress(url, itemsLoaded, itemsTotal) {
-    if (itemsLoaded) { // 开始加载后的百分比样式
-      left.style.margin = '0';
-      left.style.transform = 'translateX(-50%)';
-      right.style.margin = '0';
-      right.style.transform = 'translateX(50%)';
-    }
-    if (!errorCounter) {
-      const percent = (itemsLoaded / itemsTotal) * 100;
-      bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-      left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
-      right.textContent = `${Math.round(percent)}%`;
-      if (percent >= 100) {
-        right.style.display = 'none';
-      }
-    }
-  }
-
-  /* 加载错误处理函数 */
-  function loadingError(url) {
-    const tip = document.querySelector('#progress_tip');
-    errorCounter += 1;
-    tip.textContent = `加载${url}时发生错误`;
-  }
-
-  /* 加载完成回调函数 */
-  function LoadingFinished() {
-    if (!errorCounter) {
-      const canvas = document.querySelector('canvas');
-
-      loadingBar.style.opacity = '0'; // 渐隐加载进度条
-      setTimeout(() => {
-        loadingBar.style.display = 'none';
-      }, 1000);
-
-      canvas.style.display = 'block'; // 渐显画布
-      setTimeout(() => {
-        canvas.style.opacity = '1';
-      }, 1000);
-
-      main(); // 启动主函数
-    }
-  }
-
-  loadManager.onProgress = loadingProgress;
-  loadManager.onError = loadingError;
-  loadManager.onLoad = LoadingFinished;
-}
-
-setLoading();
-loadTexture(texList);
-loadModel(modelList);
-
-
 /**
  * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
  * @param consInfo: 模型信息对象。
@@ -134,20 +71,16 @@ loadModel(modelList);
  */
 function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
-  const consShop = {
-    destination: () => new Cons.IOPoint(texList.destTop.tex, texList.destSide.tex),
-    entry: () => new Cons.IOPoint(texList.entryTop.tex, texList.entrySide.tex),
-    ring: (t) => { // 环状装饰：
-      const mesh = modelList.ring.gltf[t].clone();
-      mesh.rotation.y = THREE.Math.degToRad(rotation);
-      return new Cons.BuiltinCons(mesh);
-    },
-    tomb: (t) => {
-      const mesh = modelList.tomb.gltf[t].clone();
-      return new Cons.BuiltinCons(mesh);
-    },
-  };
-  return consShop[desc](type);
+
+  if (desc === 'destination') {
+    return new Cons.IOPoint(texList.destTop.tex, texList.destSide.tex);
+  }
+  if (desc === 'entry') {
+    return new Cons.IOPoint(texList.entryTop.tex, texList.entrySide.tex);
+  }
+  const mesh = modelList[desc].gltf[type].clone();
+  mesh.rotation.y = THREE.Math.degToRad(rotation);
+  return new Cons.BuiltinCons(mesh);
 }
 
 
@@ -385,3 +318,66 @@ function main() {
   controls.addEventListener('change', requestRender);
   window.addEventListener('resize', requestRender);
 }
+
+
+/* 设置加载管理器的回调函数 */
+function setLoading() {
+  const loadingBar = document.querySelector('#loading');
+  const bar = document.querySelector('#bar');
+  const left = document.querySelector('#left');
+  const right = document.querySelector('#right');
+  let errorCounter = 0; // 错误计数
+
+  /* 加载进度监控函数 */
+  function loadingProgress(url, itemsLoaded, itemsTotal) {
+    if (itemsLoaded) { // 开始加载后的百分比样式
+      left.style.margin = '0';
+      left.style.transform = 'translateX(-50%)';
+      right.style.margin = '0';
+      right.style.transform = 'translateX(50%)';
+    }
+    if (!errorCounter) { // 没有加载错误时更新百分比
+      const percent = (itemsLoaded / itemsTotal) * 100;
+      bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
+      left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
+      right.textContent = `${Math.round(percent)}%`;
+      if (percent >= 100) {
+        right.style.display = 'none';
+      }
+    }
+  }
+
+  /* 加载错误处理函数 */
+  function loadingError(url) {
+    const tip = document.querySelector('#progress_tip');
+    errorCounter += 1;
+    tip.textContent = `加载${url}时发生错误`;
+  }
+
+  /* 加载完成回调函数 */
+  function LoadingFinished() {
+    if (!errorCounter) {
+      const canvas = document.querySelector('canvas');
+
+      loadingBar.style.opacity = '0'; // 渐隐加载进度条
+      setTimeout(() => {
+        loadingBar.style.display = 'none';
+      }, 1000);
+
+      canvas.style.display = 'block'; // 渐显画布
+      setTimeout(() => {
+        canvas.style.opacity = '1';
+      }, 1000);
+
+      main(); // 启动主函数
+    }
+  }
+
+  loadManager.onProgress = loadingProgress;
+  loadManager.onError = loadingError;
+  loadManager.onLoad = LoadingFinished;
+}
+
+setLoading();
+loadTexture(texList);
+loadModel(modelList);
