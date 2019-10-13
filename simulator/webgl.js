@@ -9,8 +9,9 @@ import * as Cons from './modules/cons.js';
 const loadManager = new THREE.LoadingManager();
 const texList = { // 总导入贴图列表
   blockTop: {
-    blackConcrete: { url: 'res/texture/black_concrete.png' },
+    // blackConcrete: { url: 'res/texture/black_concrete.png' },
     whiteTile: { url: 'res/texture/white_tile.png' },
+    greyTile: { url: 'res/texture/grey_tile.png' },
     default: { url: 'res/texture/default_top.png' },
   },
   blockSide: {

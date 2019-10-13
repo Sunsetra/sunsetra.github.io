@@ -133,7 +133,7 @@
     "column": 0,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     },
@@ -147,7 +147,7 @@
     "column": 1,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -165,7 +165,7 @@
     "column": 3,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -174,7 +174,7 @@
     "column": 4,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -183,7 +183,7 @@
     "column": 5,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -192,7 +192,7 @@
     "column": 6,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -201,7 +201,7 @@
     "column": 7,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -210,7 +210,7 @@
     "column": 8,
     "block": "highBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "",
       "side": "",
       "bottom": ""
     }
@@ -233,7 +233,7 @@
     "column": 1,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -242,7 +242,7 @@
     "column": 2,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -251,7 +251,7 @@
     "column": 3,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -260,7 +260,7 @@
     "column": 4,
     "block": "highBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "whiteTile",
       "side": "",
       "bottom": ""
     }
@@ -269,7 +269,7 @@
     "column": 5,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -278,7 +278,7 @@
     "column": 6,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -287,7 +287,7 @@
     "column": 7,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     }
@@ -296,7 +296,7 @@
     "column": 8,
     "block": "basicBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "greyTile",
       "side": "",
       "bottom": ""
     },
@@ -310,7 +310,7 @@
     "column": 0,
     "block": "highBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "",
       "side": "",
       "bottom": ""
     }
@@ -417,7 +417,7 @@
     "column": 8,
     "block": "highBlock",
     "texture": {
-      "top": "blackConcrete",
+      "top": "",
       "side": "",
       "bottom": ""
     }
