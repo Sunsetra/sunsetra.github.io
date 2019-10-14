@@ -3,7 +3,6 @@ import * as Block from './modules/block.js';
 import * as Cons from './modules/cons.js';
 
 /* global THREE, dat */
-// TODO: 优化结构（全局作用域已完成）
 
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
@@ -88,40 +87,82 @@ function getModel(consInfo) {
 /**
  * 主动画函数。
  * 函数全局变量包括：画布canvas，渲染器renderer，场景scene，摄影机camera，
- * 控制器controls
+ * 控制器controls，灯光envLight/sunLight
  * 全局函数包括：动画循环staticRender()，启动动画循环requestRender()，创建地图createMap()
  */
 function main() {
-  /* 全局变量定义 */
   const blockUnit = 10; // 砖块边长
   const canvas = document.querySelector('canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.gammaFactor = 2.2;
-  renderer.gammaOutput = true; // 伽玛输出
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.shadowMap.enabled = true;
-  renderer.physicallyCorrectLights = true;
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color('black');
+  let renderer; // 全局渲染器
+  let scene; // 全局场景
+  let camera; // 全局摄影机
+  let controls; // 全局镜头控制器
+  let envLight; // 全局环境光
+  let sunLight; // 全局平行光
 
+  /**
+   * 创建全局渲染器。
+   * @param antialias: 是否开启抗锯齿。
+   * @param shadow: 是否开启阴影贴图。
+   */
+  function createRender(antialias, shadow) {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias });
+    renderer.shadowMap.enabled = shadow;
+    renderer.gammaFactor = 2.2;
+    renderer.gammaOutput = true; // 伽玛输出
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.physicallyCorrectLights = true; // 物理修正模式
+  }
 
-  /* 摄像机相关定义 */
-  const fov = 75;
-  const aspect = canvas.clientWidth / canvas.clientHeight;
-  const near = 0.1;
-  const far = 500;
-  const cameraX = 0;
-  const cameraY = 80;
-  const cameraZ = 0;
-  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  // const camera = new THREE.OrthographicCamera(-50, 50, 50, -50, near, far);
-  camera.position.set(cameraX, cameraY, cameraZ);
+  /**
+   * 创建全局场景。
+   * @param backgroundColor: 指定场景的背景色。
+   */
+  function createScene(backgroundColor) {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(backgroundColor);
+  }
 
-  const controls = new THREE.OrbitControls(camera, canvas);
-  controls.target.set(0, 0, 0);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.2;
-  controls.update();
+  /* 创建全局摄影机 */
+  function createCamera() {
+    const fov = 75;
+    const aspect = canvas.clientWidth / canvas.clientHeight;
+    const near = 0.1;
+    const far = 500;
+    camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+
+    const cameraX = 0; // TODO: 规范化相机定位
+    const cameraY = 80;
+    const cameraZ = 0;
+    camera.position.set(cameraX, cameraY, cameraZ);
+  }
+
+  /* 创建全局镜头控制器 */
+  function createControls() {
+    controls = new THREE.OrbitControls(camera, canvas);
+    controls.target.set(0, 0, 0);
+    controls.enableDamping = true; // 开启阻尼惯性
+    controls.dampingFactor = 0.2;
+    controls.update();
+  }
+
+  /**
+   * 创建全局光照，包含环境光及平行光。
+   * @param color: 指定环境光颜色。
+   * @param intensity: 指定环境光强度。
+   */
+  function createLight(color, intensity) {
+    envLight = new THREE.AmbientLight(color, intensity);
+    sunLight = new THREE.DirectionalLight();
+    scene.add(envLight);
+  }
+
+  // TODO: 增加init()函数？
+  createRender(true, true);
+  createScene('skyblue');
+  createCamera();
+  createControls();
+  createLight(0xFFFFFF, 0.1);
 
 
   /* 静态动画循环 */
@@ -137,7 +178,7 @@ function main() {
       camera.aspect = width / height; // 每帧更新相机宽高比
       camera.updateProjectionMatrix();
     }
-    controls.update();
+    controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
   }
 
@@ -148,20 +189,61 @@ function main() {
     }
   }
 
-  /* dat.GUI辅助控件 */
-  const gui = new dat.GUI();
-  const lightFolder = gui.addFolder('灯光');
-  lightFolder.open();
-  const meshFolder = gui.addFolder('网格');
+  function render() {
+    renderer.render(scene, camera);
+    requestRender();
+    controls.addEventListener('change', requestRender);
+    window.addEventListener('resize', requestRender);
+  }
 
-  /* 定义环境光 */
-  const color = 0xFFFFFF;
-  const intensity = 0.1;
-  const envLight = new THREE.AmbientLight(color, intensity);
-  lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestRender).listen();
-  scene.add(envLight);
+  /* 创建辅助对象，包括灯光参数控制器等 */
+  function createHelpers() {
+    const gui = new dat.GUI();
+    const lightFolder = gui.addFolder('灯光');
 
+    // const meshFolder = gui.addFolder('网格');
+    //
+    // class AxisGridHelper {
+    //   constructor(element, gridSize) {
+    //     const axes = new THREE.AxesHelper();
+    //     axes.material.depthTest = false;
+    //     axes.renderOrder = 2;
+    //     element.add(axes);
+    //
+    //     const grid = new THREE.GridHelper(gridSize, gridSize);
+    //     grid.material.depthTest = false;
+    //     grid.renderOrder = 1;
+    //     element.add(grid);
+    //
+    //     this.grid = grid;
+    //     this.axes = axes;
+    //     this.visible = false;
+    //   }
+    //
+    //   get visible() { return this._visible; }
+    //
+    //   set visible(v) {
+    //     this._visible = v;
+    //     this.grid.visible = v;
+    //     this.axes.visible = v;
+    //   }
+    // }
+    // const sceneHelper = new AxisGridHelper(scene, 300);
+    // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestRender);
 
+    const helper = new THREE.DirectionalLightHelper(sunLight);
+    helper.update();
+    scene.add(helper);
+    lightFolder.open();
+    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestRender);
+    lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestRender).listen();
+    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
+  }
+
+  /**
+   * 根据地图数据创建地图。
+   * @param data: json格式的地图数据。
+   */
   function createMap(data) {
     const { blockInfo, light } = data;
     const blockShop = {
@@ -226,7 +308,6 @@ function main() {
     const { envIntensity, envColor } = light;
     envLight.intensity = envIntensity; // 调整环境光
     envLight.color.set(envColor);
-    const sunLight = new THREE.DirectionalLight(); // 定义平行光源
     sunLight.color.set(light.color);
     sunLight.intensity = light.intensity;
 
@@ -259,7 +340,6 @@ function main() {
     const lightPosY = lightRad * cosTheta;
     const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
     sunLight.position.set(lightPosX, lightPosY, lightPosZ);
-
     sunLight.castShadow = true; // 定义光源阴影
     sunLight.shadow.camera.left = -100;
     sunLight.shadow.camera.right = 100;
@@ -268,56 +348,17 @@ function main() {
     sunLight.shadow.bias = 0.0001;
     sunLight.shadow.mapSize.set(8192, 8192);
     sunLight.shadow.camera.updateProjectionMatrix();
-
-    const helper = new THREE.DirectionalLightHelper(sunLight);
-    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestRender);
-    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
-    helper.update();
-    scene.add(helper);
   }
 
-  /* 通过json数据构建地图 */
-  fetch('maps/0-1.json')
+  fetch('maps/0-1.json') // TODO: 换用JSONLoader？
     .then((data) => data.json())
     .then((data) => {
       createMap(data);
+      createHelpers();
       requestRender();
     });
 
-
-  /* 辅助对象定义 */
-  class AxisGridHelper {
-    constructor(element, gridSize) {
-      const axes = new THREE.AxesHelper();
-      axes.material.depthTest = false;
-      axes.renderOrder = 2;
-      element.add(axes);
-
-      const grid = new THREE.GridHelper(gridSize, gridSize);
-      grid.material.depthTest = false;
-      grid.renderOrder = 1;
-      element.add(grid);
-
-      this.grid = grid;
-      this.axes = axes;
-      this.visible = false;
-    }
-
-    get visible() { return this._visible; }
-
-    set visible(v) {
-      this._visible = v;
-      this.grid.visible = v;
-      this.axes.visible = v;
-    }
-  }
-  const sceneHelper = new AxisGridHelper(scene, 300);
-  meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestRender);
-
-  renderer.render(scene, camera);
-  requestRender();
-  controls.addEventListener('change', requestRender);
-  window.addEventListener('resize', requestRender);
+  render();
 }
 
 
