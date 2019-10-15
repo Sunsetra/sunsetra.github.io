@@ -30,16 +30,15 @@ class Block {
 }
 
 
-/* 普通砖块类 */
 class BasicBlock extends Block {
-  /* 定义最基本的普通砖块，尺寸固定。 */
+  /* 定义基本普通砖块，尺寸固定 */
   constructor() {
     super(blockUnit, 0.5 * blockUnit, blockUnit);
   }
 }
 
 class HighBlock extends Block {
-  /* 定义最基本的高台砖块，尺寸固定。 */
+  /* 定义基本高台砖块，尺寸固定 */
   constructor() {
     super(blockUnit, 0.8 * blockUnit, blockUnit);
   }

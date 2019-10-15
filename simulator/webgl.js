@@ -99,13 +99,14 @@ function main() {
   let controls; // 全局镜头控制器
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
+  let needRender = false; // 全局渲染需求Flag
 
   /**
    * 创建全局渲染器。
-   * @param antialias: 是否开启抗锯齿。
-   * @param shadow: 是否开启阴影贴图。
+   * @param antialias: 是否开启抗锯齿，默认开启。
+   * @param shadow: 是否开启阴影贴图，默认开启。
    */
-  function createRender(antialias, shadow) {
+  function createRender(antialias = true, shadow = true) {
     renderer = new THREE.WebGLRenderer({ canvas, antialias });
     renderer.shadowMap.enabled = shadow;
     renderer.gammaFactor = 2.2;
@@ -116,11 +117,15 @@ function main() {
 
   /**
    * 创建全局场景。
-   * @param backgroundColor: 指定场景的背景色。
+   * @param color: 指定场景/雾气的背景色，默认黑色。
+   * @param fog: 控制是否开启场景雾气，默认开启。
    */
-  function createScene(backgroundColor) {
+  function createScene(color = 'black', fog = true) {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(backgroundColor);
+    scene.background = new THREE.Color(color);
+    if (fog) {
+      scene.fog = new THREE.Fog(color, 100, 200);
+    }
   }
 
   /* 创建全局摄影机 */
@@ -130,11 +135,6 @@ function main() {
     const near = 0.1;
     const far = 500;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-
-    const cameraX = 0; // TODO: 规范化相机定位
-    const cameraY = 80;
-    const cameraZ = 0;
-    camera.position.set(cameraX, cameraY, cameraZ);
   }
 
   /* 创建全局镜头控制器 */
@@ -148,25 +148,25 @@ function main() {
 
   /**
    * 创建全局光照，包含环境光及平行光。
-   * @param color: 指定环境光颜色。
-   * @param intensity: 指定环境光强度。
+   * @param color: 指定环境光颜色，默认白色。
+   * @param intensity: 指定环境光强度，默认为1。
    */
-  function createLight(color, intensity) {
+  function createLight(color = 'white', intensity = 1) {
     envLight = new THREE.AmbientLight(color, intensity);
     sunLight = new THREE.DirectionalLight();
     scene.add(envLight);
   }
 
-  // TODO: 增加init()函数？
-  createRender(true, true);
-  createScene('skyblue');
-  createCamera();
-  createControls();
-  createLight(0xFFFFFF, 0.1);
+  /* 初始化全局变量 */
+  function init() {
+    createRender(true, true);
+    createScene('black', true);
+    createCamera();
+    createControls();
+    createLight(0xFFFFFF, 0.1);
+  }
 
-
-  /* 静态动画循环 */
-  let needRender = false;
+  /* 静态动画循环，只能由requestRender调用 */
   function staticRender() {
     needRender = false;
     const container = renderer.domElement;
@@ -182,18 +182,12 @@ function main() {
     renderer.render(scene, camera);
   }
 
-  function requestRender() { // 只在需要时更新画布渲染
+  /* 渲染入口点函数，只在需要渲染时调用该函数 */
+  function requestRender() {
     if (!needRender) {
       needRender = true;
       requestAnimationFrame(staticRender);
     }
-  }
-
-  function render() {
-    renderer.render(scene, camera);
-    requestRender();
-    controls.addEventListener('change', requestRender);
-    window.addEventListener('resize', requestRender);
   }
 
   /* 创建辅助对象，包括灯光参数控制器等 */
@@ -240,29 +234,28 @@ function main() {
     lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
   }
 
-  /**
+  /** TODO: 优化createMap结构，按地图尺寸设置fog
    * 根据地图数据创建地图。
    * @param data: json格式的地图数据。
    */
   function createMap(data) {
-    const { blockInfo, light } = data;
     const blockShop = {
       basicBlock: new Block.BasicBlock(),
       highBlock: new Block.HighBlock(),
     };
-    const mapWidth = data.width;
-    const mapHeight = data.height;
+    const {
+      blockInfo, light, mapWidth, mapHeight,
+    } = data;
     const map = new Basic.MapInfo(mapWidth, mapHeight, blockShop.basicBlock);
 
     /* 构建地图实体 */
     blockInfo.forEach((item) => {
       const {
-        row, column, height, texture, consInfo,
+        row, column, heightAlpha, texture, consInfo,
       } = item;
-      /* 生成地面 */
-      const block = map.setBlock(row, column, blockShop[item.block]);
-      if (height) { // 自定义砖块高度
-        block.height = height;
+      const block = map.setBlock(row, column, blockShop[item.block]); // 生成地面
+      if (heightAlpha) { // 自定义砖块高度系数
+        block.height = heightAlpha * blockUnit;
       }
       const geometry = new THREE.BoxBufferGeometry(...block.size);
 
@@ -315,6 +308,9 @@ function main() {
     const lightTargetX = (mapWidth * blockUnit) / 2;
     sunLight.target.position.set(lightTargetX, 0, lightTargetZ); // 设置光源终点
     sunLight.target.updateMatrixWorld();
+    camera.position.set(lightTargetX, lightTargetZ * 3, lightTargetZ * 3);
+    controls.target.set(lightTargetX, 0, lightTargetZ); // 设置摄影机朝向为地图中心
+    camera.updateProjectionMatrix();
     scene.add(sunLight);
     scene.add(sunLight.target);
 
@@ -350,15 +346,16 @@ function main() {
     sunLight.shadow.camera.updateProjectionMatrix();
   }
 
-  fetch('maps/0-1.json') // TODO: 换用JSONLoader？
+  fetch('maps/0-1.json')
     .then((data) => data.json())
     .then((data) => {
-      createMap(data);
-      createHelpers();
-      requestRender();
+      init(); // 初始化全局变量
+      createMap(data); // 创建地图
+      createHelpers(); // 创建辅助对象
+      requestRender(); // 发出渲染请求
+      controls.addEventListener('change', requestRender);
+      window.addEventListener('resize', requestRender);
     });
-
-  render();
 }
 
 
