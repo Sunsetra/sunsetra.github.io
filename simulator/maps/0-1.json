@@ -5,7 +5,7 @@
   "blockInfo": [{
     "row": 0,
     "column": 0,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",
@@ -20,7 +20,7 @@
   }, {
     "row": 0,
     "column": 1,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -35,7 +35,7 @@
   }, {
     "row": 0,
     "column": 2,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -50,7 +50,7 @@
   }, {
     "row": 0,
     "column": 3,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -65,7 +65,7 @@
   }, {
     "row": 0,
     "column": 4,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -80,7 +80,7 @@
   }, {
     "row": 0,
     "column": 5,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -95,7 +95,7 @@
   }, {
     "row": 0,
     "column": 6,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -110,7 +110,7 @@
   }, {
     "row": 0,
     "column": 7,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -125,7 +125,7 @@
   }, {
     "row": 0,
     "column": 8,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",
@@ -140,7 +140,7 @@
   }, {
     "row": 1,
     "column": 0,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -154,7 +154,7 @@
   }, {
     "row": 1,
     "column": 1,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -163,7 +163,7 @@
   }, {
     "row": 1,
     "column": 2,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -173,7 +173,7 @@
   }, {
     "row": 1,
     "column": 3,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -182,7 +182,7 @@
   }, {
     "row": 1,
     "column": 4,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -191,7 +191,7 @@
   }, {
     "row": 1,
     "column": 5,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -200,7 +200,7 @@
   }, {
     "row": 1,
     "column": 6,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -209,7 +209,7 @@
   }, {
     "row": 1,
     "column": 7,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -218,7 +218,7 @@
   }, {
     "row": 1,
     "column": 8,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",
@@ -228,7 +228,7 @@
   }, {
     "row": 2,
     "column": 0,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",
@@ -243,7 +243,7 @@
   }, {
     "row": 2,
     "column": 1,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -252,7 +252,7 @@
   }, {
     "row": 2,
     "column": 2,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -261,7 +261,7 @@
   }, {
     "row": 2,
     "column": 3,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -270,7 +270,7 @@
   }, {
     "row": 2,
     "column": 4,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -280,7 +280,7 @@
   }, {
     "row": 2,
     "column": 5,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -289,7 +289,7 @@
   }, {
     "row": 2,
     "column": 6,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -298,7 +298,7 @@
   }, {
     "row": 2,
     "column": 7,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -307,7 +307,7 @@
   }, {
     "row": 2,
     "column": 8,
-    "block": "basicBlock",
+    "blockType": "basicBlock",
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -321,7 +321,7 @@
   }, {
     "row": 3,
     "column": 0,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",
@@ -331,7 +331,7 @@
   }, {
     "row": 3,
     "column": 1,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -346,7 +346,7 @@
   }, {
     "row": 3,
     "column": 2,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -361,7 +361,7 @@
   }, {
     "row": 3,
     "column": 3,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -376,7 +376,7 @@
   }, {
     "row": 3,
     "column": 4,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -391,7 +391,7 @@
   }, {
     "row": 3,
     "column": 5,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -406,7 +406,7 @@
   }, {
     "row": 3,
     "column": 6,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -421,7 +421,7 @@
   }, {
     "row": 3,
     "column": 7,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "whiteTile",
@@ -436,7 +436,7 @@
   }, {
     "row": 3,
     "column": 8,
-    "block": "highBlock",
+    "blockType": "highBlock",
     "heightAlpha": 0.8,
     "texture": {
       "top": "",

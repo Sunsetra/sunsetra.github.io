@@ -28,6 +28,10 @@ const modelList = { // 总导入模型列表
   ring: { url: 'res/model/decoration/ring.glb' },
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
+const blockList = {
+  basicBlock: () => new Block.BasicBlock(),
+  highBlock: (alpha) => new Block.HighBlock(alpha),
+};
 
 
 /**
@@ -234,116 +238,118 @@ function main() {
     lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
   }
 
-  /** TODO: 优化createMap结构，按地图尺寸设置fog
+  /** TODO: 优化createMap结构
    * 根据地图数据创建地图。
    * @param data: json格式的地图数据。
    */
   function createMap(data) {
-    const blockShop = {
-      basicBlock: new Block.BasicBlock(),
-      highBlock: new Block.HighBlock(),
-    };
     const {
-      blockInfo, light, mapWidth, mapHeight,
+      mapWidth, mapHeight, blockInfo, light,
     } = data;
-    const map = new Basic.MapInfo(mapWidth, mapHeight, blockShop.basicBlock);
+    const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
+    const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
+    const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
+    const map = new Basic.MapInfo(mapWidth, mapHeight, blockList.basicBlock()); // 初始化地图
 
-    /* 构建地图实体 */
-    blockInfo.forEach((item) => {
+    scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
+    scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
+    camera.far = maxSize * 2; // 2倍最长尺寸外不显示
+    camera.position.set(centerX, centerZ * 3, centerZ * 3);
+    camera.updateProjectionMatrix();
+    controls.target.set(centerX, 0, centerZ); // 设置摄影机朝向为地图中心
+
+    blockInfo.forEach((item) => { // 构造地面砖块及建筑
       const {
-        row, column, heightAlpha, texture, consInfo,
+        row, column, blockType, heightAlpha, texture, consInfo,
       } = item;
-      const block = map.setBlock(row, column, blockShop[item.block]); // 生成地面
-      if (heightAlpha) { // 自定义砖块高度系数
-        block.height = heightAlpha * blockUnit;
-      }
-      const geometry = new THREE.BoxBufferGeometry(...block.size);
+      const block = map.setBlock(row, column, blockList[blockType](heightAlpha));
+
+      const geometry = new THREE.BoxBufferGeometry(...block.size); // 定义砖块几何体
 
       const { top, side, bottom } = texture;
       const topTex = top ? texList.blockTop[top].tex : texList.blockTop.default.tex;
-      const topMat = new THREE.MeshPhysicalMaterial({ // 定义地砖顶部贴图材质
+      const topMat = new THREE.MeshPhysicalMaterial({ // 定义砖块顶部贴图材质
         metalness: 0.1,
         roughness: 0.6,
         map: topTex,
       });
       const sideTex = side ? texList.blockSide[side].tex : texList.blockSide.default.tex;
-      const sideMat = new THREE.MeshPhysicalMaterial({ // 定义地砖侧面贴图材质
+      const sideMat = new THREE.MeshPhysicalMaterial({ // 定义砖块侧面贴图材质
         metalness: 0.1,
         roughness: 0.6,
         map: sideTex,
       });
       const bottomTex = bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex;
-      const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义地砖底部贴图材质
+      const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义砖块底部贴图材质
         metalness: 0.1,
         roughness: 0.6,
         map: bottomTex,
       });
       const material = [sideMat, sideMat, topMat, bottomMat, sideMat, sideMat];
+
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+
       const x = (column + 0.5) * block.width;
       const y = block.height / 2;
       const z = (row + 0.5) * block.depth;
-      mesh.position.set(x, y, z);
+      mesh.position.set(x, y, z); // 放置砖块
       scene.add(mesh);
 
-      /* 添加建筑 */
-      if (consInfo) {
+      if (consInfo) { // 有建筑时添加建筑
         const obj = map.addCon(row, column, getModel(consInfo));
         obj.mesh.position.set(...obj.position);
         scene.add(obj.mesh);
       }
     });
 
-
-    /* 灯光定义 */
-    const { envIntensity, envColor } = light;
-    envLight.intensity = envIntensity; // 调整环境光
+    const { envIntensity, envColor } = light; // 定义灯光
+    envLight.intensity = envIntensity;
     envLight.color.set(envColor);
     sunLight.color.set(light.color);
     sunLight.intensity = light.intensity;
 
-    const lightTargetZ = (mapHeight * blockUnit) / 2;
-    const lightTargetX = (mapWidth * blockUnit) / 2;
-    sunLight.target.position.set(lightTargetX, 0, lightTargetZ); // 设置光源终点
-    sunLight.target.updateMatrixWorld();
-    camera.position.set(lightTargetX, lightTargetZ * 3, lightTargetZ * 3);
-    controls.target.set(lightTargetX, 0, lightTargetZ); // 设置摄影机朝向为地图中心
-    camera.updateProjectionMatrix();
-    scene.add(sunLight);
-    scene.add(sunLight.target);
-
     const hasHour = Object.prototype.hasOwnProperty.call(light, 'hour');
     let hour = hasHour ? light.hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
-    const lightRad = Math.max(mapHeight * blockUnit, mapWidth * blockUnit); // 定义阳光半径
-    const hasPhi = Object.prototype.hasOwnProperty.call(light, 'phi');
-    const randomDeg = Math.floor(Math.random() * 360) + 1;
-    const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
-
     if (hour < 6 || hour > 18) { // 定义夜间光源
       hour = hour < 6 ? hour + 12 : hour % 12;
       sunLight.intensity = 0.6;
       sunLight.color.set(0xffffff);
       envLight.color.set(0x5C6C85);
     }
-    const theta = 140 - hour * 12; // 天顶角
+
+    const hasPhi = Object.prototype.hasOwnProperty.call(light, 'phi');
+    const randomDeg = Math.floor(Math.random() * 360) + 1;
+    const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
+    const lightRad = maxSize; // 光源半径为地图最大尺寸
+    const theta = 140 - hour * 12; // 从地图时间计算天顶角
     const cosTheta = Math.cos(THREE.Math.degToRad(theta)); // 计算光源位置
     const sinTheta = Math.sin(THREE.Math.degToRad(theta));
     const cosPhi = Math.cos(THREE.Math.degToRad(phi));
     const sinPhi = Math.sin(THREE.Math.degToRad(phi));
-    const lightPosX = lightRad * sinTheta * cosPhi + lightTargetX;
+    const lightPosX = lightRad * sinTheta * cosPhi + centerX;
     const lightPosY = lightRad * cosTheta;
-    const lightPosZ = lightRad * sinTheta * sinPhi + lightTargetZ;
+    const lightPosZ = lightRad * sinTheta * sinPhi + centerZ;
     sunLight.position.set(lightPosX, lightPosY, lightPosZ);
-    sunLight.castShadow = true; // 定义光源阴影
-    sunLight.shadow.camera.left = -100;
-    sunLight.shadow.camera.right = 100;
-    sunLight.shadow.camera.top = 100;
-    sunLight.shadow.camera.bottom = -100;
+    sunLight.target.position.set(centerX, 0, centerZ); // 设置光源终点
+    sunLight.target.updateMatrixWorld();
+
+    sunLight.castShadow = true; // 设置光源阴影
+    sunLight.shadow.camera.left = -maxSize / 2; // 按地图最大尺寸定义光源阴影
+    sunLight.shadow.camera.right = maxSize / 2;
+    sunLight.shadow.camera.top = maxSize / 2;
+    sunLight.shadow.camera.bottom = -maxSize / 2;
+    sunLight.shadow.camera.near = maxSize / 2;
+    sunLight.shadow.camera.far = maxSize * 1.5; // 阴影覆盖光源半径的球体
     sunLight.shadow.bias = 0.0001;
-    sunLight.shadow.mapSize.set(8192, 8192);
+    sunLight.shadow.mapSize.set(4096, 4096);
     sunLight.shadow.camera.updateProjectionMatrix();
+    // const cameraHelper = new THREE.CameraHelper(sunLight.shadow.camera);
+    // scene.add(cameraHelper);
+
+    scene.add(sunLight);
+    scene.add(sunLight.target);
   }
 
   fetch('maps/0-1.json')

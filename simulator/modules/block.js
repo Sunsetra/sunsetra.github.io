@@ -39,8 +39,9 @@ class BasicBlock extends Block {
 
 class HighBlock extends Block {
   /* 定义基本高台砖块，尺寸固定 */
-  constructor() {
-    super(blockUnit, 0.8 * blockUnit, blockUnit);
+  constructor(alpha) {
+    const a = alpha < 0.8 ? 0.8 : alpha;
+    super(blockUnit, a * blockUnit, blockUnit);
   }
 }
 
