@@ -27,6 +27,25 @@ class Block {
       },
     };
   }
+
+  /**
+   * 计算砖块在地图中的实际坐标。
+   * 在砖块排布发生变化时，应手动调用以更新砖块的实际位置。
+   * @param row: 砖块所在行。
+   * @param column: 砖块所在列。
+   */
+  calBlockPosition(row, column) {
+    this.position = {
+      x: (column + 0.5) * this.width,
+      y: this.height / 2,
+      z: (row + 0.5) * this.depth,
+      * [Symbol.iterator]() {
+        yield this.x;
+        yield this.y;
+        yield this.z;
+      },
+    };
+  }
 }
 
 

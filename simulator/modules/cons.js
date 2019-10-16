@@ -28,7 +28,7 @@ class Construction {
 
   /**
    * 返回建筑所在的实际坐标。
-   * 在绑定状态发生变化后，应手动调用以更新建筑应放置的实际位置。
+   * 在绑定状态发生变化后，应手动调用以更新建筑的实际位置。
    * @param block: 绑定的首个（左上角）砖块。
    */
   calcConPosition(block) {
@@ -93,6 +93,10 @@ class IOPoint extends Construction {
 
 
 class BuiltinCons extends Construction {
+  /**
+   * 预设的建筑/装饰建筑。
+   * @param mesh: 导入的建筑模型mesh。
+   */
   constructor(mesh) {
     super(1, 1, mesh);
     this.mesh.material.side = THREE.FrontSide;

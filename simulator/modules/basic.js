@@ -35,6 +35,7 @@ class MapInfo {
    */
   setBlock(row, column, block) {
     const index = (row - 1) * this.width + (column - 1);
+    block.calBlockPosition(row, column);
     this._blocks[index] = block;
     return this._blocks[index];
   }
