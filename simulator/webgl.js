@@ -1,3 +1,4 @@
+import {WEBGL} from './lib/WebGL.js';
 import * as Basic from './modules/basic.js';
 import * as Block from './modules/block.js';
 import * as Cons from './modules/cons.js';
@@ -31,6 +32,11 @@ const modelList = { // 总导入模型列表
 const blockList = {
   basicBlock: () => new Block.BasicBlock(),
   highBlock: (alpha) => new Block.HighBlock(alpha),
+};
+const state = { // 状态对象，用于保存当前画布的各种状态信息
+  width: undefined, // 画布宽度
+  height: undefined, // 画布高度
+  context: undefined, // 渲染上下文种类，使用webgl/webgl2
 };
 
 
@@ -92,6 +98,11 @@ function getModel(consInfo) {
 function main() {
   const blockUnit = 10; // 砖块边长
   const canvas = document.querySelector('canvas');
+  const timer = document.querySelector('#timer'); // 全局计时器显示
+  const starter = document.querySelector('#starter');
+  const reset = document.querySelector('#reset');
+
+  const timeAxis = new THREE.Clock(false); // 全局时间轴
   let renderer; // 全局渲染器
   let scene; // 全局场景
   let camera; // 全局摄影机
@@ -99,14 +110,22 @@ function main() {
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
   let needRender = false; // 全局渲染需求Flag
+  let rAF; // 全局动态渲染取消标志
 
   /**
-   * 创建全局渲染器。
+   * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
    * @param antialias: 是否开启抗锯齿，默认开启。
    * @param shadow: 是否开启阴影贴图，默认开启。
    */
   function createRender(antialias = true, shadow = true) {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias });
+    let context;
+    if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
+      context = canvas.getContext('webgl2', { antialias: true });
+    } else {
+      context = canvas.getContext('webgl', { antialias: true });
+    }
+    renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
+    state.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
     renderer.shadowMap.enabled = shadow;
     renderer.gammaFactor = 2.2;
     renderer.gammaOutput = true; // 伽玛输出
@@ -277,9 +296,8 @@ function main() {
     scene.add(sunLight.target);
   }
 
-  /* 静态动画循环，只能由requestRender调用 */
-  function staticRender() {
-    needRender = false;
+
+  function checkResize() {
     const container = renderer.domElement;
     const width = container.clientWidth;
     const height = container.clientHeight;
@@ -288,16 +306,96 @@ function main() {
       renderer.setSize(width, height, false);
       camera.aspect = width / height; // 每帧更新相机宽高比
       camera.updateProjectionMatrix();
+      state.width = width;
+      state.height = height;
     }
+  }
+
+  function updateTimer() {
+    const elapsed = timeAxis.getElapsedTime().toFixed(3);
+    const msecs = (Math.floor(elapsed * 1000) % 1000).toString().padStart(3, '0');
+    const secs = Math.floor(elapsed).toString().padStart(2, '0');
+    const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    timer.textContent = `${min}:${secs}.${msecs}`;
+  }
+
+  /* 静态动画循环，只能由requestStaticRender调用 */
+  function staticRender() {
+    needRender = false;
+    checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
   }
 
-  /* 渲染入口点函数，只在需要渲染时调用该函数 */
-  function requestRender() {
+  /* 静态渲染入口点函数 */
+  function requestStaticRender() {
     if (!needRender) {
       needRender = true;
       requestAnimationFrame(staticRender);
+    }
+  }
+
+  /* 动态动画循环，只能由requestDynamicRender调用 */
+  function dynamicRender() {
+    checkResize();
+    controls.update(); // 开启阻尼惯性时需调用
+    renderer.render(scene, camera);
+    updateTimer();
+    rAF = requestAnimationFrame(dynamicRender);
+  }
+
+  /* 动态渲染入口点函数 */
+  function requestDynamicRender() {
+    changeState();
+    timer.textContent = '00:00.000'; // 重置计时
+    timeAxis.start();
+    rAF = requestAnimationFrame(dynamicRender);
+  }
+
+  /* 动画暂停函数 */
+  function pauseAnimate() {
+    changeState(); // 必须放在stop()之前
+    cancelAnimationFrame(rAF);
+    timeAxis.stop(); // 先取消动画后再停止时间轴
+  }
+
+  /* 继续动画函数 */
+  function continueAnimate() {
+    changeState();
+    const { elapsedTime } = timeAxis;
+    timeAxis.start();
+    timeAxis.elapsedTime = elapsedTime;
+    rAF = requestAnimationFrame(dynamicRender);
+  }
+
+  /* 重置动画函数 */
+  function resetAnimate() {
+    cancelAnimationFrame(rAF);
+    timeAxis.stop(); // 先取消动画后再停止时间轴
+    timer.textContent = '00:00.000'; // 重置计时
+    starter.textContent = '开始';
+    starter.removeEventListener('click', pauseAnimate);
+    starter.removeEventListener('click', continueAnimate);
+    starter.addEventListener('click', requestDynamicRender);
+    controls.addEventListener('change', requestStaticRender);
+    window.addEventListener('resize', requestStaticRender);
+  }
+
+  /* 改变控制按钮状态 */
+  function changeState() {
+    if (timeAxis.running) {
+      starter.textContent = '继续';
+      starter.removeEventListener('click', pauseAnimate);
+      starter.addEventListener('click', continueAnimate);
+      controls.addEventListener('change', requestStaticRender);
+      window.addEventListener('resize', requestStaticRender);
+    } else {
+      starter.textContent = '暂停';
+      starter.removeEventListener('click', requestDynamicRender);
+      starter.removeEventListener('click', continueAnimate);
+      starter.addEventListener('click', pauseAnimate);
+      controls.removeEventListener('change', requestStaticRender);
+      window.removeEventListener('resize', requestStaticRender);
     }
   }
 
@@ -305,6 +403,10 @@ function main() {
   function createHelpers() {
     const gui = new dat.GUI();
     const lightFolder = gui.addFolder('灯光');
+    lightFolder.open();
+    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
+    lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
+    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
 
     // const meshFolder = gui.addFolder('网格');
     //
@@ -334,15 +436,11 @@ function main() {
     //   }
     // }
     // const sceneHelper = new AxisGridHelper(scene, 300);
-    // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestRender);
+    // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestStaticRender);
 
-    const helper = new THREE.DirectionalLightHelper(sunLight);
-    helper.update();
-    scene.add(helper);
-    lightFolder.open();
-    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestRender);
-    lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestRender).listen();
-    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestRender);
+    // const helper = new THREE.DirectionalLightHelper(sunLight);
+    // helper.update();
+    // scene.add(helper);
   }
 
 
@@ -352,9 +450,11 @@ function main() {
       init(); // 初始化全局变量
       createMap(data); // 创建地图
       createHelpers(); // 创建辅助对象
-      requestRender(); // 发出渲染请求
-      controls.addEventListener('change', requestRender);
-      window.addEventListener('resize', requestRender);
+      requestStaticRender(); // 发出渲染请求
+      starter.addEventListener('click', requestDynamicRender);
+      reset.addEventListener('click', resetAnimate);
+      controls.addEventListener('change', requestStaticRender);
+      window.addEventListener('resize', requestStaticRender);
     });
 }
 
@@ -396,16 +496,16 @@ function setLoading() {
   /* 加载完成回调函数 */
   function LoadingFinished() {
     if (!errorCounter) {
-      const canvas = document.querySelector('canvas');
+      const mainFrame = document.querySelector('main');
 
       loadingBar.style.opacity = '0'; // 渐隐加载进度条
       setTimeout(() => {
         loadingBar.style.display = 'none';
       }, 1000);
 
-      canvas.style.display = 'block'; // 渐显画布
+      mainFrame.style.display = 'block'; // 渐显画布
       setTimeout(() => {
-        canvas.style.opacity = '1';
+        mainFrame.style.opacity = '1';
       }, 1000);
 
       main(); // 启动主函数

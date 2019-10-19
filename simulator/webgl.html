@@ -13,10 +13,18 @@
   <title>webgl试验部</title>
 </head>
 <body>
-<canvas>
-  完蛋，浏览器不支持canvas元素呢！换最新的<a href="https://www.google.cn/intl/zh-CN/chrome/">Chrome</a>
-  或者<a href="https://www.mozilla.org/zh-CN/firefox/new/" target="_blank">Firefox</a>试试呢？
-</canvas>
+<main>
+  <canvas>
+    完蛋，浏览器不支持canvas元素呢！换最新的<a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank">Chrome</a>
+    或者<a href="https://www.mozilla.org/zh-CN/firefox/new/" target="_blank">Firefox</a>试试呢？
+  </canvas>
+  <div class="controller">
+    <div id="timer">00:00.000</div>
+    <button id="starter">开始</button>
+    <button id="reset">重置</button>
+  </div>
+</main>
+
 <div id="loading">
     <div id="container">
       <div id="bar">

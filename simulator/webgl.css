@@ -3,12 +3,33 @@ html, body {
   background-color: black;
 }
 
-canvas {
+main {
   width: 100%;
   height: 100%;
   display: none;
   opacity: 0;
   transition: opacity 1s;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.controller {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  top: 10%;
+  left: 10%;
+  width: 10%;
+  color: white;
+  font-size: larger;
+}
+
+button {
+  margin: 0 1rem;
 }
 
 #loading {

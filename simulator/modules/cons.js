@@ -73,13 +73,13 @@ class IOPoint extends Construction {
    */
   constructor(textureTop, textureSide) {
     const topMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
+      alphaTest: 0.6,
       map: textureTop,
       side: THREE.DoubleSide,
       transparent: true,
     });
     const sideMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.7,
+      alphaTest: 0.6,
       map: textureSide,
       side: THREE.DoubleSide,
       transparent: true,
