@@ -102,7 +102,7 @@ function main() {
   const starter = document.querySelector('#starter');
   const reset = document.querySelector('#reset');
 
-  const timeAxis = new THREE.Clock(false); // 全局时间轴
+  const timeAxis = new Basic.TimeAxis(); // 全局时间轴
   let renderer; // 全局渲染器
   let scene; // 全局场景
   let camera; // 全局摄影机
@@ -297,6 +297,10 @@ function main() {
   }
 
 
+  /**
+   * 检查渲染尺寸是否改变。
+   * 引用对象：渲染器renderer, 摄像机camera, state状态对象
+   */
   function checkResize() {
     const container = renderer.domElement;
     const width = container.clientWidth;
@@ -311,16 +315,9 @@ function main() {
     }
   }
 
-  function updateTimer() {
-    const elapsed = timeAxis.getElapsedTime().toFixed(3);
-    const msecs = (Math.floor(elapsed * 1000) % 1000).toString().padStart(3, '0');
-    const secs = Math.floor(elapsed).toString().padStart(2, '0');
-    const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
-    timer.textContent = `${min}:${secs}.${msecs}`;
-  }
-
   /* 静态动画循环，只能由requestStaticRender调用 */
   function staticRender() {
+    console.log('static');
     needRender = false;
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
@@ -337,16 +334,19 @@ function main() {
 
   /* 动态动画循环，只能由requestDynamicRender调用 */
   function dynamicRender() {
+    console.log('dynamic');
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
-    updateTimer();
+
+    const { min, secs, msecs } = timeAxis.getElapsedTime();
+    timer.textContent = `${min}:${secs}.${msecs}`;
     rAF = requestAnimationFrame(dynamicRender);
   }
 
   /* 动态渲染入口点函数 */
   function requestDynamicRender() {
-    changeState();
+    changeTimeAxisState();
     timer.textContent = '00:00.000'; // 重置计时
     timeAxis.start();
     rAF = requestAnimationFrame(dynamicRender);
@@ -354,17 +354,15 @@ function main() {
 
   /* 动画暂停函数 */
   function pauseAnimate() {
-    changeState(); // 必须放在stop()之前
+    changeTimeAxisState(); // 必须放在stop()之前
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
   }
 
   /* 继续动画函数 */
   function continueAnimate() {
-    changeState();
-    const { elapsedTime } = timeAxis;
-    timeAxis.start();
-    timeAxis.elapsedTime = elapsedTime;
+    changeTimeAxisState();
+    timeAxis.continue();
     rAF = requestAnimationFrame(dynamicRender);
   }
 
@@ -382,7 +380,7 @@ function main() {
   }
 
   /* 改变控制按钮状态 */
-  function changeState() {
+  function changeTimeAxisState() {
     if (timeAxis.running) {
       starter.textContent = '继续';
       starter.removeEventListener('click', pauseAnimate);

@@ -1,3 +1,5 @@
+/* global THREE */
+
 /* 地图信息类 */
 class MapInfo {
   /**
@@ -117,4 +119,33 @@ class MapInfo {
   }
 }
 
-export { MapInfo };
+
+class TimeAxis extends THREE.Clock {
+  /**
+   * 扩展时间轴。
+   * 支持格式化输出经过时间及继续计时函数。
+   */
+  constructor() {
+    super(false);
+  }
+
+  /* 格式化输出当前时间对象 */
+  getElapsedTime() {
+    const elapsed = super.getElapsedTime().toFixed(3);
+    const msecs = (Math.floor(elapsed * 1000) % 1000).toString().padStart(3, '0');
+    const secs = Math.floor(elapsed).toString().padStart(2, '0');
+    const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    return { min, secs, msecs };
+  }
+
+  /* 继续已暂停的计时器 */
+  continue() {
+    if (!this.running) {
+      const { elapsedTime } = this; // 计时器stop时已更新过elapsedTime
+      this.start();
+      this.elapsedTime = elapsedTime;
+    }
+  }
+}
+
+export { MapInfo, TimeAxis };
