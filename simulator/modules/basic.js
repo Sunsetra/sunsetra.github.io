@@ -1,5 +1,11 @@
 /* global THREE */
 
+const statusEnum = Object.freeze({
+  RESET: 'reset',
+  PAUSE: 'pause',
+  CONTINUE: 'continue',
+});
+
 /* 地图信息类 */
 class MapInfo {
   /**
@@ -148,4 +154,4 @@ class TimeAxis extends THREE.Clock {
   }
 }
 
-export { MapInfo, TimeAxis };
+export { statusEnum, MapInfo, TimeAxis };

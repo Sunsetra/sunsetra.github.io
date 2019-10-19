@@ -1,7 +1,7 @@
-import {WEBGL} from './lib/WebGL.js';
-import * as Basic from './modules/basic.js';
-import * as Block from './modules/block.js';
-import * as Cons from './modules/cons.js';
+import { WEBGL } from './lib/WebGL.js';
+import { statusEnum, MapInfo, TimeAxis } from './modules/basic.js';
+import { BasicBlock, HighBlock } from './modules/block.js';
+import { IOPoint, BuiltinCons } from './modules/cons.js';
 
 /* global THREE, dat */
 
@@ -30,10 +30,10 @@ const modelList = { // 总导入模型列表
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
 const blockList = {
-  basicBlock: () => new Block.BasicBlock(),
-  highBlock: (alpha) => new Block.HighBlock(alpha),
+  basicBlock: () => new BasicBlock(),
+  highBlock: (alpha) => new HighBlock(alpha),
 };
-const state = { // 状态对象，用于保存当前画布的各种状态信息
+const sysState = { // 状态对象，用于保存当前画布的各种状态信息
   width: undefined, // 画布宽度
   height: undefined, // 画布高度
   context: undefined, // 渲染上下文种类，使用webgl/webgl2
@@ -83,14 +83,14 @@ function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
 
   if (desc === 'destination') {
-    return new Cons.IOPoint(texList.destTop.tex, texList.destSide.tex);
+    return new IOPoint(texList.destTop.tex, texList.destSide.tex);
   }
   if (desc === 'entry') {
-    return new Cons.IOPoint(texList.entryTop.tex, texList.entrySide.tex);
+    return new IOPoint(texList.entryTop.tex, texList.entrySide.tex);
   }
   const mesh = modelList[desc].gltf[type].clone();
   mesh.rotation.y = THREE.Math.degToRad(rotation);
-  return new Cons.BuiltinCons(mesh);
+  return new BuiltinCons(mesh);
 }
 
 
@@ -102,7 +102,7 @@ function main() {
   const starter = document.querySelector('#starter');
   const reset = document.querySelector('#reset');
 
-  const timeAxis = new Basic.TimeAxis(); // 全局时间轴
+  const timeAxis = new TimeAxis(); // 全局时间轴
   let renderer; // 全局渲染器
   let scene; // 全局场景
   let camera; // 全局摄影机
@@ -125,7 +125,7 @@ function main() {
       context = canvas.getContext('webgl', { antialias: true });
     }
     renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
-    state.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
+    sysState.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
     renderer.shadowMap.enabled = shadow;
     renderer.gammaFactor = 2.2;
     renderer.gammaOutput = true; // 伽玛输出
@@ -195,7 +195,7 @@ function main() {
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
-    const map = new Basic.MapInfo(mapWidth, mapHeight, blockList.basicBlock()); // 初始化地图
+    const map = new MapInfo(mapWidth, mapHeight, blockList.basicBlock()); // 初始化地图
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -297,10 +297,7 @@ function main() {
   }
 
 
-  /**
-   * 检查渲染尺寸是否改变。
-   * 引用对象：渲染器renderer, 摄像机camera, state状态对象
-   */
+  /* 检查渲染尺寸是否改变 */
   function checkResize() {
     const container = renderer.domElement;
     const width = container.clientWidth;
@@ -310,8 +307,8 @@ function main() {
       renderer.setSize(width, height, false);
       camera.aspect = width / height; // 每帧更新相机宽高比
       camera.updateProjectionMatrix();
-      state.width = width;
-      state.height = height;
+      sysState.width = width;
+      sysState.height = height;
     }
   }
 
@@ -344,24 +341,24 @@ function main() {
     rAF = requestAnimationFrame(dynamicRender);
   }
 
+
   /* 动态渲染入口点函数 */
   function requestDynamicRender() {
-    changeTimeAxisState();
-    timer.textContent = '00:00.000'; // 重置计时
+    setState(statusEnum.PAUSE);
     timeAxis.start();
     rAF = requestAnimationFrame(dynamicRender);
   }
 
   /* 动画暂停函数 */
   function pauseAnimate() {
-    changeTimeAxisState(); // 必须放在stop()之前
+    setState(statusEnum.CONTINUE); // 必须放在stop()之前
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
   }
 
   /* 继续动画函数 */
   function continueAnimate() {
-    changeTimeAxisState();
+    setState(statusEnum.PAUSE);
     timeAxis.continue();
     rAF = requestAnimationFrame(dynamicRender);
   }
@@ -370,30 +367,32 @@ function main() {
   function resetAnimate() {
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
-    timer.textContent = '00:00.000'; // 重置计时
-    starter.textContent = '开始';
-    starter.removeEventListener('click', pauseAnimate);
-    starter.removeEventListener('click', continueAnimate);
-    starter.addEventListener('click', requestDynamicRender);
-    controls.addEventListener('change', requestStaticRender);
-    window.addEventListener('resize', requestStaticRender);
+    setState(statusEnum.RESET);
   }
 
-  /* 改变控制按钮状态 */
-  function changeTimeAxisState() {
-    if (timeAxis.running) {
+  /* 改变时间轴控制按钮状态 */
+  function setState(state) {
+    if (state === statusEnum.CONTINUE) {
       starter.textContent = '继续';
       starter.removeEventListener('click', pauseAnimate);
       starter.addEventListener('click', continueAnimate);
       controls.addEventListener('change', requestStaticRender);
       window.addEventListener('resize', requestStaticRender);
-    } else {
+    } else if (state === statusEnum.PAUSE) {
       starter.textContent = '暂停';
       starter.removeEventListener('click', requestDynamicRender);
       starter.removeEventListener('click', continueAnimate);
       starter.addEventListener('click', pauseAnimate);
       controls.removeEventListener('change', requestStaticRender);
       window.removeEventListener('resize', requestStaticRender);
+    } else if (state === statusEnum.RESET) {
+      timer.textContent = '00:00.000'; // 重置计时
+      starter.textContent = '开始';
+      starter.removeEventListener('click', pauseAnimate);
+      starter.removeEventListener('click', continueAnimate);
+      starter.addEventListener('click', requestDynamicRender);
+      controls.addEventListener('change', requestStaticRender);
+      window.addEventListener('resize', requestStaticRender);
     }
   }
 
@@ -449,10 +448,8 @@ function main() {
       createMap(data); // 创建地图
       createHelpers(); // 创建辅助对象
       requestStaticRender(); // 发出渲染请求
-      starter.addEventListener('click', requestDynamicRender);
       reset.addEventListener('click', resetAnimate);
-      controls.addEventListener('change', requestStaticRender);
-      window.addEventListener('resize', requestStaticRender);
+      setState(statusEnum.RESET);
     });
 }
 
