@@ -135,13 +135,21 @@ class TimeAxis extends THREE.Clock {
     super(false);
   }
 
-  /* 格式化输出当前时间对象 */
-  getElapsedTime() {
+  /**
+   * 格式化输出当前时间（对象）。
+   * @returns {{min: *, secs: *, msecs: *}}: 格式化为字符串对象的当前时间。
+   */
+  getElapsedTimeO() {
     const elapsed = super.getElapsedTime().toFixed(3);
     const msecs = (Math.floor(elapsed * 1000) % 1000).toString().padStart(3, '0');
     const secs = Math.floor(elapsed).toString().padStart(2, '0');
     const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
     return { min, secs, msecs };
+  }
+
+  /* 返回当前时间（数字） */
+  getElapsedTimeN() {
+    return super.getElapsedTime();
   }
 
   /* 继续已暂停的计时器 */

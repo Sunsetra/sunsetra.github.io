@@ -2,6 +2,11 @@
   "name": "0-1",
   "mapWidth": 9,
   "mapHeight": 4,
+  "resources": {
+    "texture": ["whiteTile", "greyTile"],
+    "model": ["ring", "tomb"],
+    "enemy": ["slime"]
+  },
   "blockInfo": [{
     "row": 0,
     "column": 0,
@@ -451,5 +456,24 @@
     "intensity": 2,
     "hour": 16,
     "phi": 180
-  }
+  },
+  "waves": [
+    {
+      "maxWaitingTime": 0,
+      "fragments": [
+        {
+          "time": 5,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        }
+      ]
+    }
+  ]
 }

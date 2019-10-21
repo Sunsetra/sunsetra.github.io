@@ -2,6 +2,7 @@ import { WEBGL } from './lib/WebGL.js';
 import { statusEnum, MapInfo, TimeAxis } from './modules/basic.js';
 import { BasicBlock, HighBlock } from './modules/block.js';
 import { IOPoint, BuiltinCons } from './modules/cons.js';
+// import * as Unit from './modules/unit.js';
 
 /* global THREE, dat */
 
@@ -10,29 +11,35 @@ const loadManager = new THREE.LoadingManager();
 const texList = { // 总导入贴图列表
   blockTop: {
     // blackConcrete: { url: 'res/texture/black_concrete.png' },
-    whiteTile: { url: 'res/texture/white_tile.png' },
-    greyTile: { url: 'res/texture/grey_tile.png' },
-    default: { url: 'res/texture/default_top.png' },
+    whiteTile: { url: 'res/texture/block/white_tile.png' },
+    greyTile: { url: 'res/texture/block/grey_tile.png' },
+    default: { url: 'res/texture/block/default_top.png' },
   },
   blockSide: {
-    default: { url: 'res/texture/default_side.png' },
+    default: { url: 'res/texture/block/default_side.png' },
   },
   blockBottom: {
-    default: { url: 'res/texture/default_bottom.png' },
+    default: { url: 'res/texture/block/default_bottom.png' },
   },
   destTop: { url: 'res/texture/destinationTop.png' },
   destSide: { url: 'res/texture/destinationSide.png' },
   entryTop: { url: 'res/texture/entryTop.png' },
   entrySide: { url: 'res/texture/entrySide.png' },
+  enemy: {
+    slime: { url: 'res/texture/enemy/slime.png' },
+  },
 };
 const modelList = { // 总导入模型列表
   ring: { url: 'res/model/decoration/ring.glb' },
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
-const blockList = {
+const blockShop = { // 砖块实例列表
   basicBlock: () => new BasicBlock(),
   highBlock: (alpha) => new HighBlock(alpha),
 };
+// const enemyShop = { // 敌人实例列表
+//   slime: new Unit.Slime(texList.enemy.slime.tex),
+// };
 const sysState = { // 状态对象，用于保存当前画布的各种状态信息
   width: undefined, // 画布宽度
   height: undefined, // 画布高度
@@ -111,6 +118,8 @@ function main() {
   let sunLight; // 全局平行光
   let needRender = false; // 全局渲染需求Flag
   let rAF; // 全局动态渲染取消标志
+  // let waveData; // 全局波次数据
+  // let activeEnemy = []; // 在场的敌人数组，更新敌人位置时遍历
 
   /**
    * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
@@ -185,17 +194,17 @@ function main() {
   }
 
   /**
-   * 根据地图数据创建地图。
+   * 根据地图数据创建地图及建筑。
    * @param data: json格式的地图数据。
    */
   function createMap(data) {
     const {
-      mapWidth, mapHeight, blockInfo, light,
+      mapWidth, mapHeight, blockInfo, light, enemy, waves,
     } = data;
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
-    const map = new MapInfo(mapWidth, mapHeight, blockList.basicBlock()); // 初始化地图
+    const map = new MapInfo(mapWidth, mapHeight, blockShop.basicBlock()); // 初始化地图
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -209,7 +218,7 @@ function main() {
       const {
         row, column, blockType, heightAlpha, texture, consInfo,
       } = item;
-      const block = map.setBlock(row, column, blockList[blockType](heightAlpha));
+      const block = map.setBlock(row, column, blockShop[blockType](heightAlpha));
 
       const geometry = new THREE.BoxBufferGeometry(...block.size); // 定义砖块几何体
 
@@ -247,6 +256,13 @@ function main() {
       }
     });
 
+    // waveData = waves;
+    // enemy.type.forEach((e) => {
+    //   const texture = texList.enemy[e].tex;
+    //   const { width, height } = texture.image;
+    //   const geometry = new THREE.PlaneBufferGeometry(width, height);
+    //   enemyShop[e] = new THREE.Mesh(geometry, texture);
+    // });
 
     const { envIntensity, envColor } = light; // 定义灯光
     envLight.intensity = envIntensity;
@@ -297,6 +313,30 @@ function main() {
   }
 
 
+  // /* 更新所有敌人及其位置 */
+  // function updateEnemy(thisTime) {
+  //   if (waveData) {
+  //     const { fragments } = waveData[0];
+  //     if (fragments) {
+  //       const { time, enemy } = fragments;
+  //       if (thisTime >= time) {
+  //         const mesh = enemyShop[enemy].clone();
+  //         const inst = new Unit.
+  //         activeEnemy.push(fragments);
+  //       }
+  //       for (const unit of enemyShop) { // 更新场上的敌人
+  //         const { path } = unit;
+  //       }
+  //     } else {
+  //       waveData.shift();
+  //       updateEnemy(); // 调用自身避免丢帧
+  //     }
+  //   } else {
+  //     // 游戏结束
+  //   }
+  // }
+
+
   /* 检查渲染尺寸是否改变 */
   function checkResize() {
     const container = renderer.domElement;
@@ -332,11 +372,12 @@ function main() {
   /* 动态动画循环，只能由requestDynamicRender调用 */
   function dynamicRender() {
     console.log('dynamic');
+    // updateEnemy(timeAxis.getElapsedTimeN()); // 更新敌人位置
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
 
-    const { min, secs, msecs } = timeAxis.getElapsedTime();
+    const { min, secs, msecs } = timeAxis.getElapsedTimeO();
     timer.textContent = `${min}:${secs}.${msecs}`;
     rAF = requestAnimationFrame(dynamicRender);
   }
