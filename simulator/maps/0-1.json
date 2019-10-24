@@ -3,7 +3,11 @@
   "mapWidth": 9,
   "mapHeight": 4,
   "resources": {
-    "texture": ["whiteTile", "greyTile"],
+    "block": {
+      "blockTop": ["whiteTile", "greyTile"],
+      "blockSide": [],
+      "blockBottom": []
+    },
     "model": ["ring", "tomb"],
     "enemy": ["slime"]
   },

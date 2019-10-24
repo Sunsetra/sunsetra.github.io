@@ -83,11 +83,12 @@ class MapInfo {
       return true;
     };
 
+    let index;
     if (con.width > 1 || con.height > 1) { // 添加的建筑跨度大于1格
       if (verifyLocation(row, column, con.width, con.height)) {
         for (let x = 0; x < con.height; x += 1) {
           for (let y = 0; y < con.width; y += 1) {
-            const index = (row + x - 1) * this.width + (column + y - 1);
+            index = (row + x - 1) * this.width + (column + y - 1);
             this._cons[index] = con;
           }
         }
@@ -99,7 +100,7 @@ class MapInfo {
     }
     con.setLocation(row, column);
     con.calcConPosition(block); // 添加的建筑只占1格
-    const index = (row - 1) * this.width + (column - 1);
+    index = (row - 1) * this.width + (column - 1);
     this._cons[index] = con;
     return this._cons[index];
   }

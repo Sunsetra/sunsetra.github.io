@@ -8,6 +8,7 @@ import { IOPoint, BuiltinCons } from './modules/cons.js';
 
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
+
 const texList = { // 总导入贴图列表
   blockTop: {
     // blackConcrete: { url: 'res/texture/black_concrete.png' },
@@ -21,10 +22,12 @@ const texList = { // 总导入贴图列表
   blockBottom: {
     default: { url: 'res/texture/block/default_bottom.png' },
   },
-  destTop: { url: 'res/texture/destinationTop.png' },
-  destSide: { url: 'res/texture/destinationSide.png' },
-  entryTop: { url: 'res/texture/entryTop.png' },
-  entrySide: { url: 'res/texture/entrySide.png' },
+  IOPoint: {
+    destTop: { url: 'res/texture/destinationTop.png' },
+    destSide: { url: 'res/texture/destinationSide.png' },
+    entryTop: { url: 'res/texture/entryTop.png' },
+    entrySide: { url: 'res/texture/entrySide.png' },
+  },
   enemy: {
     slime: { url: 'res/texture/enemy/slime.png' },
   },
@@ -40,46 +43,14 @@ const blockShop = { // 砖块实例列表
 // const enemyShop = { // 敌人实例列表
 //   slime: new Unit.Slime(texList.enemy.slime.tex),
 // };
-const sysState = { // 状态对象，用于保存当前画布的各种状态信息
+
+const sysStatus = { // 状态对象，用于保存当前画布的各种状态信息
   width: undefined, // 画布宽度
   height: undefined, // 画布高度
   context: undefined, // 渲染上下文种类，使用webgl/webgl2
+  map: undefined, // 当前加载的地图名
 };
 
-
-/**
- * 从贴图列表中加载贴图。
- * @param list: 贴图列表。
- */
-function loadTexture(list) {
-  const texLoader = new THREE.TextureLoader(loadManager);
-  for (const item of Object.values(list)) {
-    if (item.url) {
-      item.tex = texLoader.load(item.url);
-      item.tex.encoding = THREE.sRGBEncoding;
-      item.anisotropy = 16;
-    } else {
-      loadTexture(item);
-    }
-  }
-}
-
-/**
- * 从模型列表中加载模型。
- * @param list: 模型列表。
- */
-function loadModel(list) {
-  const gltfLoader = new THREE.GLTFLoader(loadManager);
-  for (const model of Object.values(list)) {
-    gltfLoader.load(model.url, (gltf) => {
-      model.gltf = {};
-      gltf.scene.children.forEach((obj) => {
-        const type = obj.name.split('_').pop();
-        model.gltf[type] = obj;
-      });
-    });
-  }
-}
 
 /**
  * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
@@ -90,10 +61,10 @@ function getModel(consInfo) {
   const { desc, type, rotation } = consInfo;
 
   if (desc === 'destination') {
-    return new IOPoint(texList.destTop.tex, texList.destSide.tex);
+    return new IOPoint(texList.IOPoint.destTop.tex, texList.IOPoint.destSide.tex);
   }
   if (desc === 'entry') {
-    return new IOPoint(texList.entryTop.tex, texList.entrySide.tex);
+    return new IOPoint(texList.IOPoint.entryTop.tex, texList.IOPoint.entrySide.tex);
   }
   const mesh = modelList[desc].gltf[type].clone();
   mesh.rotation.y = THREE.Math.degToRad(rotation);
@@ -102,7 +73,7 @@ function getModel(consInfo) {
 
 
 /* 主函数入口 */
-function main() {
+function main(data) {
   const blockUnit = 10; // 砖块边长
   const canvas = document.querySelector('canvas');
   const timer = document.querySelector('#timer'); // 全局计时器显示
@@ -129,12 +100,12 @@ function main() {
   function createRender(antialias = true, shadow = true) {
     let context;
     if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
-      context = canvas.getContext('webgl2', { antialias: true });
+      context = canvas.getContext('webgl2');
     } else {
-      context = canvas.getContext('webgl', { antialias: true });
+      context = canvas.getContext('webgl');
     }
     renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
-    sysState.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
+    sysStatus.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
     renderer.shadowMap.enabled = shadow;
     renderer.gammaFactor = 2.2;
     renderer.gammaOutput = true; // 伽玛输出
@@ -195,12 +166,12 @@ function main() {
 
   /**
    * 根据地图数据创建地图及建筑。
-   * @param data: json格式的地图数据。
+   * @param mapData: json格式的地图数据。
    */
-  function createMap(data) {
+  function createMap(mapData) {
     const {
       mapWidth, mapHeight, blockInfo, light, enemy, waves,
-    } = data;
+    } = mapData;
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
@@ -347,8 +318,8 @@ function main() {
       renderer.setSize(width, height, false);
       camera.aspect = width / height; // 每帧更新相机宽高比
       camera.updateProjectionMatrix();
-      sysState.width = width;
-      sysState.height = height;
+      sysStatus.width = width;
+      sysStatus.height = height;
     }
   }
 
@@ -482,21 +453,20 @@ function main() {
   }
 
 
-  fetch('maps/0-1.json')
-    .then((data) => data.json())
-    .then((data) => {
-      init(); // 初始化全局变量
-      createMap(data); // 创建地图
-      createHelpers(); // 创建辅助对象
-      requestStaticRender(); // 发出渲染请求
-      reset.addEventListener('click', resetAnimate);
-      setState(statusEnum.RESET);
-    });
+  init(); // 初始化全局变量
+  createMap(data); // 创建地图
+  createHelpers(); // 创建辅助对象
+  requestStaticRender(); // 发出渲染请求
+  reset.addEventListener('click', resetAnimate);
+  setState(statusEnum.RESET);
 }
 
 
-/* 设置加载管理器的回调函数 */
-function setLoading() {
+/**
+ * 设置加载管理器的回调函数。
+ * @param data: 地图数据，需要传递给main()函数。
+ */
+function setLoading(data) {
   const loadingBar = document.querySelector('#loading');
   const bar = document.querySelector('#bar');
   const left = document.querySelector('#left');
@@ -526,7 +496,7 @@ function setLoading() {
   function loadingError(url) {
     const tip = document.querySelector('#progress_tip');
     errorCounter += 1;
-    tip.textContent = `加载${url}时发生错误`;
+    tip.innerText += `\n加载${url}时发生错误`;
   }
 
   /* 加载完成回调函数 */
@@ -544,7 +514,7 @@ function setLoading() {
         mainFrame.style.opacity = '1';
       }, 1000);
 
-      main(); // 启动主函数
+      main(data); // 启动主函数
     }
   }
 
@@ -553,6 +523,60 @@ function setLoading() {
   loadManager.onLoad = LoadingFinished;
 }
 
-setLoading();
-loadTexture(texList);
-loadModel(modelList);
+/**
+ * 加载资源，包括贴图，模型等。
+ * @param res: 需加载的资源对象。
+ */
+function loadingResources(res) {
+  const texLoader = new THREE.TextureLoader(loadManager);
+  const gltfLoader = new THREE.GLTFLoader(loadManager);
+  const { block, model, enemy } = res;
+
+  for (const item of Object.values(texList.IOPoint)) { // 加载进出点贴图
+    item.tex = texLoader.load(item.url);
+    item.tex.encoding = THREE.sRGBEncoding;
+    item.anisotropy = 16;
+  }
+
+  for (const surf of Object.keys(block)) { // 加载砖块贴图
+    const texArray = block[surf];
+    texArray.push('default'); // 默认贴图均需要加载
+    for (const name of texArray) {
+      const item = texList[surf][name];
+      item.tex = texLoader.load(item.url);
+      item.tex.encoding = THREE.sRGBEncoding;
+      item.anisotropy = 16;
+    }
+  }
+
+  for (const name of model) { // 加载建筑模型
+    const item = modelList[name];
+    gltfLoader.load(item.url, (gltf) => {
+      item.gltf = {};
+      gltf.scene.children.forEach((obj) => { // 模型命名尾缀为模型种类
+        const type = obj.name.split('_').pop();
+        item.gltf[type] = obj;
+      });
+    });
+  }
+
+  for (const name of enemy) { // 加载敌人模型
+    const item = texList.enemy[name];
+    item.tex = texLoader.load(item.url);
+    item.tex.encoding = THREE.sRGBEncoding;
+    item.anisotropy = 16;
+  }
+}
+
+function preLoading() { // 通过传入地图信息加载资源
+  fetch('maps/0-1.json')
+    .then((data) => data.json())
+    .then((data) => {
+      const { name, resources } = data;
+      sysStatus.map = name;
+      setLoading(data);
+      loadingResources(resources);
+    });
+}
+
+preLoading();
