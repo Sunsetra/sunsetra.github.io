@@ -1,8 +1,13 @@
 import { WEBGL } from './lib/WebGL.js';
-import { statusEnum, MapInfo, TimeAxis } from './modules/basic.js';
-import { BasicBlock, HighBlock } from './modules/block.js';
+import {
+  blockUnit,
+  statusEnum,
+  MapInfo,
+  TimeAxis,
+  Block,
+} from './modules/basic.js';
 import { IOPoint, BuiltinCons } from './modules/cons.js';
-// import * as Unit from './modules/unit.js';
+import * as Unit from './modules/unit.js';
 
 /* global THREE, dat */
 
@@ -36,13 +41,6 @@ const modelList = { // 总导入模型列表
   ring: { url: 'res/model/decoration/ring.glb' },
   tomb: { url: 'res/model/construction/tomb.glb' },
 };
-const blockShop = { // 砖块实例列表
-  basicBlock: () => new BasicBlock(),
-  highBlock: (alpha) => new HighBlock(alpha),
-};
-// const enemyShop = { // 敌人实例列表
-//   slime: new Unit.Slime(texList.enemy.slime.tex),
-// };
 
 const sysStatus = { // 状态对象，用于保存当前画布的各种状态信息
   width: undefined, // 画布宽度
@@ -52,29 +50,52 @@ const sysStatus = { // 状态对象，用于保存当前画布的各种状态信
 };
 
 
+const enemyShop = { // 敌人实例列表
+  slime: () => {
+    const texture = texList.enemy.slime.tex;
+    const { width, height } = texture.image;
+    const geometry = new THREE.PlaneBufferGeometry(width, height);
+    const material = new THREE.MeshBasicMaterial({
+      alphaTest: 0.6,
+      map: texture,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    return new Unit.Slime(mesh);
+  },
+};
+
 /**
  * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
  * @param consInfo: 模型信息对象。
  * @returns {Construction}: 返回建筑实例。
  */
-function getModel(consInfo) {
+const modelShop = (consInfo) => {
   const { desc, type, rotation } = consInfo;
 
   if (desc === 'destination') {
-    return new IOPoint(texList.IOPoint.destTop.tex, texList.IOPoint.destSide.tex);
+    const texture = {
+      topTex: texList.IOPoint.destTop.tex,
+      sideTex: texList.IOPoint.destSide.tex,
+    };
+    return new IOPoint(texture);
   }
   if (desc === 'entry') {
-    return new IOPoint(texList.IOPoint.entryTop.tex, texList.IOPoint.entrySide.tex);
+    const texture = {
+      topTex: texList.IOPoint.entryTop.tex,
+      sideTex: texList.IOPoint.entrySide.tex,
+    };
+    return new IOPoint(texture);
   }
   const mesh = modelList[desc].gltf[type].clone();
   mesh.rotation.y = THREE.Math.degToRad(rotation);
   return new BuiltinCons(mesh);
-}
+};
 
 
 /* 主函数入口 */
 function main(data) {
-  const blockUnit = 10; // 砖块边长
   const canvas = document.querySelector('canvas');
   const timer = document.querySelector('#timer'); // 全局计时器显示
   const starter = document.querySelector('#starter');
@@ -89,8 +110,8 @@ function main(data) {
   let sunLight; // 全局平行光
   let needRender = false; // 全局渲染需求Flag
   let rAF; // 全局动态渲染取消标志
-  // let waveData; // 全局波次数据
-  // let activeEnemy = []; // 在场的敌人数组，更新敌人位置时遍历
+  let map; // 全局当前地图对象
+  const activeEnemy = []; // 在场的敌人数组，更新敌人位置时遍历
 
   /**
    * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
@@ -170,12 +191,12 @@ function main(data) {
    */
   function createMap(mapData) {
     const {
-      mapWidth, mapHeight, blockInfo, light, enemy, waves,
+      mapWidth, mapHeight, blockInfo, light, waves, enemyNum,
     } = mapData;
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
-    const map = new MapInfo(mapWidth, mapHeight, blockShop.basicBlock()); // 初始化地图
+    map = new MapInfo(mapWidth, mapHeight, enemyNum, waves); // 初始化地图
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -189,51 +210,24 @@ function main(data) {
       const {
         row, column, blockType, heightAlpha, texture, consInfo,
       } = item;
-      const block = map.setBlock(row, column, blockShop[blockType](heightAlpha));
-
-      const geometry = new THREE.BoxBufferGeometry(...block.size); // 定义砖块几何体
 
       const { top, side, bottom } = texture;
-      const topTex = top ? texList.blockTop[top].tex : texList.blockTop.default.tex;
-      const topMat = new THREE.MeshPhysicalMaterial({ // 定义砖块顶部贴图材质
-        metalness: 0.1,
-        roughness: 0.6,
-        map: topTex,
-      });
-      const sideTex = side ? texList.blockSide[side].tex : texList.blockSide.default.tex;
-      const sideMat = new THREE.MeshPhysicalMaterial({ // 定义砖块侧面贴图材质
-        metalness: 0.1,
-        roughness: 0.6,
-        map: sideTex,
-      });
-      const bottomTex = bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex;
-      const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义砖块底部贴图材质
-        metalness: 0.1,
-        roughness: 0.6,
-        map: bottomTex,
-      });
-      const material = [sideMat, sideMat, topMat, bottomMat, sideMat, sideMat];
-
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.position.set(...block.position); // 放置砖块
-      scene.add(mesh);
+      const blockTex = {
+        topTex: top ? texList.blockTop[top].tex : texList.blockTop.default.tex,
+        sideTex: side ? texList.blockSide[side].tex : texList.blockSide.default.tex,
+        bottomTex: bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex,
+      };
+      const block = map.setBlock(row, column, new Block(blockType, heightAlpha, blockTex));
+      block.mesh.position.set(...block.position); // 放置砖块
+      scene.add(block.mesh);
 
       if (consInfo) { // 有建筑时添加建筑
-        const obj = map.addCon(row, column, getModel(consInfo));
+        const obj = map.addCon(row, column, modelShop(consInfo));
         obj.mesh.position.set(...obj.position);
         scene.add(obj.mesh);
       }
     });
 
-    // waveData = waves;
-    // enemy.type.forEach((e) => {
-    //   const texture = texList.enemy[e].tex;
-    //   const { width, height } = texture.image;
-    //   const geometry = new THREE.PlaneBufferGeometry(width, height);
-    //   enemyShop[e] = new THREE.Mesh(geometry, texture);
-    // });
 
     const { envIntensity, envColor } = light; // 定义灯光
     envLight.intensity = envIntensity;
@@ -276,34 +270,42 @@ function main(data) {
     sunLight.shadow.bias = 0.0001;
     sunLight.shadow.mapSize.set(4096, 4096);
     sunLight.shadow.camera.updateProjectionMatrix();
-    // const cameraHelper = new THREE.CameraHelper(sunLight.shadow.camera);
-    // scene.add(cameraHelper);
 
     scene.add(sunLight);
     scene.add(sunLight.target);
   }
 
+  /* 更新所有敌人及其位置 */
+  function updateEnemy(thisTime) {
+    if (map.enemyNum) { // 检查剩余敌人数量
+      if (map.waves.length) {
+        const { fragments } = map.waves[0]; // 当前波次的分段
+        const thisFrag = fragments[0]; // 首只敌人信息
+        const { time, enemy, path } = thisFrag;
 
-  // /* 更新所有敌人及其位置 */
-  // function updateEnemy(thisTime) {
-  //   if (waveData) {
-  //     const { fragments } = waveData[0];
-  //     if (fragments) {
-  //       const { time, enemy } = fragments;
-  //       if (thisTime >= time) {
-  //         const mesh = enemyShop[enemy].clone();
-  //         const inst = new Unit.
-  //         activeEnemy.push(fragments);
-  //       }
-  //       for (const unit of enemyShop) { // 更新场上的敌人
-  //         const { path } = unit;
-  //       }
-  //     } else {
-  //       waveData.shift();
-  //       updateEnemy(); // 调用自身避免丢帧
-  //     }
-  //   } else {
-  //     // 游戏结束
+        if (thisTime >= time) { // 检查应出现的新敌人
+          thisFrag.inst = enemyShop[enemy](); // 敌人实例
+          const { x, z } = path[0];
+          const y = map.getBlock(z, x).size.height + thisFrag.inst.size.height / 2;
+          thisFrag.inst.position = { x, y, z }; // 敌人初始定位
+          scene.add(thisFrag.inst.mesh);
+          activeEnemy.push(thisFrag); // 场上新增敌人
+          fragments.shift(); // 从当前波次中删除该敌人
+          if (!fragments.length) { // 检查当前波次剩余未出场敌人
+            map.waves.shift(); // 当前波次剩余敌人为0则删除当前波次
+          }
+        }
+        // 更新敌人位置
+      }
+    } else {
+      // 剩余敌人总数为空时游戏结束
+    }
+  }
+
+
+  // function updateEnemyPosition() {
+  //   for (const item of activeEnemy) {
+  //     const { path } = item;
   //   }
   // }
 
@@ -325,7 +327,6 @@ function main(data) {
 
   /* 静态动画循环，只能由requestStaticRender调用 */
   function staticRender() {
-    console.log('static');
     needRender = false;
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
@@ -342,8 +343,7 @@ function main(data) {
 
   /* 动态动画循环，只能由requestDynamicRender调用 */
   function dynamicRender() {
-    console.log('dynamic');
-    // updateEnemy(timeAxis.getElapsedTimeN()); // 更新敌人位置
+    updateEnemy(timeAxis.getElapsedTimeN()); // 更新敌人位置
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
@@ -446,7 +446,6 @@ function main(data) {
     // }
     // const sceneHelper = new AxisGridHelper(scene, 300);
     // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestStaticRender);
-
     // const helper = new THREE.DirectionalLightHelper(sunLight);
     // helper.update();
     // scene.add(helper);

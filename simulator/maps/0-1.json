@@ -2,6 +2,7 @@
   "name": "0-1",
   "mapWidth": 9,
   "mapHeight": 4,
+  "enemyNum": 11,
   "resources": {
     "block": {
       "blockTop": ["whiteTile", "greyTile"],
@@ -150,6 +151,7 @@
     "row": 1,
     "column": 0,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -164,6 +166,7 @@
     "row": 1,
     "column": 1,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -183,6 +186,7 @@
     "row": 1,
     "column": 3,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -192,6 +196,7 @@
     "row": 1,
     "column": 4,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -201,6 +206,7 @@
     "row": 1,
     "column": 5,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -210,6 +216,7 @@
     "row": 1,
     "column": 6,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -219,6 +226,7 @@
     "row": 1,
     "column": 7,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -253,6 +261,7 @@
     "row": 2,
     "column": 1,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -262,6 +271,7 @@
     "row": 2,
     "column": 2,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -271,6 +281,7 @@
     "row": 2,
     "column": 3,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -290,6 +301,7 @@
     "row": 2,
     "column": 5,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -299,6 +311,7 @@
     "row": 2,
     "column": 6,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -308,6 +321,7 @@
     "row": 2,
     "column": 7,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -317,6 +331,7 @@
     "row": 2,
     "column": 8,
     "blockType": "basicBlock",
+    "heightAlpha": 0.5,
     "texture": {
       "top": "greyTile",
       "side": "",
@@ -466,7 +481,115 @@
       "maxWaitingTime": 0,
       "fragments": [
         {
-          "time": 5,
+          "time": 1,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 16,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 18,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 29,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 29.7,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 34,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 45,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 45.7,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 52,
+          "enemy": "slime",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 52.7,
           "enemy": "slime",
           "path": [
             { "x": 8, "z": 2 },

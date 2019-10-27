@@ -1,44 +1,47 @@
 /* global THREE */
 
-const blockUnit = 10; // 砖块单位长度
+import { blockUnit } from './basic.js';
 
-/* 基本建筑类 */
+/**
+ * 建筑的抽象基类。
+ * 属性:
+ *   rowSpan/colSpan: 建筑跨越的行/列。
+ *   row/column: 建筑所在的行/列（左上角）。
+ *   mesh: 建筑网格实体。
+ *   position: 建筑所在的绝对坐标。
+ * 方法:
+ *   setLocation(row, column, block): 设置建筑所在位置并更新建筑实际坐标。
+ *   normalize(): 建筑大小标准化为绑定砖块尺寸大小。
+ */
 class Construction {
   /**
    * 定义地图建筑的位置及网格实体。
-   * @param width: 建筑跨越的列数。
-   * @param height: 建筑跨越的行数。
+   * @param colSpan: 建筑跨越的列数。
+   * @param rowSpan: 建筑跨越的行数。
    * @param mesh: 建筑使用的网格实体。
    */
-  constructor(width, height, mesh = null) {
-    this.width = width;
-    this.height = height;
+  constructor(rowSpan, colSpan, mesh) {
+    this.rowSpan = rowSpan;
+    this.colSpan = colSpan;
     this.mesh = mesh;
   }
 
   /**
-   * 设置建筑所在的位置，应在绑定时设置。
+   * 设置建筑所在的位置并更新建筑所在的实际坐标。
    * @param row: 建筑所在的行。
    * @param column: 建筑所在的列。
-   */
-  setLocation(row, column) {
-    this.row = row;
-    this.column = column;
-  }
-
-  /**
-   * 返回建筑所在的实际坐标。
-   * 在绑定状态发生变化后，应手动调用以更新建筑的实际位置。
    * @param block: 绑定的首个（左上角）砖块。
    */
-  calcConPosition(block) {
+  setLocation(row, column, block) {
     const box = new THREE.Box3().setFromObject(this.mesh);
     const conSize = box.getSize(new THREE.Vector3());
 
+    this.row = row;
+    this.column = column;
     this.position = { // 调整居中放置
-      x: (this.column + this.width / 2) * block.width,
-      y: conSize.y / 2 + block.height - 0.01,
-      z: (this.row + this.height / 2) * block.depth,
+      x: (this.column + this.colSpan / 2) * block.size.width,
+      y: conSize.y / 2 + block.size.height - 0.01,
+      z: (this.row + this.rowSpan / 2) * block.size.depth,
       * [Symbol.iterator]() {
         yield this.x;
         yield this.y;
@@ -48,8 +51,8 @@ class Construction {
   }
 
   /**
-   * 标准化添加的自定义模型。
-   * 注：对于自身有大小需求的模型不应调用该函数。
+   * 标准化添加的自定义模型为绑定砖块区域尺寸。
+   * 对于自身有大小需求的模型不应调用该函数。
    */
   normalize() {
     this.mesh.geometry.center(); // 重置原点为几何中心
@@ -58,7 +61,7 @@ class Construction {
     const wrapper = new THREE.Object3D().add(this.mesh); // 使用外部对象包裹
     const box = new THREE.Box3().setFromObject(wrapper);
     const boxSize = box.getSize(new THREE.Vector3());
-    const mag = (blockUnit * this.width) / boxSize.x;
+    const mag = (blockUnit * this.colSpan) / boxSize.x;
     wrapper.scale.set(mag, mag, mag); // 按X方向的比例缩放
     this.mesh = wrapper;
   }
@@ -67,20 +70,20 @@ class Construction {
 
 class IOPoint extends Construction {
   /**
-   * 预设进入/目标点建筑。
-   * @param textureTop: 建筑的顶部贴图。
-   * @param textureSide：建筑的侧向贴图。
+   * 预设进入/目标点建筑，内部构建。
+   * @param texture
    */
-  constructor(textureTop, textureSide) {
+  constructor(texture) {
+    const { topTex, sideTex } = texture;
     const topMat = new THREE.MeshBasicMaterial({
       alphaTest: 0.6,
-      map: textureTop,
+      map: topTex,
       side: THREE.DoubleSide,
       transparent: true,
     });
     const sideMat = new THREE.MeshBasicMaterial({
       alphaTest: 0.6,
-      map: textureSide,
+      map: sideTex,
       side: THREE.DoubleSide,
       transparent: true,
     });
@@ -94,7 +97,7 @@ class IOPoint extends Construction {
 
 class BuiltinCons extends Construction {
   /**
-   * 预设的建筑/装饰建筑。
+   * 预设的建筑/装饰建筑，外部导入。
    * @param mesh: 导入的建筑模型mesh。
    */
   constructor(mesh) {
