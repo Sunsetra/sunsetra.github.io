@@ -7,7 +7,7 @@ import { blockUnit } from './basic.js';
  * 属性:
  *   mesh: 实体网格模型。
  *   size: 最终模型尺寸（仅X向及Y向）。
- *   position: 模型的绝对坐标（三向）。
+ *   position: 模型的坐标（X向及Z向为抽象坐标，Y向为绝对坐标）。
  */
 class Unit {
   /**
@@ -34,11 +34,19 @@ class Unit {
     };
   }
 
-  set position(pos) { // 设置模型的当前位置
-    this._posX = (pos.x + 0.5) * blockUnit;
-    this._posY = pos.y;
-    this._posZ = (pos.z + 0.5) * blockUnit;
-    this.mesh.position.set(this._posX, this._posY, this._posZ);
+  /**
+   * 设置模型的当前位置（可不设置Y向坐标）。
+   * 注：其中X向及Z向为抽象坐标，Y向为绝对坐标.
+   * @param pos: 包括三向坐标的对象（可不包含Y向）。
+   */
+  set position(pos) {
+    this._posX = pos.x;
+    if (pos.y) { this._posY = pos.y; }
+    this._posZ = pos.z;
+
+    const absPosX = (this._posX + 0.5) * blockUnit;
+    const absPosZ = (this._posZ + 0.5) * blockUnit;
+    this.mesh.position.set(absPosX, this._posY, absPosZ);
   }
 
   get position() { // 读取模型的当前位置
@@ -72,12 +80,23 @@ class Enemy extends Unit {
 
 class Slime extends Enemy {
   /**
-   * 基础源石虫类，速度5，尺寸系数0.7。
+   * 基础源石虫类，速度0.5，尺寸系数0.7。
    * @param mesh: 源石虫网格模型。
    */
   constructor(mesh) {
-    super(mesh, 0.7, 5);
+    super(mesh, 0.7, 0.5);
   }
 }
 
-export { Slime };
+
+class Saber extends Enemy {
+  /**
+   * 基础士兵类，速度0.55，尺寸系数0.7。
+   * @param mesh: 源石虫网格模型。
+   */
+  constructor(mesh) {
+    super(mesh, 0.7, 0.55);
+  }
+}
+
+export { Slime, Saber };

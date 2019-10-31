@@ -35,6 +35,7 @@ const texList = { // 总导入贴图列表
   },
   enemy: {
     slime: { url: 'res/texture/enemy/slime.png' },
+    saber: { url: 'res/texture/enemy/saber.png' },
   },
 };
 const modelList = { // 总导入模型列表
@@ -46,6 +47,7 @@ const sysStatus = { // 状态对象，用于保存当前画布的各种状态信
   width: undefined, // 画布宽度
   height: undefined, // 画布高度
   context: undefined, // 渲染上下文种类，使用webgl/webgl2
+  renderType: undefined, // 当前渲染类型是动态/静态
   map: undefined, // 当前加载的地图名
 };
 
@@ -63,6 +65,19 @@ const enemyShop = { // 敌人实例列表
     });
     const mesh = new THREE.Mesh(geometry, material);
     return new Unit.Slime(mesh);
+  },
+  saber: () => {
+    const texture = texList.enemy.saber.tex;
+    const { width, height } = texture.image;
+    const geometry = new THREE.PlaneBufferGeometry(width, height);
+    const material = new THREE.MeshBasicMaterial({
+      alphaTest: 0.6,
+      map: texture,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    return new Unit.Saber(mesh);
   },
 };
 
@@ -108,76 +123,78 @@ function main(data) {
   let controls; // 全局镜头控制器
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
-  let needRender = false; // 全局渲染需求Flag
-  let rAF; // 全局动态渲染取消标志
   let map; // 全局当前地图对象
   const activeEnemy = []; // 在场的敌人数组，更新敌人位置时遍历
 
-  /**
-   * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
-   * @param antialias: 是否开启抗锯齿，默认开启。
-   * @param shadow: 是否开启阴影贴图，默认开启。
-   */
-  function createRender(antialias = true, shadow = true) {
-    let context;
-    if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
-      context = canvas.getContext('webgl2');
-    } else {
-      context = canvas.getContext('webgl');
-    }
-    renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
-    sysStatus.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
-    renderer.shadowMap.enabled = shadow;
-    renderer.gammaFactor = 2.2;
-    renderer.gammaOutput = true; // 伽玛输出
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.physicallyCorrectLights = true; // 物理修正模式
-  }
-
-  /**
-   * 创建全局场景。
-   * @param color: 指定场景/雾气的背景色，默认黑色。
-   * @param fog: 控制是否开启场景雾气，默认开启。
-   */
-  function createScene(color = 'black', fog = true) {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(color);
-    if (fog) {
-      scene.fog = new THREE.Fog(color, 100, 200);
-    }
-  }
-
-  /* 创建全局摄影机 */
-  function createCamera() {
-    const fov = 75;
-    const aspect = canvas.clientWidth / canvas.clientHeight;
-    const near = 0.1;
-    const far = 500;
-    camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  }
-
-  /* 创建全局镜头控制器 */
-  function createControls() {
-    controls = new THREE.OrbitControls(camera, canvas);
-    controls.target.set(0, 0, 0);
-    controls.enableDamping = true; // 开启阻尼惯性
-    controls.dampingFactor = 0.2;
-    controls.update();
-  }
-
-  /**
-   * 创建全局光照，包含环境光及平行光。
-   * @param color: 指定环境光颜色，默认白色。
-   * @param intensity: 指定环境光强度，默认为1。
-   */
-  function createLight(color = 'white', intensity = 1) {
-    envLight = new THREE.AmbientLight(color, intensity);
-    sunLight = new THREE.DirectionalLight();
-    scene.add(envLight);
-  }
+  let needRender = false; // 全局渲染需求Flag
+  let rAF; // 全局动态渲染取消标志
+  let lastTime = 0; // 上次渲染时的rAF时刻
 
   /* 初始化全局变量 */
   function init() {
+    /**
+     * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
+     * @param antialias: 是否开启抗锯齿，默认开启。
+     * @param shadow: 是否开启阴影贴图，默认开启。
+     */
+    function createRender(antialias = true, shadow = true) {
+      let context;
+      if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
+        context = canvas.getContext('webgl2');
+      } else {
+        context = canvas.getContext('webgl');
+      }
+      renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
+      sysStatus.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
+      renderer.shadowMap.enabled = shadow;
+      renderer.gammaFactor = 2.2;
+      renderer.gammaOutput = true; // 伽玛输出
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.physicallyCorrectLights = true; // 物理修正模式
+    }
+
+    /**
+     * 创建全局场景。
+     * @param color: 指定场景/雾气的背景色，默认黑色。
+     * @param fog: 控制是否开启场景雾气，默认开启。
+     */
+    function createScene(color = 'black', fog = true) {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(color);
+      if (fog) {
+        scene.fog = new THREE.Fog(color, 100, 200);
+      }
+    }
+
+    /* 创建全局摄影机 */
+    function createCamera() {
+      const fov = 75;
+      const aspect = canvas.clientWidth / canvas.clientHeight;
+      const near = 0.1;
+      const far = 500;
+      camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    }
+
+    /* 创建全局镜头控制器 */
+    function createControls() {
+      controls = new THREE.OrbitControls(camera, canvas);
+      controls.target.set(0, 0, 0);
+      controls.enableDamping = true; // 开启阻尼惯性
+      controls.dampingFactor = 0.2;
+      controls.update();
+    }
+
+    /**
+     * 创建全局光照，包含环境光及平行光。
+     * @param color: 指定环境光颜色，默认白色。
+     * @param intensity: 指定环境光强度，默认为1。
+     */
+    function createLight(color = 'white', intensity = 1) {
+      envLight = new THREE.AmbientLight(color, intensity);
+      sunLight = new THREE.DirectionalLight();
+      scene.add(envLight);
+    }
+
     createRender(true, true);
     createScene('black', true);
     createCamera();
@@ -275,39 +292,106 @@ function main(data) {
     scene.add(sunLight.target);
   }
 
-  /* 更新所有敌人及其位置 */
-  function updateEnemy(thisTime) {
-    if (map.enemyNum) { // 检查剩余敌人数量
-      if (map.waves.length) {
-        const { fragments } = map.waves[0]; // 当前波次的分段
-        const thisFrag = fragments[0]; // 首只敌人信息
-        const { time, enemy, path } = thisFrag;
+  /**
+   * 更新维护敌人状态。
+   * @param axisTime: 时间轴时刻。
+   */
+  function updateEnemyStatus(axisTime) {
+    if (map.waves.length) {
+      const { fragments } = map.waves[0]; // 当前波次的分段
+      const thisFrag = fragments[0];
+      const { time, enemy, path } = thisFrag; // 首只敌人信息
 
-        if (thisTime >= time) { // 检查应出现的新敌人
-          thisFrag.inst = enemyShop[enemy](); // 敌人实例
-          const { x, z } = path[0];
-          const y = map.getBlock(z, x).size.height + thisFrag.inst.size.height / 2;
-          thisFrag.inst.position = { x, y, z }; // 敌人初始定位
-          scene.add(thisFrag.inst.mesh);
-          activeEnemy.push(thisFrag); // 场上新增敌人
-          fragments.shift(); // 从当前波次中删除该敌人
-          if (!fragments.length) { // 检查当前波次剩余未出场敌人
-            map.waves.shift(); // 当前波次剩余敌人为0则删除当前波次
-          }
-        }
-        // 更新敌人位置
+      if (axisTime >= time) { // 检查应出现的新敌人
+        thisFrag.inst = enemyShop[enemy](); // 创建敌人实例
+
+        const { x, z } = path[0]; // 读取首个路径点
+        const y = map.getBlock(z, x).size.height + thisFrag.inst.size.height / 2;
+        thisFrag.inst.position = { x, y, z }; // 敌人初始定位
+        scene.add(thisFrag.inst.mesh);
+        path.shift(); // 删除首个路径点
+
+        activeEnemy.push(thisFrag); // 新增活跃敌人
+        fragments.shift(); // 从当前波次中删除该敌人
+        console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.length} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
+        if (!fragments.length) { map.waves.shift(); } // 若当前波次中剩余敌人为0则删除当前波次
       }
-    } else {
-      // 剩余敌人总数为空时游戏结束
     }
   }
 
+  /**
+   * 更新敌人当前坐标。
+   * @param rAFTime: 当前帧时刻。
+   */
+  function updateEnemyPosition(rAFTime) {
+    const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
 
-  // function updateEnemyPosition() {
-  //   for (const item of activeEnemy) {
-  //     const { path } = item;
-  //   }
-  // }
+    activeEnemy.forEach((enemy, index) => {
+      const { path, inst } = enemy;
+      if (path.length) { // 判定敌人是否到达终点
+        if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在暂停
+          inst.pause -= interval;
+          if (inst.pause <= 0) { // 取消暂停恢复移动
+            path.shift();
+            delete inst.pause;
+            console.log(`恢复 ${enemy.time}秒 出现的敌人`);
+          }
+        } else if (Object.prototype.hasOwnProperty.call(path[0], 'pause')) { // 判定是否暂停
+          const { pause } = path[0];
+          inst.pause = pause - interval;
+          console.log(`暂停 ${enemy.time}秒 出现的敌人 ${pause}秒`);
+        } else { // 没有暂停则正常移动
+          const oldX = inst.position.x;
+          const oldZ = inst.position.z;
+          const newX = path[0].x;
+          const newZ = path[0].z;
+          const { speed } = inst;
+
+          let velocityX = speed / Math.sqrt(((newZ - oldZ) / (newX - oldX)) ** 2 + 1);
+          velocityX = newX >= oldX ? velocityX : -velocityX;
+          let velocityZ = Math.abs(((newZ - oldZ) / (newX - oldX)) * velocityX);
+          velocityZ = newZ >= oldZ ? velocityZ : -velocityZ;
+
+          const stepX = interval * velocityX + oldX;
+          const stepZ = interval * velocityZ + oldZ;
+          inst.position = { x: stepX, z: stepZ };
+
+          if (newX <= oldX && inst.mesh.rotation.y === 0) { // 向左运动且默认朝向时
+            inst.mesh.rotation.y = Math.PI; // 转运动方向向左
+          } else if (newX >= oldX && inst.mesh.rotation.y === Math.PI) { // 向右运动且朝向为左时
+            inst.mesh.rotation.y = 0; // 重置运动方向向右，即默认方向
+          }
+
+          const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
+          const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
+          if (ifDeltaX && ifDeltaZ) { // 判定是否到达当前路径点，到达则移除当前路径点
+            console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
+            path.shift();
+          }
+        }
+      } else { // TODO: 到达则删除它并从scene中移除
+        activeEnemy.splice(index, 1);
+        map.enemyNum -= 1;
+        console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.length} ，总敌人剩余 ${map.enemyNum}`);
+      }
+    });
+  }
+
+  /**
+   * 游戏状态更新函数。
+   * @param axisTime: 时间轴时刻。
+   * @param rAFTime: 当前帧时刻。
+   */
+  function updateMap(axisTime, rAFTime) {
+    if (map.enemyNum) { // 检查剩余敌人数量
+      updateEnemyStatus(axisTime); // 更新维护敌人状态
+      updateEnemyPosition(rAFTime); // 更新敌人位置
+    } else { // TODO: 剩余敌人总数为空时游戏结束
+      cancelAnimationFrame(rAF);
+      timeAxis.stop(); // 先取消动画后再停止时间轴
+      setState(statusEnum.RESET);
+    }
+  }
 
 
   /* 检查渲染尺寸是否改变 */
@@ -335,29 +419,35 @@ function main(data) {
 
   /* 静态渲染入口点函数 */
   function requestStaticRender() {
+    sysStatus.renderType = 'static';
     if (!needRender) {
       needRender = true;
       requestAnimationFrame(staticRender);
     }
   }
 
-  /* 动态动画循环，只能由requestDynamicRender调用 */
-  function dynamicRender() {
-    updateEnemy(timeAxis.getElapsedTimeN()); // 更新敌人位置
+  /* 动态动画循环，只能由requestDynamicRender及动画控制函数调用 */
+  function dynamicRender(rAFTime) {
+    // eslint-disable-next-line max-len
+    // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
+    updateMap(timeAxis.getElapsedTimeN(), rAFTime); // 更新敌人位置
+    lastTime = rAFTime;
+    const { min, secs, msecs } = timeAxis.getElapsedTimeO();
+    timer.textContent = `${min}:${secs}.${msecs}`; // 更新计时器
+
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
-
-    const { min, secs, msecs } = timeAxis.getElapsedTimeO();
-    timer.textContent = `${min}:${secs}.${msecs}`;
     rAF = requestAnimationFrame(dynamicRender);
   }
 
 
   /* 动态渲染入口点函数 */
   function requestDynamicRender() {
+    sysStatus.renderType = 'dynamic';
     setState(statusEnum.PAUSE);
     timeAxis.start();
+    lastTime = window.performance.now(); // 设置首帧时间
     rAF = requestAnimationFrame(dynamicRender);
   }
 
@@ -372,17 +462,19 @@ function main(data) {
   function continueAnimate() {
     setState(statusEnum.PAUSE);
     timeAxis.continue();
+    lastTime = window.performance.now(); // 设置首帧时间
     rAF = requestAnimationFrame(dynamicRender);
   }
 
   /* 重置动画函数 */
-  function resetAnimate() {
+  function resetAnimate() { // TODO: 重置游戏应为重玩本图
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
+    timer.textContent = '00:00.000'; // 重置计时
     setState(statusEnum.RESET);
   }
 
-  /* 改变时间轴控制按钮状态 */
+  /* 改变时间轴控制按钮状态及渲染模式 */
   function setState(state) {
     if (state === statusEnum.CONTINUE) {
       starter.textContent = '继续';
@@ -398,7 +490,6 @@ function main(data) {
       controls.removeEventListener('change', requestStaticRender);
       window.removeEventListener('resize', requestStaticRender);
     } else if (state === statusEnum.RESET) {
-      timer.textContent = '00:00.000'; // 重置计时
       starter.textContent = '开始';
       starter.removeEventListener('click', pauseAnimate);
       starter.removeEventListener('click', continueAnimate);

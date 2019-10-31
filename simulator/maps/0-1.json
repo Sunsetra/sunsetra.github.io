@@ -10,7 +10,7 @@
       "blockBottom": []
     },
     "model": ["ring", "tomb"],
-    "enemy": ["slime"]
+    "enemy": ["slime", "saber"]
   },
   "blockInfo": [{
     "row": 0,
@@ -593,6 +593,20 @@
           "enemy": "slime",
           "path": [
             { "x": 8, "z": 2 },
+            { "x": 3, "z": 1 },
+            { "x": 3, "z": 2 },
+            { "x": 1, "z": 2 },
+            { "x": 1, "z": 1 },
+            { "x": 0, "z": 1 }
+          ]
+        },
+        {
+          "time": 63.7,
+          "enemy": "saber",
+          "path": [
+            { "x": 8, "z": 2 },
+            { "x": 7, "z": 2 },
+            { "pause": 3 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
             { "x": 1, "z": 2 },
