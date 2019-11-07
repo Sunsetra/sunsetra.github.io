@@ -202,12 +202,14 @@ class Block {
    * @param type: 定义砖块的种类。
    * @param heightAlpha: 定义砖块在Y方向上的高度系数。
    * @param texture: 定义砖块的贴图。
+   * @param placeable: 定义是否可放置单位。
    */
-  constructor(type, heightAlpha, texture) {
+  constructor(type, heightAlpha, texture, placeable) {
     this._width = blockUnit;
     this._height = heightAlpha * blockUnit;
     this._depth = blockUnit;
     this.type = type;
+    this.placeable = placeable;
 
     const { topTex, sideTex, bottomTex } = texture;
     const geometry = new THREE.BoxBufferGeometry(...this.size); // 定义砖块几何体

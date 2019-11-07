@@ -37,6 +37,9 @@ const texList = { // 总导入贴图列表
     slime: { url: 'res/texture/enemy/slime.png' },
     saber: { url: 'res/texture/enemy/saber.png' },
   },
+  operator: {
+    haze: { url: 'res/texture/operator/haze.png' },
+  },
 };
 const modelList = { // 总导入模型列表
   ring: { url: 'res/model/decoration/ring.glb' },
@@ -225,7 +228,7 @@ function main(data) {
 
     blockInfo.forEach((item) => { // 构造地面砖块及建筑
       const {
-        row, column, blockType, heightAlpha, texture, consInfo,
+        row, column, blockType, placeable, heightAlpha, texture, consInfo,
       } = item;
 
       const { top, side, bottom } = texture;
@@ -234,7 +237,8 @@ function main(data) {
         sideTex: side ? texList.blockSide[side].tex : texList.blockSide.default.tex,
         bottomTex: bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex,
       };
-      const block = map.setBlock(row, column, new Block(blockType, heightAlpha, blockTex));
+      const blockInst = new Block(blockType, heightAlpha, blockTex, placeable);
+      const block = map.setBlock(row, column, blockInst);
       block.mesh.position.set(...block.position); // 放置砖块
       scene.add(block.mesh);
 
@@ -620,7 +624,11 @@ function setLoading(data) {
 function loadingResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
   const gltfLoader = new THREE.GLTFLoader(loadManager);
-  const { block, model, enemy } = res;
+  const {
+    block,
+    model,
+    enemy,
+  } = res;
 
   for (const item of Object.values(texList.IOPoint)) { // 加载进出点贴图
     item.tex = texLoader.load(item.url);
@@ -656,6 +664,13 @@ function loadingResources(res) {
     item.tex.encoding = THREE.sRGBEncoding;
     item.anisotropy = 16;
   }
+
+  // for (const name of operator) { // 加载干员模型
+  //   const item = texList.operator[name];
+  //   item.tex = texLoader.load(item.url);
+  //   item.tex.encoding = THREE.sRGBEncoding;
+  //   item.anisotropy = 16;
+  // }
 }
 
 function preLoading() { // 通过传入地图信息加载资源

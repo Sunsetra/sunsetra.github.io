@@ -14,8 +14,9 @@ class Unit {
    * 定义单位模型及相对大小。
    * @param mesh: 单位网格模型。
    * @param sizeAlpha: 模型大小相对于单位砖块长度的尺寸系数。
+   * @param hp: 单位血量。
    */
-  constructor(mesh, sizeAlpha) {
+  constructor(mesh, sizeAlpha, hp) {
     mesh.geometry.center(); // 重置原点为几何中心
     mesh.geometry.computeBoundingBox();
     mesh.geometry.boundingBox.getCenter(mesh.position);
@@ -32,6 +33,8 @@ class Unit {
       width: boxSize.x,
       height: boxSize.y,
     };
+
+    this.hp = hp;
   }
 
   /**
@@ -67,12 +70,13 @@ class Unit {
 class Enemy extends Unit {
   /**
    * 敌方单位的抽象基类，增加了移动速度属性。
-   * @param mesh: 单位网格模型。
+   * @param mesh: 敌人网格模型。
    * @param size: 模型大小相对于单位砖块长度的尺寸系数。
-   * @param speed: 单位的移动速度。
+   * @param speed: 敌人的移动速度。
+   * @param hp: 敌人血量。
    */
-  constructor(mesh, size, speed) {
-    super(mesh, size);
+  constructor(mesh, size, speed, hp) {
+    super(mesh, size, hp);
     this.speed = speed;
   }
 }
@@ -84,7 +88,7 @@ class Slime extends Enemy {
    * @param mesh: 源石虫网格模型。
    */
   constructor(mesh) {
-    super(mesh, 0.7, 0.5);
+    super(mesh, 0.7, 0.5, 550);
   }
 }
 
@@ -95,8 +99,22 @@ class Saber extends Enemy {
    * @param mesh: 源石虫网格模型。
    */
   constructor(mesh) {
-    super(mesh, 0.7, 0.55);
+    super(mesh, 0.7, 0.55, 1650);
   }
 }
+
+
+// class Operator extends Unit {
+//   /**
+//    * 干员的抽象基类。
+//    * @param mesh: 干员网格模型。
+//    * @param size: 模型大小相对于单位砖块长度的尺寸系数。
+//    * @param hp: 干员血量。
+//    */
+//   constructor(mesh, size, hp) {
+//     super(mesh, size, hp);
+//   }
+// }
+
 
 export { Slime, Saber };

@@ -12,462 +12,464 @@
     "model": ["ring", "tomb"],
     "enemy": ["slime", "saber"]
   },
-  "blockInfo": [{
-    "row": 0,
-    "column": 0,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "tomb",
-      "type": "0",
-      "rotation": 0
+  "blockInfo": [
+    {
+      "row": 0,
+      "column": 0,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "tomb",
+        "type": "0",
+        "rotation": 0
+      }
+    }, {
+      "row": 0,
+      "column": 1,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 0,
+      "column": 2,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "2",
+        "rotation": 0
+      }
+    }, {
+      "row": 0,
+      "column": 3,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 0,
+      "column": 4,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 0,
+      "column": 5,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 0,
+      "column": 6,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 0,
+      "column": 7,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 0,
+      "column": 8,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "tomb",
+        "type": "0",
+        "rotation": 0
+      }
+    }, {
+      "row": 1,
+      "column": 0,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "destination",
+        "type": "",
+        "rotation": 0
+      }
+    }, {
+      "row": 1,
+      "column": 1,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 2,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 3,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 4,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 5,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 6,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 7,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 1,
+      "column": 8,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 0,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "tomb",
+        "type": "0",
+        "rotation": 0
+      }
+    }, {
+      "row": 2,
+      "column": 1,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 2,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 3,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 4,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 5,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 6,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 7,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 2,
+      "column": 8,
+      "blockType": "basicBlock",
+      "heightAlpha": 0.5,
+      "texture": {
+        "top": "greyTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "entry",
+        "type": "",
+        "rotation": 0
+      }
+    }, {
+      "row": 3,
+      "column": 0,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      }
+    }, {
+      "row": 3,
+      "column": 1,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 3,
+      "column": 2,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "2",
+        "rotation": 0
+      }
+    }, {
+      "row": 3,
+      "column": 3,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 3,
+      "column": 4,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 3,
+      "column": 5,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 3,
+      "column": 6,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 180
+      }
+    }, {
+      "row": 3,
+      "column": 7,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "whiteTile",
+        "side": "",
+        "bottom": ""
+      },
+      "consInfo": {
+        "desc": "ring",
+        "type": "3",
+        "rotation": 0
+      }
+    }, {
+      "row": 3,
+      "column": 8,
+      "blockType": "highBlock",
+      "heightAlpha": 0.8,
+      "texture": {
+        "top": "",
+        "side": "",
+        "bottom": ""
+      }
     }
-  }, {
-    "row": 0,
-    "column": 1,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 0,
-    "column": 2,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "2",
-      "rotation": 0
-    }
-  }, {
-    "row": 0,
-    "column": 3,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 0,
-    "column": 4,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 0,
-    "column": 5,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 0,
-    "column": 6,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 0,
-    "column": 7,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 0,
-    "column": 8,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "tomb",
-      "type": "0",
-      "rotation": 0
-    }
-  }, {
-    "row": 1,
-    "column": 0,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "destination",
-      "type": "",
-      "rotation": 0
-    }
-  }, {
-    "row": 1,
-    "column": 1,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 2,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 3,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 4,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 5,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 6,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 7,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 1,
-    "column": 8,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 0,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "tomb",
-      "type": "0",
-      "rotation": 0
-    }
-  }, {
-    "row": 2,
-    "column": 1,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 2,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 3,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 4,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 5,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 6,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 7,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 2,
-    "column": 8,
-    "blockType": "basicBlock",
-    "heightAlpha": 0.5,
-    "texture": {
-      "top": "greyTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "entry",
-      "type": "",
-      "rotation": 0
-    }
-  }, {
-    "row": 3,
-    "column": 0,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    }
-  }, {
-    "row": 3,
-    "column": 1,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 3,
-    "column": 2,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "2",
-      "rotation": 0
-    }
-  }, {
-    "row": 3,
-    "column": 3,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 3,
-    "column": 4,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 3,
-    "column": 5,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 3,
-    "column": 6,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 180
-    }
-  }, {
-    "row": 3,
-    "column": 7,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "whiteTile",
-      "side": "",
-      "bottom": ""
-    },
-    "consInfo": {
-      "desc": "ring",
-      "type": "3",
-      "rotation": 0
-    }
-  }, {
-    "row": 3,
-    "column": 8,
-    "blockType": "highBlock",
-    "heightAlpha": 0.8,
-    "texture": {
-      "top": "",
-      "side": "",
-      "bottom": ""
-    }
-  }],
+  ],
   "light": {
     "envIntensity": 0.6,
     "envColor": "rgb(230,205,180)",
@@ -481,7 +483,7 @@
       "maxWaitingTime": 0,
       "fragments": [
         {
-          "time": 1,
+          "time": 5,
           "enemy": "slime",
           "path": [
             { "x": 8, "z": 2 },
