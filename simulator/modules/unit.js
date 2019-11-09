@@ -17,23 +17,15 @@ class Unit {
    * @param hp: 单位血量。
    */
   constructor(mesh, sizeAlpha, hp) {
-    mesh.geometry.center(); // 重置原点为几何中心
-    mesh.geometry.computeBoundingBox();
-    mesh.geometry.boundingBox.getCenter(mesh.position);
-    const wrapper = new THREE.Object3D().add(mesh); // 使用外部对象包裹
-    const originBox = new THREE.Box3().setFromObject(wrapper);
-    const originSize = originBox.getSize(new THREE.Vector3());
-    const mag = (blockUnit * sizeAlpha) / originSize.x;
-    wrapper.scale.set(mag, mag, mag); // 按X方向的比例缩放
-    this.mesh = wrapper;
+    const { height } = mesh.material.map.image;
+    const mag = (blockUnit * sizeAlpha) / height;
+    mesh.scale.set(mag, mag, mag); // 按X方向的比例缩放
+    this.mesh = mesh;
 
-    const box = new THREE.Box3().setFromObject(wrapper);
+    const box = new THREE.Box3().setFromObject(mesh);
     const boxSize = box.getSize(new THREE.Vector3());
-    this.size = { // 缩放后的模型尺寸
-      width: boxSize.x,
-      height: boxSize.y,
-    };
-
+    this.width = boxSize.x;
+    this.height = boxSize.y;
     this.hp = hp;
   }
 
@@ -53,16 +45,7 @@ class Unit {
   }
 
   get position() { // 读取模型的当前位置
-    return {
-      x: this._posX,
-      y: this._posY,
-      z: this._posZ,
-      * [Symbol.iterator]() {
-        yield this.x;
-        yield this.y;
-        yield this.z;
-      },
-    };
+    return new THREE.Vector3(this._posX, this._posY, this._posZ);
   }
 }
 
@@ -84,7 +67,7 @@ class Enemy extends Unit {
 
 class Slime extends Enemy {
   /**
-   * 基础源石虫类，速度0.5，尺寸系数0.7。
+   * 基础源石虫类，速度0.5，尺寸系数0.7，血量550。
    * @param mesh: 源石虫网格模型。
    */
   constructor(mesh) {
@@ -95,7 +78,7 @@ class Slime extends Enemy {
 
 class Saber extends Enemy {
   /**
-   * 基础士兵类，速度0.55，尺寸系数0.7。
+   * 基础士兵类，速度0.55，尺寸系数0.7，血量1650。
    * @param mesh: 源石虫网格模型。
    */
   constructor(mesh) {

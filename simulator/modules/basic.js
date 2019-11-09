@@ -92,7 +92,7 @@ class MapInfo {
     const block = this.getBlock(row, column); // 获取建筑所在砖块
 
     const verifyLocation = (r, c, w, h) => { // 检查建筑跨度中的地形是否等高
-      const firstHeight = block.size.height;
+      const firstHeight = block.size.y;
       for (let x = 0; x < h; x += 1) {
         for (let y = 0; y < w; y += 1) {
           const thisHeight = this.getBlock(r + x, c + y).height;
@@ -128,7 +128,7 @@ class MapInfo {
    * @param column: 需移除建筑所在的列，从0开始。
    * @returns {Construction|boolean}: 移除成功返回移除的建筑，移除失败返回false
    */
-  removeCon(row, column) {
+  removeCon(row, column) { // TODO: 安全释放资源
     const con = this.getCon(row, column);
     if (con) {
       this.getCons().forEach((c) => {
@@ -212,7 +212,7 @@ class Block {
     this.placeable = placeable;
 
     const { topTex, sideTex, bottomTex } = texture;
-    const geometry = new THREE.BoxBufferGeometry(...this.size); // 定义砖块几何体
+    const geometry = new THREE.BoxBufferGeometry(this._width, this._height, this._depth); // 定义砖块几何体
     const topMat = new THREE.MeshPhysicalMaterial({ // 定义砖块顶部贴图材质
       metalness: 0.1,
       roughness: 0.6,
@@ -236,35 +236,21 @@ class Block {
   }
 
   get size() {
-    return {
-      width: this._width,
-      height: this._height,
-      depth: this._depth,
-      * [Symbol.iterator]() {
-        yield this.width;
-        yield this.height;
-        yield this.depth;
-      },
-    };
+    return new THREE.Vector3(this._width, this._height, this._depth);
   }
 
   /**
-   * 计算砖块在地图中的实际坐标。
+   * 计算砖块在地图中的实际坐标并放置砖块。
    * 在砖块排布发生变化时，应手动调用以更新砖块的实际位置。
    * @param row: 砖块所在行。
    * @param column: 砖块所在列。
    */
   calBlockPosition(row, column) {
-    this.position = {
-      x: (column + 0.5) * this._width,
-      y: this._height / 2,
-      z: (row + 0.5) * this._depth,
-      * [Symbol.iterator]() {
-        yield this.x;
-        yield this.y;
-        yield this.z;
-      },
-    };
+    const x = (column + 0.5) * this._width;
+    const y = this._height / 2;
+    const z = (row + 0.5) * this._depth;
+    this.position = new THREE.Vector3(x, y, z);
+    this.mesh.position.set(x, y, z); // 放置砖块
   }
 }
 

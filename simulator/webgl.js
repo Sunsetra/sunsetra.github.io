@@ -239,13 +239,11 @@ function main(data) {
       };
       const blockInst = new Block(blockType, heightAlpha, blockTex, placeable);
       const block = map.setBlock(row, column, blockInst);
-      block.mesh.position.set(...block.position); // 放置砖块
       scene.add(block.mesh);
 
       if (consInfo) { // 有建筑时添加建筑
-        const obj = map.addCon(row, column, modelShop(consInfo));
-        obj.mesh.position.set(...obj.position);
-        scene.add(obj.mesh);
+        const con = map.addCon(row, column, modelShop(consInfo));
+        scene.add(con.mesh);
       }
     });
 
@@ -310,7 +308,7 @@ function main(data) {
         thisFrag.inst = enemyShop[enemy](); // 创建敌人实例
 
         const { x, z } = path[0]; // 读取首个路径点
-        const y = map.getBlock(z, x).size.height + thisFrag.inst.size.height / 2;
+        const y = map.getBlock(z, x).size.y + thisFrag.inst.height / 2;
         thisFrag.inst.position = { x, y, z }; // 敌人初始定位
         scene.add(thisFrag.inst.mesh);
         path.shift(); // 删除首个路径点

@@ -27,7 +27,7 @@ class Construction {
   }
 
   /**
-   * 设置建筑所在的位置并更新建筑所在的实际坐标。
+   * 设置建筑所在的位置并设置建筑所在的实际坐标。
    * @param row: 建筑所在的行。
    * @param column: 建筑所在的列。
    * @param block: 绑定的首个（左上角）砖块。
@@ -38,16 +38,11 @@ class Construction {
 
     this.row = row;
     this.column = column;
-    this.position = { // 调整居中放置
-      x: (this.column + this.colSpan / 2) * block.size.width,
-      y: conSize.y / 2 + block.size.height - 0.01,
-      z: (this.row + this.rowSpan / 2) * block.size.depth,
-      * [Symbol.iterator]() {
-        yield this.x;
-        yield this.y;
-        yield this.z;
-      },
-    };
+
+    const x = (this.column + this.colSpan / 2) * block.size.x;
+    const y = conSize.y / 2 + block.size.y - 0.01;
+    const z = (this.row + this.rowSpan / 2) * block.size.z;
+    this.mesh.position.set(x, y, z);
   }
 
   /**
