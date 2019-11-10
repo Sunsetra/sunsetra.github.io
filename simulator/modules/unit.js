@@ -6,7 +6,7 @@ import { blockUnit } from './basic.js';
  * 所有单位的抽象基类。
  * 属性:
  *   mesh: 实体网格模型。
- *   size: 最终模型尺寸（仅X向及Y向）。
+ *   width/height: 最终模型尺寸（仅X向的宽度及Y向的高度）。
  *   position: 模型的坐标（X向及Z向为抽象坐标，Y向为绝对坐标）。
  */
 class Unit {
@@ -17,8 +17,8 @@ class Unit {
    * @param hp: 单位血量。
    */
   constructor(mesh, sizeAlpha, hp) {
-    const { height } = mesh.material.map.image;
-    const mag = (blockUnit * sizeAlpha) / height;
+    const { width } = mesh.material.map.image;
+    const mag = (blockUnit * sizeAlpha) / width;
     mesh.scale.set(mag, mag, mag); // 按X方向的比例缩放
     this.mesh = mesh;
 

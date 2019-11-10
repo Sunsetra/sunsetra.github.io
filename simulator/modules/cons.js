@@ -10,7 +10,7 @@ import { blockUnit } from './basic.js';
  *   mesh: 建筑网格实体。
  *   position: 建筑所在的绝对坐标。
  * 方法:
- *   setLocation(row, column, block): 设置建筑所在位置并更新建筑实际坐标。
+ *   setLocation(row, column, block): 设置建筑所在的位置并设置建筑所在实际坐标。
  *   normalize(): 建筑大小标准化为绑定砖块尺寸大小。
  */
 class Construction {
@@ -33,12 +33,11 @@ class Construction {
    * @param block: 绑定的首个（左上角）砖块。
    */
   setLocation(row, column, block) {
-    const box = new THREE.Box3().setFromObject(this.mesh);
-    const conSize = box.getSize(new THREE.Vector3());
-
     this.row = row;
     this.column = column;
 
+    const box = new THREE.Box3().setFromObject(this.mesh);
+    const conSize = box.getSize(new THREE.Vector3());
     const x = (this.column + this.colSpan / 2) * block.size.x;
     const y = conSize.y / 2 + block.size.y - 0.01;
     const z = (this.row + this.rowSpan / 2) * block.size.z;
@@ -66,25 +65,9 @@ class Construction {
 class IOPoint extends Construction {
   /**
    * 预设进入/目标点建筑，内部构建。
-   * @param texture
+   * @param mesh: 当前建筑的网格模型。
    */
-  constructor(texture) {
-    const { topTex, sideTex } = texture;
-    const topMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.6,
-      map: topTex,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const sideMat = new THREE.MeshBasicMaterial({
-      alphaTest: 0.6,
-      map: sideTex,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const destMaterials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
-    const cube = new THREE.BoxBufferGeometry(9.99, 9.99, 9.99);
-    const mesh = new THREE.Mesh(cube, destMaterials);
+  constructor(mesh) {
     super(1, 1, mesh);
   }
 }

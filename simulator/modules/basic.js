@@ -25,8 +25,8 @@ const statusEnum = Object.freeze({ // 状态常量
 class MapInfo {
   /**
    * 定义地图的长度/宽度、敌人等基本信息。
-   * @param width: 定义地图在X方向的宽度。
-   * @param height: 定义地图在Z方向的宽度。
+   * @param width: 定义地图在X方向的格数。
+   * @param height: 定义地图在Z方向的格数。
    * @param enemyNum: 敌人总数，用以界定何时游戏结束。
    * @param waves: 敌人波次数据。
    */
@@ -36,7 +36,7 @@ class MapInfo {
     this.enemyNum = enemyNum;
     this.waves = waves;
     this._blocks = new Array(width * height).fill(null);
-    this._cons = new Array(width * height).fill(undefined);
+    this._cons = new Array(width * height).fill(null);
   }
 
   /**
@@ -70,14 +70,14 @@ class MapInfo {
    * 获取指定位置的绑定建筑。
    * @param row: 目标建筑所在的行。
    * @param column: 目标建筑所在的列。
-   * @returns {Construction}: 返回指定位置的建筑。
+   * @returns {Construction|null}: 返回指定位置的建筑，无建筑则返回null。
    */
   getCon(row, column) {
     const index = row * this.width + column;
     return this._cons[index];
   }
 
-  /* 返回所有建筑的列表，没有建筑的位置为undefined。 */
+  /* 返回所有建筑的列表，没有建筑的位置为null。 */
   getCons() { return this._cons; }
 
   /**
@@ -95,7 +95,7 @@ class MapInfo {
       const firstHeight = block.size.y;
       for (let x = 0; x < h; x += 1) {
         for (let y = 0; y < w; y += 1) {
-          const thisHeight = this.getBlock(r + x, c + y).height;
+          const thisHeight = this.getBlock(r + x, c + y).size.y;
           if (thisHeight !== firstHeight) { return false; } // 不等高返回false
         }
       }
@@ -198,7 +198,7 @@ class TimeAxis extends THREE.Clock {
  */
 class Block {
   /**
-   * 定义基础砖块对象。
+   * 定义基础砖块对象，其中每个砖块都必须拥有独立的几何体。
    * @param type: 定义砖块的种类。
    * @param heightAlpha: 定义砖块在Y方向上的高度系数。
    * @param texture: 定义砖块的贴图。

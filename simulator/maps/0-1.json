@@ -5,9 +5,9 @@
   "enemyNum": 11,
   "resources": {
     "block": {
-      "blockTop": ["whiteTile", "greyTile"],
-      "blockSide": [],
-      "blockBottom": []
+      "top": ["whiteTile", "greyTile"],
+      "side": [],
+      "bottom": []
     },
     "model": ["ring", "tomb"],
     "enemy": ["slime", "saber"]

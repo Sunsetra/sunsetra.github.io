@@ -14,24 +14,29 @@ import * as Unit from './modules/unit.js';
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
 
-const texList = { // 总导入贴图列表
-  blockTop: {
-    // blackConcrete: { url: 'res/texture/black_concrete.png' },
-    whiteTile: { url: 'res/texture/block/white_tile.png' },
-    greyTile: { url: 'res/texture/block/grey_tile.png' },
-    default: { url: 'res/texture/block/default_top.png' },
-  },
-  blockSide: {
-    default: { url: 'res/texture/block/default_side.png' },
-  },
-  blockBottom: {
-    default: { url: 'res/texture/block/default_bottom.png' },
+const resList = { // 总资源列表
+  block: {
+    top: {
+      whiteTile: { url: 'res/texture/block/white_tile.png' },
+      greyTile: { url: 'res/texture/block/grey_tile.png' },
+      default: { url: 'res/texture/block/default_top.png' },
+    },
+    side: {
+      default: { url: 'res/texture/block/default_side.png' },
+    },
+    bottom: {
+      default: { url: 'res/texture/block/default_bottom.png' },
+    },
   },
   IOPoint: {
-    destTop: { url: 'res/texture/destinationTop.png' },
-    destSide: { url: 'res/texture/destinationSide.png' },
-    entryTop: { url: 'res/texture/entryTop.png' },
-    entrySide: { url: 'res/texture/entrySide.png' },
+    destination: {
+      topTex: { url: 'res/texture/destinationTop.png' },
+      sideTex: { url: 'res/texture/destinationSide.png' },
+    },
+    entry: {
+      topTex: { url: 'res/texture/entryTop.png' },
+      sideTex: { url: 'res/texture/entrySide.png' },
+    },
   },
   enemy: {
     slime: { url: 'res/texture/enemy/slime.png' },
@@ -40,10 +45,10 @@ const texList = { // 总导入贴图列表
   operator: {
     haze: { url: 'res/texture/operator/haze.png' },
   },
-};
-const modelList = { // 总导入模型列表
-  ring: { url: 'res/model/decoration/ring.glb' },
-  tomb: { url: 'res/model/construction/tomb.glb' },
+  model: {
+    ring: { url: 'res/model/decoration/ring.glb' },
+    tomb: { url: 'res/model/construction/tomb.glb' },
+  },
 };
 
 const sysStatus = { // 状态对象，用于保存当前画布的各种状态信息
@@ -55,31 +60,15 @@ const sysStatus = { // 状态对象，用于保存当前画布的各种状态信
 };
 
 
-const enemyShop = { // 敌人实例列表
+const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非标血量等属性的特殊敌人
   slime: () => {
-    const texture = texList.enemy.slime.tex;
-    const { width, height } = texture.image;
-    const geometry = new THREE.PlaneBufferGeometry(width, height);
-    const material = new THREE.MeshBasicMaterial({
-      alphaTest: 0.6,
-      map: texture,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
+    const { mat, geo } = resList.enemy.slime;
+    const mesh = new THREE.Mesh(geo, mat);
     return new Unit.Slime(mesh);
   },
   saber: () => {
-    const texture = texList.enemy.saber.tex;
-    const { width, height } = texture.image;
-    const geometry = new THREE.PlaneBufferGeometry(width, height);
-    const material = new THREE.MeshBasicMaterial({
-      alphaTest: 0.6,
-      map: texture,
-      side: THREE.DoubleSide,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
+    const { mat, geo } = resList.enemy.saber;
+    const mesh = new THREE.Mesh(geo, mat);
     return new Unit.Saber(mesh);
   },
 };
@@ -92,21 +81,12 @@ const enemyShop = { // 敌人实例列表
 const modelShop = (consInfo) => {
   const { desc, type, rotation } = consInfo;
 
-  if (desc === 'destination') {
-    const texture = {
-      topTex: texList.IOPoint.destTop.tex,
-      sideTex: texList.IOPoint.destSide.tex,
-    };
-    return new IOPoint(texture);
+  if (desc === 'destination' || desc === 'entry') {
+    const { geo, mat } = resList.IOPoint[desc];
+    const mesh = new THREE.Mesh(geo, mat);
+    return new IOPoint(mesh);
   }
-  if (desc === 'entry') {
-    const texture = {
-      topTex: texList.IOPoint.entryTop.tex,
-      sideTex: texList.IOPoint.entrySide.tex,
-    };
-    return new IOPoint(texture);
-  }
-  const mesh = modelList[desc].gltf[type].clone();
+  const mesh = resList.model[desc].gltf[type].clone();
   mesh.rotation.y = THREE.Math.degToRad(rotation);
   return new BuiltinCons(mesh);
 };
@@ -233,11 +213,11 @@ function main(data) {
 
       const { top, side, bottom } = texture;
       const blockTex = {
-        topTex: top ? texList.blockTop[top].tex : texList.blockTop.default.tex,
-        sideTex: side ? texList.blockSide[side].tex : texList.blockSide.default.tex,
-        bottomTex: bottom ? texList.blockBottom[bottom].tex : texList.blockBottom.default.tex,
+        topTex: top ? resList.block.top[top].tex : resList.block.top.default.tex,
+        sideTex: side ? resList.block.side[side].tex : resList.block.side.default.tex,
+        bottomTex: bottom ? resList.block.bottom[bottom].tex : resList.block.bottom.default.tex,
       };
-      const blockInst = new Block(blockType, heightAlpha, blockTex, placeable);
+      const blockInst = new Block(blockType, heightAlpha, blockTex, placeable); // 砖块Mesh只能在主函数中构建
       const block = map.setBlock(row, column, blockInst);
       scene.add(block.mesh);
 
@@ -558,12 +538,58 @@ function main(data) {
  * 设置加载管理器的回调函数。
  * @param data: 地图数据，需要传递给main()函数。
  */
-function setLoading(data) {
+function setLoadingManager(data) {
   const loadingBar = document.querySelector('#loading');
   const bar = document.querySelector('#bar');
   const left = document.querySelector('#left');
   const right = document.querySelector('#right');
   let errorCounter = 0; // 错误计数
+
+  function createGeometry() {
+    for (const item of Object.values(resList.IOPoint)) { // 构建进出点模型
+      const { topTex, sideTex } = item;
+      const topMat = new THREE.MeshBasicMaterial({
+        alphaTest: 0.6,
+        map: topTex.tex,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+      const sideMat = new THREE.MeshBasicMaterial({
+        alphaTest: 0.6,
+        map: sideTex.tex,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+      item.mat = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+      const edge = blockUnit - 0.01;
+      item.geo = new THREE.BoxBufferGeometry(edge, edge, edge);
+    }
+
+    for (const item of Object.values(resList.enemy)) { // 构建敌人模型
+      const { width, height } = item.tex.image;
+      item.geo = new THREE.PlaneBufferGeometry(width, height);
+      item.mat = new THREE.MeshBasicMaterial({
+        alphaTest: 0.6,
+        map: item.tex,
+        side: THREE.DoubleSide,
+        transparent: true,
+      });
+    }
+  }
+
+  function showCanvas() {
+    const mainFrame = document.querySelector('main');
+
+    loadingBar.style.opacity = '0'; // 渐隐加载进度条
+    setTimeout(() => {
+      loadingBar.style.display = 'none';
+    }, 1000);
+
+    mainFrame.style.display = 'block'; // 渐显画布
+    setTimeout(() => {
+      mainFrame.style.opacity = '1';
+    }, 1000);
+  }
 
   /* 加载进度监控函数 */
   function loadingProgress(url, itemsLoaded, itemsTotal) {
@@ -592,61 +618,57 @@ function setLoading(data) {
   }
 
   /* 加载完成回调函数 */
-  function LoadingFinished() {
+  function loadingFinished() {
     if (!errorCounter) {
-      const mainFrame = document.querySelector('main');
-
-      loadingBar.style.opacity = '0'; // 渐隐加载进度条
-      setTimeout(() => {
-        loadingBar.style.display = 'none';
-      }, 1000);
-
-      mainFrame.style.display = 'block'; // 渐显画布
-      setTimeout(() => {
-        mainFrame.style.opacity = '1';
-      }, 1000);
-
+      createGeometry();
+      showCanvas();
       main(data); // 启动主函数
     }
   }
 
   loadManager.onProgress = loadingProgress;
   loadManager.onError = loadingError;
-  loadManager.onLoad = LoadingFinished;
+  loadManager.onLoad = loadingFinished;
 }
 
 /**
  * 加载资源，包括贴图，模型等。
  * @param res: 需加载的资源对象。
  */
-function loadingResources(res) {
+function loadResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
   const gltfLoader = new THREE.GLTFLoader(loadManager);
-  const {
-    block,
-    model,
-    enemy,
-  } = res;
+  const { block, model, enemy } = res;
 
-  for (const item of Object.values(texList.IOPoint)) { // 加载进出点贴图
-    item.tex = texLoader.load(item.url);
-    item.tex.encoding = THREE.sRGBEncoding;
-    item.anisotropy = 16;
-  }
-
-  for (const surf of Object.keys(block)) { // 加载砖块贴图
+  ['top', 'side', 'bottom'].forEach((surf) => { // 加载砖块贴图
     const texArray = block[surf];
-    texArray.push('default'); // 默认贴图均需要加载
+    texArray.push('default'); // 砖块默认贴图均需要加载
     for (const name of texArray) {
-      const item = texList[surf][name];
+      const item = resList.block[surf][name];
       item.tex = texLoader.load(item.url);
       item.tex.encoding = THREE.sRGBEncoding;
-      item.anisotropy = 16;
+      item.tex.anisotropy = 16;
     }
+  });
+
+  ['destination', 'entry'].forEach((con) => { // 加载进出点贴图
+    const texArray = resList.IOPoint[con];
+    for (const item of Object.values(texArray)) {
+      item.tex = texLoader.load(item.url);
+      item.tex.encoding = THREE.sRGBEncoding;
+      item.tex.anisotropy = 16;
+    }
+  });
+
+  for (const name of enemy) { // 加载敌人贴图
+    const item = resList.enemy[name];
+    item.tex = texLoader.load(item.url);
+    item.tex.encoding = THREE.sRGBEncoding;
+    item.tex.anisotropy = 16;
   }
 
   for (const name of model) { // 加载建筑模型
-    const item = modelList[name];
+    const item = resList.model[name];
     gltfLoader.load(item.url, (gltf) => {
       item.gltf = {};
       gltf.scene.children.forEach((obj) => { // 模型命名尾缀为模型种类
@@ -656,14 +678,7 @@ function loadingResources(res) {
     });
   }
 
-  for (const name of enemy) { // 加载敌人模型
-    const item = texList.enemy[name];
-    item.tex = texLoader.load(item.url);
-    item.tex.encoding = THREE.sRGBEncoding;
-    item.anisotropy = 16;
-  }
-
-  // for (const name of operator) { // 加载干员模型
+  // for (const name of operator) { // 加载干员贴图
   //   const item = texList.operator[name];
   //   item.tex = texLoader.load(item.url);
   //   item.tex.encoding = THREE.sRGBEncoding;
@@ -677,8 +692,8 @@ function preLoading() { // 通过传入地图信息加载资源
     .then((data) => {
       const { name, resources } = data;
       sysStatus.map = name;
-      setLoading(data);
-      loadingResources(resources);
+      setLoadingManager(data);
+      loadResources(resources);
     });
 }
 
