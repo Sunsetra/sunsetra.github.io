@@ -107,11 +107,11 @@ function main(data) {
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
   let map; // 全局当前地图对象
-  const activeEnemy = []; // 在场的敌人数组，更新敌人位置时遍历
+  const activeEnemy = new Set(); // 场上敌人集合
 
-  let needRender = false; // 全局渲染需求Flag
-  let rAF; // 全局动态渲染取消标志
-  let lastTime = 0; // 上次渲染时的rAF时刻
+  let needRender = false; // 静态渲染需求Flag
+  let rAF; // 动态渲染取消标志
+  let lastTime = 0; // 上次渲染的rAF时刻
 
   /* 初始化全局变量 */
   function init() {
@@ -227,55 +227,57 @@ function main(data) {
       }
     });
 
+    /* 定义地图灯光 */
+    {
+      const { envIntensity, envColor } = light;
+      envLight.intensity = envIntensity;
+      envLight.color.set(envColor);
+      sunLight.color.set(light.color);
+      sunLight.intensity = light.intensity;
 
-    const { envIntensity, envColor } = light; // 定义灯光
-    envLight.intensity = envIntensity;
-    envLight.color.set(envColor);
-    sunLight.color.set(light.color);
-    sunLight.intensity = light.intensity;
+      const hasHour = Object.prototype.hasOwnProperty.call(light, 'hour');
+      let hour = hasHour ? light.hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
+      if (hour < 6 || hour > 18) { // 定义夜间光源
+        hour = hour < 6 ? hour + 12 : hour % 12;
+        sunLight.intensity = 0.6;
+        sunLight.color.set(0xffffff);
+        envLight.color.set(0x5C6C7C);
+      }
 
-    const hasHour = Object.prototype.hasOwnProperty.call(light, 'hour');
-    let hour = hasHour ? light.hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
-    if (hour < 6 || hour > 18) { // 定义夜间光源
-      hour = hour < 6 ? hour + 12 : hour % 12;
-      sunLight.intensity = 0.6;
-      sunLight.color.set(0xffffff);
-      envLight.color.set(0x5C6C7C);
+      const hasPhi = Object.prototype.hasOwnProperty.call(light, 'phi');
+      const randomDeg = Math.floor(Math.random() * 360) + 1;
+      const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
+      const lightRad = maxSize; // 光源半径为地图最大尺寸
+      const theta = 140 - hour * 12; // 从地图时间计算天顶角
+      const cosTheta = Math.cos(THREE.Math.degToRad(theta)); // 计算光源位置
+      const sinTheta = Math.sin(THREE.Math.degToRad(theta));
+      const cosPhi = Math.cos(THREE.Math.degToRad(phi));
+      const sinPhi = Math.sin(THREE.Math.degToRad(phi));
+      const lightPosX = lightRad * sinTheta * cosPhi + centerX;
+      const lightPosY = lightRad * cosTheta;
+      const lightPosZ = lightRad * sinTheta * sinPhi + centerZ;
+      sunLight.position.set(lightPosX, lightPosY, lightPosZ);
+      sunLight.target.position.set(centerX, 0, centerZ); // 设置光源终点
+      sunLight.target.updateWorldMatrix();
+
+      sunLight.castShadow = true; // 设置光源阴影
+      sunLight.shadow.camera.left = -maxSize / 2; // 按地图最大尺寸定义光源阴影
+      sunLight.shadow.camera.right = maxSize / 2;
+      sunLight.shadow.camera.top = maxSize / 2;
+      sunLight.shadow.camera.bottom = -maxSize / 2;
+      sunLight.shadow.camera.near = maxSize / 2;
+      sunLight.shadow.camera.far = maxSize * 1.5; // 阴影覆盖光源半径的球体
+      sunLight.shadow.bias = 0.0001;
+      sunLight.shadow.mapSize.set(4096, 4096);
+      sunLight.shadow.camera.updateProjectionMatrix();
+
+      scene.add(sunLight);
+      scene.add(sunLight.target);
     }
-
-    const hasPhi = Object.prototype.hasOwnProperty.call(light, 'phi');
-    const randomDeg = Math.floor(Math.random() * 360) + 1;
-    const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
-    const lightRad = maxSize; // 光源半径为地图最大尺寸
-    const theta = 140 - hour * 12; // 从地图时间计算天顶角
-    const cosTheta = Math.cos(THREE.Math.degToRad(theta)); // 计算光源位置
-    const sinTheta = Math.sin(THREE.Math.degToRad(theta));
-    const cosPhi = Math.cos(THREE.Math.degToRad(phi));
-    const sinPhi = Math.sin(THREE.Math.degToRad(phi));
-    const lightPosX = lightRad * sinTheta * cosPhi + centerX;
-    const lightPosY = lightRad * cosTheta;
-    const lightPosZ = lightRad * sinTheta * sinPhi + centerZ;
-    sunLight.position.set(lightPosX, lightPosY, lightPosZ);
-    sunLight.target.position.set(centerX, 0, centerZ); // 设置光源终点
-    sunLight.target.updateMatrixWorld();
-
-    sunLight.castShadow = true; // 设置光源阴影
-    sunLight.shadow.camera.left = -maxSize / 2; // 按地图最大尺寸定义光源阴影
-    sunLight.shadow.camera.right = maxSize / 2;
-    sunLight.shadow.camera.top = maxSize / 2;
-    sunLight.shadow.camera.bottom = -maxSize / 2;
-    sunLight.shadow.camera.near = maxSize / 2;
-    sunLight.shadow.camera.far = maxSize * 1.5; // 阴影覆盖光源半径的球体
-    sunLight.shadow.bias = 0.0001;
-    sunLight.shadow.mapSize.set(4096, 4096);
-    sunLight.shadow.camera.updateProjectionMatrix();
-
-    scene.add(sunLight);
-    scene.add(sunLight.target);
   }
 
   /**
-   * 更新维护敌人状态。
+   * 初始化敌人并更新维护敌人状态。
    * @param axisTime: 时间轴时刻。
    */
   function updateEnemyStatus(axisTime) {
@@ -293,9 +295,10 @@ function main(data) {
         scene.add(thisFrag.inst.mesh);
         path.shift(); // 删除首个路径点
 
-        activeEnemy.push(thisFrag); // 新增活跃敌人
+        activeEnemy.add(thisFrag); // 新增活跃敌人
         fragments.shift(); // 从当前波次中删除该敌人
-        console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.length} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
+        // eslint-disable-next-line max-len
+        // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
         if (!fragments.length) { map.waves.shift(); } // 若当前波次中剩余敌人为0则删除当前波次
       }
     }
@@ -308,21 +311,21 @@ function main(data) {
   function updateEnemyPosition(rAFTime) {
     const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
 
-    activeEnemy.forEach((enemy, index) => {
+    for (const enemy of activeEnemy) {
       const { path, inst } = enemy;
       if (path.length) { // 判定敌人是否到达终点
-        if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在暂停
+        if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在停顿中
           inst.pause -= interval;
-          if (inst.pause <= 0) { // 取消暂停恢复移动
+          if (inst.pause <= 0) { // 取消停顿恢复移动
             path.shift();
             delete inst.pause;
-            console.log(`恢复 ${enemy.time}秒 出现的敌人`);
+            // console.log(`恢复 ${enemy.time}秒 出现的敌人`);
           }
-        } else if (Object.prototype.hasOwnProperty.call(path[0], 'pause')) { // 判定是否暂停
+        } else if (Object.prototype.hasOwnProperty.call(path[0], 'pause')) { // 判定敌人是否停顿
           const { pause } = path[0];
           inst.pause = pause - interval;
-          console.log(`暂停 ${enemy.time}秒 出现的敌人 ${pause}秒`);
-        } else { // 没有暂停则正常移动
+          // console.log(`暂停 ${enemy.time}秒 出现的敌人 ${pause}秒`);
+        } else { // 没有停顿则正常移动
           const oldX = inst.position.x;
           const oldZ = inst.position.z;
           const newX = path[0].x;
@@ -338,25 +341,23 @@ function main(data) {
           const stepZ = interval * velocityZ + oldZ;
           inst.position = { x: stepX, z: stepZ };
 
-          if (newX <= oldX && inst.mesh.rotation.y === 0) { // 向左运动且默认朝向时
-            inst.mesh.rotation.y = Math.PI; // 转运动方向向左
-          } else if (newX >= oldX && inst.mesh.rotation.y === Math.PI) { // 向右运动且朝向为左时
-            inst.mesh.rotation.y = 0; // 重置运动方向向右，即默认方向
-          }
+          const rotateDeg = Math.atan((newZ - oldZ) / (newX - oldX));
+          inst.mesh.rotation.y = Math.PI - rotateDeg; // 调整运动方向
 
           const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
           const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
           if (ifDeltaX && ifDeltaZ) { // 判定是否到达当前路径点，到达则移除当前路径点
-            console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
+            // console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
             path.shift();
           }
         }
       } else { // TODO: 到达则删除它并从scene中移除
-        activeEnemy.splice(index, 1);
+        activeEnemy.delete(enemy);
         map.enemyNum -= 1;
-        console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.length} ，总敌人剩余 ${map.enemyNum}`);
+        // eslint-disable-next-line max-len
+        // console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
       }
-    });
+    }
   }
 
   /**
@@ -369,9 +370,10 @@ function main(data) {
       updateEnemyStatus(axisTime); // 更新维护敌人状态
       updateEnemyPosition(rAFTime); // 更新敌人位置
     } else { // TODO: 剩余敌人总数为空时游戏结束
-      cancelAnimationFrame(rAF);
-      timeAxis.stop(); // 先取消动画后再停止时间轴
+      rAF = null; // 置空rAF以取消动画
+      timeAxis.stop();
       setState(statusEnum.RESET);
+      console.log('游戏结束');
     }
   }
 
@@ -393,6 +395,7 @@ function main(data) {
 
   /* 静态动画循环，只能由requestStaticRender调用 */
   function staticRender() {
+    // console.log('静态');
     needRender = false;
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
@@ -410,6 +413,7 @@ function main(data) {
 
   /* 动态动画循环，只能由requestDynamicRender及动画控制函数调用 */
   function dynamicRender(rAFTime) {
+    // console.log('动态');
     // eslint-disable-next-line max-len
     // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
     updateMap(timeAxis.getElapsedTimeN(), rAFTime); // 更新敌人位置
@@ -420,18 +424,23 @@ function main(data) {
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
     renderer.render(scene, camera);
-    rAF = requestAnimationFrame(dynamicRender);
+    if (rAF) { // 从动画回调内部取消动画
+      rAF = requestAnimationFrame(dynamicRender);
+    }
   }
-
 
   /* 动态渲染入口点函数 */
   function requestDynamicRender() {
     sysStatus.renderType = 'dynamic';
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') { pauseAnimate(); }
+    });
     setState(statusEnum.PAUSE);
     timeAxis.start();
     lastTime = window.performance.now(); // 设置首帧时间
     rAF = requestAnimationFrame(dynamicRender);
   }
+
 
   /* 动画暂停函数 */
   function pauseAnimate() {
@@ -481,6 +490,7 @@ function main(data) {
     }
   }
 
+
   /* 创建辅助对象，包括灯光参数控制器等 */
   function createHelpers() {
     const gui = new dat.GUI();
@@ -529,7 +539,7 @@ function main(data) {
   createMap(data); // 创建地图
   createHelpers(); // 创建辅助对象
   requestStaticRender(); // 发出渲染请求
-  reset.addEventListener('click', resetAnimate);
+  reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时
   setState(statusEnum.RESET);
 }
 
@@ -545,6 +555,7 @@ function setLoadingManager(data) {
   const right = document.querySelector('#right');
   let errorCounter = 0; // 错误计数
 
+  /* 创建可复用的几何体及材质信息 */
   function createGeometry() {
     for (const item of Object.values(resList.IOPoint)) { // 构建进出点模型
       const { topTex, sideTex } = item;
@@ -570,6 +581,7 @@ function setLoadingManager(data) {
       item.geo = new THREE.PlaneBufferGeometry(width, height);
       item.mat = new THREE.MeshBasicMaterial({
         alphaTest: 0.6,
+        depthWrite: false,
         map: item.tex,
         side: THREE.DoubleSide,
         transparent: true,
@@ -577,6 +589,7 @@ function setLoadingManager(data) {
     }
   }
 
+  /* 控制进度条及画布显隐 */
   function showCanvas() {
     const mainFrame = document.querySelector('main');
 

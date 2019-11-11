@@ -51,6 +51,7 @@ button {
   height: 3px;
   margin-bottom: 10%;
   background-color: yellow;
+  user-select: none;
 }
 
 #bar {
