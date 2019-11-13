@@ -92,6 +92,178 @@ const modelShop = (consInfo) => {
 };
 
 
+class MapGeometry {
+  constructor(width, height, blockInfo) {
+    this.width = width;
+    this.height = height;
+    this.blockData = new Array(width * height).fill(null); // 数组砖块数据
+    blockInfo.forEach((block) => { // 构造元素数组，无砖块的位置为null
+      const { row, column } = block;
+      const ndx = row * 9 + column;
+      this.blockData[ndx] = block;
+    });
+    console.log(this.blockData);
+    // this.faces = [
+    //   { // 左侧
+    //     dir: [0, -1],
+    //     corners: [
+    //       [0, 1, 0],
+    //       [0, 0, 0],
+    //       [0, 1, 1],
+    //       [0, 0, 1],
+    //     ],
+    //   },
+    //   { // 右侧
+    //     dir: [0, 1],
+    //     corners: [
+    //       [1, 1, 1],
+    //       [1, 0, 1],
+    //       [1, 1, 0],
+    //       [1, 0, 0],
+    //     ],
+    //   },
+    //   { // 上侧
+    //     dir: [-1, 0],
+    //     corners: [
+    //       [1, 1, 1],
+    //       [1, 0, 1],
+    //       [1, 1, 0],
+    //       [1, 0, 0],
+    //     ],
+    //   },
+    //   { // 下侧
+    //     dir: [1, 0],
+    //     corners: [
+    //       [1, 1, 1],
+    //       [1, 0, 1],
+    //       [1, 1, 0],
+    //       [1, 0, 0],
+    //     ],
+    //   },
+    // ];
+  }
+
+  _getBlock(row, column) { // 验证指定位置处是否有方块，有返回方块，没有返回null
+    const verifyRow = Math.floor(row / this.height);
+    const verifyColumn = Math.floor(column / this.width);
+    if (verifyRow !== 0 || verifyColumn !== 0) {
+      return null;
+    }
+    return this.blockData[row * this.width + column];
+  }
+
+  _getFaces(row, column) {
+    const thisBlock = this._getBlock(row, column);
+    const thisHeight = thisBlock.heightAlpha;
+    let left = null;
+    let right = null;
+    let up = null;
+    let down = null;
+
+    const leftBlock = this._getBlock(row, column - 1);
+    const leftHeight = leftBlock ? leftBlock.heightAlpha : 0; // 当前侧块的高度系数
+    if (thisHeight - leftHeight > 0) { // 本块高于侧块，需要侧面
+      const corner = [ // 1表示blockUnit全长
+        [0, thisHeight * blockUnit, 0],
+        [0, 0, 0],
+        [0, thisHeight * blockUnit, blockUnit],
+        [0, 0, blockUnit],
+      ];
+      const normal = [-1, 0, 0];
+      left = { corner, normal };
+    }
+
+    const rightBlock = this._getBlock(row, column + 1);
+    const rightHeight = rightBlock ? rightBlock.heightAlpha : 0; // 当前侧块的高度系数
+    if (thisHeight - rightHeight > 0) { // 本块高于侧块，需要侧面
+      const corner = [ // 1表示blockUnit全长
+        [blockUnit, thisHeight * blockUnit, blockUnit],
+        [blockUnit, 0, blockUnit],
+        [blockUnit, thisHeight * blockUnit, 0],
+        [blockUnit, 0, 0],
+      ];
+      const normal = [1, 0, 0];
+      right = { corner, normal };
+    }
+
+    const bottomCorner = [
+      [blockUnit, 0, blockUnit],
+      [0, 0, blockUnit],
+      [blockUnit, 0, 0],
+      [0, 0, 0],
+    ];
+    const bottomNormal = [0, -1, 0];
+    const bottom = { corner: bottomCorner, normal: bottomNormal };
+
+    const topCorner = [
+      [0, thisHeight * blockUnit, blockUnit],
+      [blockUnit, thisHeight * blockUnit, blockUnit],
+      [0, thisHeight * blockUnit, 0],
+      [blockUnit, thisHeight * blockUnit, 0],
+    ];
+    const topNormal = [0, 1, 0];
+    const top = { corner: topCorner, normal: topNormal };
+
+    const upBlock = this._getBlock(row - 1, column);
+    const upHeight = upBlock ? upBlock.heightAlpha : 0; // 当前侧块的高度系数
+    if (thisHeight - upHeight > 0) { // 本块高于侧块，需要侧面
+      const corner = [ // 1表示blockUnit全长
+        [blockUnit, 0, 0],
+        [0, 0, 0],
+        [blockUnit, thisHeight * blockUnit, 0],
+        [0, thisHeight * blockUnit, 0],
+      ];
+      const normal = [0, 0, -1];
+      up = { corner, normal };
+    }
+
+    const downBlock = this._getBlock(row + 1, column);
+    const downHeight = downBlock ? downBlock.heightAlpha : 0; // 当前侧块的高度系数
+    if (thisHeight - downHeight > 0) { // 本块高于侧块，需要侧面
+      const corner = [ // 1表示blockUnit全长
+        [0, 0, blockUnit],
+        [blockUnit, 0, blockUnit],
+        [0, thisHeight * blockUnit, blockUnit],
+        [blockUnit, thisHeight * blockUnit, blockUnit],
+      ];
+      const normal = [0, 0, 1];
+      down = { corner, normal };
+    }
+
+    return [left, right, bottom, top, up, down];
+  }
+
+  generateGeometry() {
+    const positions = [];
+    const normals = [];
+    const indices = [];
+    for (let row = 0; row < this.height; row += 1) { // 遍历整个地图几何
+      for (let column = 0; column < this.width; column += 1) {
+        if (this._getBlock(row, column)) { // 该处有方块（不为null）才构造几何
+          const faces = this._getFaces(row, column); // 获取每个方块的邻块
+          console.log(faces);
+          for (const face of faces) { // 遍历当前方块的邻块
+            if (face) { // 如果该侧需要绘面（不为null）
+              const { corner, normal } = face;
+              const ndx = positions.length / 3; // 置于
+              for (const pos of corner) { // 遍历当前邻块的角点
+                positions.push(pos[0] + column, pos[1], pos[2] + row);
+                normals.push(...normal);
+              }
+              indices.push(
+                ndx, ndx + 1, ndx + 2,
+                ndx + 2, ndx + 1, ndx + 3,
+              );
+            }
+          }
+        }
+      }
+    }
+    return { positions, normals, indices };
+  }
+}
+
+
 /* 主函数入口 */
 function main(data) {
   const canvas = document.querySelector('canvas');
@@ -197,6 +369,7 @@ function main(data) {
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
     map = new MapInfo(mapWidth, mapHeight, enemyNum, waves); // 初始化地图
+    const mapGeo = new MapGeometry(9, 4, blockInfo);
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -205,27 +378,41 @@ function main(data) {
     camera.updateProjectionMatrix();
     controls.target.set(centerX, 0, centerZ); // 设置摄影机朝向为地图中心
 
+    const { positions, normals, indices } = mapGeo.generateGeometry();
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.MeshLambertMaterial({ color: 'green', side: THREE.DoubleSide });
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+    geometry.setIndex(indices);
+    const mesh = new THREE.Mesh(geometry, material);
 
-    blockInfo.forEach((item) => { // 构造地面砖块及建筑
-      const {
-        row, column, blockType, placeable, heightAlpha, texture, consInfo,
-      } = item;
+    const axes = new THREE.AxesHelper();
+    axes.material.depthTest = false;
+    axes.renderOrder = 2;
+    mesh.add(axes);
 
-      const { top, side, bottom } = texture;
-      const blockTex = {
-        topTex: top ? resList.block.top[top].tex : resList.block.top.default.tex,
-        sideTex: side ? resList.block.side[side].tex : resList.block.side.default.tex,
-        bottomTex: bottom ? resList.block.bottom[bottom].tex : resList.block.bottom.default.tex,
-      };
-      const blockInst = new Block(blockType, heightAlpha, blockTex, placeable); // 砖块Mesh只能在主函数中构建
-      const block = map.setBlock(row, column, blockInst);
-      scene.add(block.mesh);
+    scene.add(mesh);
 
-      if (consInfo) { // 有建筑时添加建筑
-        const con = map.addCon(row, column, modelShop(consInfo));
-        scene.add(con.mesh);
-      }
-    });
+    // blockInfo.forEach((item) => { // 构造地面砖块及建筑
+    //   const {
+    //     row, column, blockType, placeable, heightAlpha, texture, consInfo,
+    //   } = item;
+    //
+    //   const { top, side, bottom } = texture;
+    //   const blockTex = {
+    //     topTex: top ? resList.block.top[top].tex : resList.block.top.default.tex,
+    //     sideTex: side ? resList.block.side[side].tex : resList.block.side.default.tex,
+    //     bottomTex: bottom ? resList.block.bottom[bottom].tex : resList.block.bottom.default.tex,
+    //   };
+    //   const blockInst = new Block(blockType, heightAlpha, blockTex, placeable); // 砖块Mesh只能在主函数构建
+    //   const block = map.setBlock(row, column, blockInst);
+    //   scene.add(block.mesh);
+    //
+    //   if (consInfo) { // 有建筑时添加建筑
+    //     const con = map.addCon(row, column, modelShop(consInfo));
+    //     scene.add(con.mesh);
+    //   }
+    // });
 
     /* 定义地图灯光 */
     {
