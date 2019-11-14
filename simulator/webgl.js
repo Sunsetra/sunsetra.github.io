@@ -93,6 +93,12 @@ const modelShop = (consInfo) => {
 
 
 class MapGeometry {
+  /**
+   * 地图几何类，用于构建地图几何。
+   * @param width: 地图宽度（总列数）。
+   * @param height: 地图高度（总行数）。
+   * @param blockInfo: 地图数据对象。
+   */
   constructor(width, height, blockInfo) {
     this.width = width;
     this.height = height;
@@ -102,158 +108,103 @@ class MapGeometry {
       const ndx = row * 9 + column;
       this.blockData[ndx] = block;
     });
-    console.log(this.blockData);
-    // this.faces = [
-    //   { // 左侧
-    //     dir: [0, -1],
-    //     corners: [
-    //       [0, 1, 0],
-    //       [0, 0, 0],
-    //       [0, 1, 1],
-    //       [0, 0, 1],
-    //     ],
-    //   },
-    //   { // 右侧
-    //     dir: [0, 1],
-    //     corners: [
-    //       [1, 1, 1],
-    //       [1, 0, 1],
-    //       [1, 1, 0],
-    //       [1, 0, 0],
-    //     ],
-    //   },
-    //   { // 上侧
-    //     dir: [-1, 0],
-    //     corners: [
-    //       [1, 1, 1],
-    //       [1, 0, 1],
-    //       [1, 1, 0],
-    //       [1, 0, 0],
-    //     ],
-    //   },
-    //   { // 下侧
-    //     dir: [1, 0],
-    //     corners: [
-    //       [1, 1, 1],
-    //       [1, 0, 1],
-    //       [1, 1, 0],
-    //       [1, 0, 0],
-    //     ],
-    //   },
-    // ];
+    this.faces = [
+      { // 左侧
+        normal: [-1, 0, 0],
+        corners: [
+          [0, 1, 0],
+          [0, 0, 0],
+          [0, 1, 1],
+          [0, 0, 1],
+        ],
+      },
+      { // 右侧
+        normal: [1, 0, 0],
+        corners: [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 1, 0],
+          [1, 0, 0],
+        ],
+      },
+      { // 底侧
+        normal: [0, -1, 0],
+        corners: [
+          [1, 0, 1],
+          [0, 0, 1],
+          [1, 0, 0],
+          [0, 0, 0],
+        ],
+      },
+      { // 顶侧
+        normal: [0, 1, 0],
+        corners: [
+          [0, 1, 1],
+          [1, 1, 1],
+          [0, 1, 0],
+          [1, 1, 0],
+        ],
+      },
+      { // 上侧
+        normal: [0, 0, -1],
+        corners: [
+          [1, 0, 0],
+          [0, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0],
+        ],
+      },
+      { // 下侧
+        normal: [0, 0, 1],
+        corners: [
+          [0, 0, 1],
+          [1, 0, 1],
+          [0, 1, 1],
+          [1, 1, 1],
+        ],
+      },
+    ];
   }
 
-  _getBlock(row, column) { // 验证指定位置处是否有方块，有返回方块，没有返回null
+  /**
+   * 验证并获取指定位置的砖块对象。
+   * @param row: 砖块所在行。
+   * @param column: 砖块所在列。
+   * @returns {null|object}: 指定位置处存在砖块时返回砖块，不存在则返回null
+   * @private: 现仅类内使用，考虑更改为通用方法。
+   */
+  _getBlock(row, column) {
     const verifyRow = Math.floor(row / this.height);
     const verifyColumn = Math.floor(column / this.width);
-    if (verifyRow !== 0 || verifyColumn !== 0) {
+    if (verifyRow || verifyColumn) {
       return null;
     }
-    return this.blockData[row * this.width + column];
-  }
-
-  _getFaces(row, column) {
-    const thisBlock = this._getBlock(row, column);
-    const thisHeight = thisBlock.heightAlpha;
-    let left = null;
-    let right = null;
-    let up = null;
-    let down = null;
-
-    const leftBlock = this._getBlock(row, column - 1);
-    const leftHeight = leftBlock ? leftBlock.heightAlpha : 0; // 当前侧块的高度系数
-    if (thisHeight - leftHeight > 0) { // 本块高于侧块，需要侧面
-      const corner = [ // 1表示blockUnit全长
-        [0, thisHeight * blockUnit, 0],
-        [0, 0, 0],
-        [0, thisHeight * blockUnit, blockUnit],
-        [0, 0, blockUnit],
-      ];
-      const normal = [-1, 0, 0];
-      left = { corner, normal };
-    }
-
-    const rightBlock = this._getBlock(row, column + 1);
-    const rightHeight = rightBlock ? rightBlock.heightAlpha : 0; // 当前侧块的高度系数
-    if (thisHeight - rightHeight > 0) { // 本块高于侧块，需要侧面
-      const corner = [ // 1表示blockUnit全长
-        [blockUnit, thisHeight * blockUnit, blockUnit],
-        [blockUnit, 0, blockUnit],
-        [blockUnit, thisHeight * blockUnit, 0],
-        [blockUnit, 0, 0],
-      ];
-      const normal = [1, 0, 0];
-      right = { corner, normal };
-    }
-
-    const bottomCorner = [
-      [blockUnit, 0, blockUnit],
-      [0, 0, blockUnit],
-      [blockUnit, 0, 0],
-      [0, 0, 0],
-    ];
-    const bottomNormal = [0, -1, 0];
-    const bottom = { corner: bottomCorner, normal: bottomNormal };
-
-    const topCorner = [
-      [0, thisHeight * blockUnit, blockUnit],
-      [blockUnit, thisHeight * blockUnit, blockUnit],
-      [0, thisHeight * blockUnit, 0],
-      [blockUnit, thisHeight * blockUnit, 0],
-    ];
-    const topNormal = [0, 1, 0];
-    const top = { corner: topCorner, normal: topNormal };
-
-    const upBlock = this._getBlock(row - 1, column);
-    const upHeight = upBlock ? upBlock.heightAlpha : 0; // 当前侧块的高度系数
-    if (thisHeight - upHeight > 0) { // 本块高于侧块，需要侧面
-      const corner = [ // 1表示blockUnit全长
-        [blockUnit, 0, 0],
-        [0, 0, 0],
-        [blockUnit, thisHeight * blockUnit, 0],
-        [0, thisHeight * blockUnit, 0],
-      ];
-      const normal = [0, 0, -1];
-      up = { corner, normal };
-    }
-
-    const downBlock = this._getBlock(row + 1, column);
-    const downHeight = downBlock ? downBlock.heightAlpha : 0; // 当前侧块的高度系数
-    if (thisHeight - downHeight > 0) { // 本块高于侧块，需要侧面
-      const corner = [ // 1表示blockUnit全长
-        [0, 0, blockUnit],
-        [blockUnit, 0, blockUnit],
-        [0, thisHeight * blockUnit, blockUnit],
-        [blockUnit, thisHeight * blockUnit, blockUnit],
-      ];
-      const normal = [0, 0, 1];
-      down = { corner, normal };
-    }
-
-    return [left, right, bottom, top, up, down];
+    return this.blockData[row * 9 + column];
   }
 
   generateGeometry() {
-    const positions = [];
-    const normals = [];
-    const indices = [];
+    const positions = []; // 存放顶点坐标
+    const normals = []; // 存放面法向量
+    const indices = []; // 存放顶点序列索引
     for (let row = 0; row < this.height; row += 1) { // 遍历整个地图几何
       for (let column = 0; column < this.width; column += 1) {
-        if (this._getBlock(row, column)) { // 该处有方块（不为null）才构造几何
-          const faces = this._getFaces(row, column); // 获取每个方块的邻块
-          console.log(faces);
-          for (const face of faces) { // 遍历当前方块的邻块
-            if (face) { // 如果该侧需要绘面（不为null）
-              const { corner, normal } = face;
-              const ndx = positions.length / 3; // 置于
-              for (const pos of corner) { // 遍历当前邻块的角点
-                positions.push(pos[0] + column, pos[1], pos[2] + row);
+        const thisBlock = this._getBlock(row, column);
+        if (thisBlock) { // 该处有方块（不为null）才构造几何
+          const thisHeight = thisBlock.heightAlpha;
+
+          for (const { normal, corners } of this.faces) {
+            const sideBlock = this._getBlock(row + normal[2], column + normal[0]);
+            const sideHeight = sideBlock ? sideBlock.heightAlpha : 0; // 当前侧块的高度系数
+            if (thisHeight - sideHeight > 0 || normal[1]) { // 当前侧面高于侧块或是上下表面
+              const ndx = positions.length / 3; // 置于首次改变position数组之前
+              corners.forEach((pos) => {
+                const x = pos[0] * blockUnit;
+                const y = pos[1] * thisHeight * blockUnit;
+                const z = pos[2] * blockUnit;
+                positions.push(x + column * blockUnit, y, z + row * blockUnit);
                 normals.push(...normal);
-              }
-              indices.push(
-                ndx, ndx + 1, ndx + 2,
-                ndx + 2, ndx + 1, ndx + 3,
-              );
+              });
+              indices.push(ndx, ndx + 1, ndx + 2, ndx + 2, ndx + 1, ndx + 3);
             }
           }
         }
@@ -369,7 +320,6 @@ function main(data) {
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
     map = new MapInfo(mapWidth, mapHeight, enemyNum, waves); // 初始化地图
-    const mapGeo = new MapGeometry(9, 4, blockInfo);
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -378,20 +328,18 @@ function main(data) {
     camera.updateProjectionMatrix();
     controls.target.set(centerX, 0, centerZ); // 设置摄影机朝向为地图中心
 
-    const { positions, normals, indices } = mapGeo.generateGeometry();
-    const geometry = new THREE.BufferGeometry();
-    const material = new THREE.MeshLambertMaterial({ color: 'green', side: THREE.DoubleSide });
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-    geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
-    geometry.setIndex(indices);
-    const mesh = new THREE.Mesh(geometry, material);
-
-    const axes = new THREE.AxesHelper();
-    axes.material.depthTest = false;
-    axes.renderOrder = 2;
-    mesh.add(axes);
-
-    scene.add(mesh);
+    /* 构建地图几何 */
+    {
+      const mapGeo = new MapGeometry(9, 4, blockInfo);
+      const { positions, normals, indices } = mapGeo.generateGeometry();
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.MeshLambertMaterial({ color: 'green', side: THREE.DoubleSide });
+      geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+      geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+      geometry.setIndex(indices);
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+    }
 
     // blockInfo.forEach((item) => { // 构造地面砖块及建筑
     //   const {
