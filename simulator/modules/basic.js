@@ -24,11 +24,11 @@ const statusEnum = Object.freeze({ // 状态常量
  */
 class MapInfo {
   /**
-   * 定义地图的长度/宽度、敌人等基本信息。
-   * @param width: 定义地图在X方向的格数。
-   * @param height: 定义地图在Z方向的格数。
-   * @param enemyNum: 敌人总数，用以界定何时游戏结束。
-   * @param waves: 敌人波次数据。
+   * 存储地图的基本信息，包括敌人等。
+   * @param {number} width: 定义地图在X方向的格数。
+   * @param {number} height: 定义地图在Z方向的格数。
+   * @param {number} enemyNum: 敌人总数，用以界定何时游戏结束。
+   * @param {object} waves: 敌人波次数据。
    */
   constructor(width, height, enemyNum, waves) {
     this.width = width > 0 ? width : 2;
@@ -39,32 +39,32 @@ class MapInfo {
     this._cons = new Array(width * height).fill(null);
   }
 
-  /**
-   * 返回指定行/列的砖块。
-   * @param row: 砖块所在行，从0开始。
-   * @param column: 砖块所在列，从0开始。
-   * @returns {Block}: 返回指定位置的砖块对象。
-   */
-  getBlock(row, column) {
-    const index = row * this.width + column;
-    return this._blocks[index];
-  }
+  // /**
+  //  * 返回指定行/列的砖块。
+  //  * @param row: 砖块所在行，从0开始。
+  //  * @param column: 砖块所在列，从0开始。
+  //  * @returns {Block}: 返回指定位置的砖块对象。
+  //  */
+  // getBlock(row, column) {
+  //   const index = row * this.width + column;
+  //   return this._blocks[index];
+  // }
+  //
+  // getBlocks() { return this._blocks; }
 
-  getBlocks() { return this._blocks; }
-
-  /**
-   * 替换地图中指定行/列的砖块。
-   * @param row: 要替换的砖块所在的行，从0开始。
-   * @param column: 要替换的砖块所在的列，从0开始。
-   * @param block: 要替换为的砖块对象。
-   * @returns {Block}: 返回新设置的砖块对象。
-   */
-  setBlock(row, column, block) {
-    const index = row * this.width + column;
-    block.calBlockPosition(row, column);
-    this._blocks[index] = block;
-    return this._blocks[index];
-  }
+  // /**
+  //  * 替换地图中指定行/列的砖块。
+  //  * @param row: 要替换的砖块所在的行，从0开始。
+  //  * @param column: 要替换的砖块所在的列，从0开始。
+  //  * @param block: 要替换为的砖块对象。
+  //  * @returns {Block}: 返回新设置的砖块对象。
+  //  */
+  // setBlock(row, column, block) {
+  //   const index = row * this.width + column;
+  //   block.calBlockPosition(row, column);
+  //   this._blocks[index] = block;
+  //   return this._blocks[index];
+  // }
 
   /**
    * 获取指定位置的绑定建筑。
@@ -186,78 +186,78 @@ class TimeAxis extends THREE.Clock {
   }
 }
 
-/**
- * 砖块对象的基类。
- * 属性:
- *   mesh: 砖块的网格实体。
- *   type: 砖块类型。
- *   size: 砖块在X/Y/Z方向上的绝对长度。
- *   position: 砖块在地图中的绝对坐标。
- * 方法:
- *   calBlockPosition(row, column): 更新砖块的绝对坐标。
- */
-class Block {
-  /**
-   * 定义基础砖块对象，其中每个砖块都必须拥有独立的几何体。
-   * @param type: 定义砖块的种类。
-   * @param heightAlpha: 定义砖块在Y方向上的高度系数。
-   * @param texture: 定义砖块的贴图。
-   * @param placeable: 定义是否可放置单位。
-   */
-  constructor(type, heightAlpha, texture, placeable) {
-    this._width = blockUnit;
-    this._height = heightAlpha * blockUnit;
-    this._depth = blockUnit;
-    this.type = type;
-    this.placeable = placeable;
-
-    const { topTex, sideTex, bottomTex } = texture;
-    const geometry = new THREE.BoxBufferGeometry(this._width, this._height, this._depth); // 定义砖块几何体
-    const topMat = new THREE.MeshPhysicalMaterial({ // 定义砖块顶部贴图材质
-      metalness: 0.1,
-      roughness: 0.6,
-      map: topTex,
-    });
-    const sideMat = new THREE.MeshPhysicalMaterial({ // 定义砖块侧面贴图材质
-      metalness: 0.1,
-      roughness: 0.6,
-      map: sideTex,
-    });
-    const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义砖块底部贴图材质
-      metalness: 0.1,
-      roughness: 0.6,
-      map: bottomTex,
-    });
-    const material = [sideMat, sideMat, topMat, bottomMat, sideMat, sideMat];
-
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.castShadow = true;
-    this.mesh.receiveShadow = true;
-  }
-
-  get size() {
-    return new THREE.Vector3(this._width, this._height, this._depth);
-  }
-
-  /**
-   * 计算砖块在地图中的实际坐标并放置砖块。
-   * 在砖块排布发生变化时，应手动调用以更新砖块的实际位置。
-   * @param row: 砖块所在行。
-   * @param column: 砖块所在列。
-   */
-  calBlockPosition(row, column) {
-    const x = (column + 0.5) * this._width;
-    const y = this._height / 2;
-    const z = (row + 0.5) * this._depth;
-    this.position = new THREE.Vector3(x, y, z);
-    this.mesh.position.set(x, y, z); // 放置砖块
-  }
-}
+// /**
+//  * 砖块对象的基类。
+//  * 属性:
+//  *   mesh: 砖块的网格实体。
+//  *   type: 砖块类型。
+//  *   size: 砖块在X/Y/Z方向上的绝对长度。
+//  *   position: 砖块在地图中的绝对坐标。
+//  * 方法:
+//  *   calBlockPosition(row, column): 更新砖块的绝对坐标。
+//  */
+// class Block {
+//   /**
+//    * 定义基础砖块对象，其中每个砖块都必须拥有独立的几何体。
+//    * @param type: 定义砖块的种类。
+//    * @param heightAlpha: 定义砖块在Y方向上的高度系数。
+//    * @param texture: 定义砖块的贴图。
+//    * @param placeable: 定义是否可放置单位。
+//    */
+//   constructor(type, heightAlpha, texture, placeable) {
+//     this._width = blockUnit;
+//     this._height = heightAlpha * blockUnit;
+//     this._depth = blockUnit;
+//     this.type = type;
+//     this.placeable = placeable;
+//
+//     const { topTex, sideTex, bottomTex } = texture;
+// eslint-disable-next-line max-len
+//     const geometry = new THREE.BoxBufferGeometry(this._width, this._height, this._depth); // 定义砖块几何体
+//     const topMat = new THREE.MeshPhysicalMaterial({ // 定义砖块顶部贴图材质
+//       metalness: 0.1,
+//       roughness: 0.6,
+//       map: topTex,
+//     });
+//     const sideMat = new THREE.MeshPhysicalMaterial({ // 定义砖块侧面贴图材质
+//       metalness: 0.1,
+//       roughness: 0.6,
+//       map: sideTex,
+//     });
+//     const bottomMat = new THREE.MeshPhysicalMaterial({ // 定义砖块底部贴图材质
+//       metalness: 0.1,
+//       roughness: 0.6,
+//       map: bottomTex,
+//     });
+//     const material = [sideMat, sideMat, topMat, bottomMat, sideMat, sideMat];
+//
+//     this.mesh = new THREE.Mesh(geometry, material);
+//     this.mesh.castShadow = true;
+//     this.mesh.receiveShadow = true;
+//   }
+//
+//   get size() {
+//     return new THREE.Vector3(this._width, this._height, this._depth);
+//   }
+//
+//   /**
+//    * 计算砖块在地图中的实际坐标并放置砖块。
+//    * 在砖块排布发生变化时，应手动调用以更新砖块的实际位置。
+//    * @param row: 砖块所在行。
+//    * @param column: 砖块所在列。
+//    */
+//   calBlockPosition(row, column) {
+//     const x = (column + 0.5) * this._width;
+//     const y = this._height / 2;
+//     const z = (row + 0.5) * this._depth;
+//     this.position = new THREE.Vector3(x, y, z);
+//     this.mesh.position.set(x, y, z); // 放置砖块
+//   }
+// }
 
 export {
   blockUnit,
   statusEnum,
   MapInfo,
   TimeAxis,
-  Block,
 };

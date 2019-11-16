@@ -4,7 +4,6 @@ import {
   statusEnum,
   MapInfo,
   TimeAxis,
-  Block,
 } from './modules/basic.js';
 import { IOPoint, BuiltinCons } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
@@ -59,7 +58,6 @@ const sysStatus = { // 状态对象，用于保存当前画布的各种状态信
   map: undefined, // 当前加载的地图名
 };
 
-
 const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非标血量等属性的特殊敌人
   slime: () => {
     const { mat, geo } = resList.enemy.slime;
@@ -74,9 +72,10 @@ const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非
 };
 
 /**
- * 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
- * @param consInfo: 模型信息对象。
- * @returns {Construction}: 返回建筑实例。
+ * @function: 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
+ * @param {object} consInfo: 模型信息对象。
+ * @param {string} consInfo.desc: 模型类型名称。
+ * @returns {Construction}: 返回建筑对象实例。
  */
 const modelShop = (consInfo) => {
   const { desc, type, rotation } = consInfo;
@@ -94,18 +93,24 @@ const modelShop = (consInfo) => {
 
 class MapGeometry {
   /**
-   * 地图几何类，用于构建地图几何。
-   * @param width: 地图宽度（总列数）。
-   * @param height: 地图高度（总行数）。
-   * @param blockInfo: 地图数据对象。
+   * 地图几何类，用于构建及存储地图的几何信息，包括尺寸及砖块信息。
+   * @param {number} width: 地图宽度（总列数）。
+   * @param {number} height: 地图高度（总行数）。
+   * @param {Array} blockInfo: 地图数据对象。
+   *
+   * @property {number} width: 地图的总列数。
+   * @property {number} height: 地图的总行数。
    */
   constructor(width, height, blockInfo) {
     this.width = width;
     this.height = height;
     this.blockData = new Array(width * height).fill(null); // 数组砖块数据
     blockInfo.forEach((block) => { // 构造元素数组，无砖块的位置为null
-      const { row, column } = block;
-      const ndx = row * 9 + column;
+      const { row, column, heightAlpha } = block;
+      const blockSize = new THREE.Vector3(blockUnit, heightAlpha * heightAlpha, blockUnit);
+      Object.defineProperty(block, 'size', blockSize); // 为砖块对象添加三维尺寸对象
+
+      const ndx = row * this.width + column;
       this.blockData[ndx] = block;
     });
     this.faces = [
@@ -168,42 +173,42 @@ class MapGeometry {
 
   /**
    * 验证并获取指定位置的砖块对象。
-   * @param row: 砖块所在行。
-   * @param column: 砖块所在列。
+   * @param {number} row: 砖块所在行。
+   * @param {number} column: 砖块所在列。
    * @returns {null|object}: 指定位置处存在砖块时返回砖块，不存在则返回null
-   * @private: 现仅类内使用，考虑更改为通用方法。
    */
-  _getBlock(row, column) {
+  getBlock(row, column) {
     const verifyRow = Math.floor(row / this.height);
     const verifyColumn = Math.floor(column / this.width);
     if (verifyRow || verifyColumn) {
       return null;
     }
-    return this.blockData[row * 9 + column];
+    return this.blockData[row * this.width + column];
   }
 
+  /**
+   * 构造地图几何数据及贴图映射数据。
+   * @namespace block.heightAlpha: 砖块的高度系数。
+   * @return {object}: 返回顶点坐标，法向量，顶点序列，UV信息，侧面顶点组信息的对象。
+   */
   generateGeometry() {
-    /**
-     * 构造地图几何数据及贴图映射数据。
-     * @namespace  block.heightAlpha: 砖块的高度系数。
-     * @return Object: 返回顶点坐标，法向量，顶点序列，UV信息，侧面顶点组信息的对象。
-     */
     const positions = []; // 存放顶点坐标
     const normals = []; // 存放面法向量
     const indices = []; // 存放顶点序列索引
     const uvs = []; // 存放顶点UV信息
     const sideGroup = []; // 侧面贴图顶点组信息，每个元素是一个组的[start, count]
+
     let start = 0; // 贴图顶点组开始索引
     let count = 0; // 贴图单顶点组计数
 
     for (let row = 0; row < this.height; row += 1) { // 遍历整个地图几何
       for (let column = 0; column < this.width; column += 1) {
-        const thisBlock = this._getBlock(row, column);
+        const thisBlock = this.getBlock(row, column);
         if (thisBlock) { // 该处有方块（不为null）才构造几何
           const thisHeight = thisBlock.heightAlpha;
 
           this.faces.forEach(({ corners, normal }) => {
-            const sideBlock = this._getBlock(row + normal[2], column + normal[0]);
+            const sideBlock = this.getBlock(row + normal[2], column + normal[0]);
             const sideHeight = sideBlock ? sideBlock.heightAlpha : 0; // 当前侧块的高度系数
             if (thisHeight - sideHeight > 0 || normal[1]) { // 当前侧面高于侧块或是上下表面
               const ndx = positions.length / 3; // 置于首次改变position数组之前
@@ -235,7 +240,10 @@ class MapGeometry {
 }
 
 
-/* 主函数入口 */
+/**
+ * 游戏主函数，在资源加载完成后执行。
+ * @param {object} data: 地图数据对象。
+ */
 function main(data) {
   const canvas = document.querySelector('canvas');
   const timer = document.querySelector('#timer'); // 全局计时器显示
@@ -256,12 +264,11 @@ function main(data) {
   let rAF; // 动态渲染取消标志
   let lastTime = 0; // 上次渲染的rAF时刻
 
-  /* 初始化全局变量 */
   function init() {
     /**
      * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
-     * @param antialias: 是否开启抗锯齿，默认开启。
-     * @param shadow: 是否开启阴影贴图，默认开启。
+     * @param {boolean} antialias: 是否开启抗锯齿，默认开启。
+     * @param {boolean} shadow: 是否开启阴影贴图，默认开启。
      */
     function createRender(antialias = true, shadow = true) {
       let context;
@@ -281,8 +288,8 @@ function main(data) {
 
     /**
      * 创建全局场景。
-     * @param color: 指定场景/雾气的背景色，默认黑色。
-     * @param fog: 控制是否开启场景雾气，默认开启。
+     * @param {*} color: 指定场景/雾气的背景色，默认黑色。
+     * @param {boolean} fog: 控制是否开启场景雾气，默认开启。
      */
     function createScene(color = 'black', fog = true) {
       scene = new THREE.Scene();
@@ -292,7 +299,7 @@ function main(data) {
       }
     }
 
-    /* 创建全局摄影机 */
+    /** 创建全局摄影机 */
     function createCamera() {
       const fov = 75;
       const aspect = canvas.clientWidth / canvas.clientHeight;
@@ -301,7 +308,7 @@ function main(data) {
       camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     }
 
-    /* 创建全局镜头控制器 */
+    /** 创建全局镜头控制器 */
     function createControls() {
       controls = new THREE.OrbitControls(camera, canvas);
       controls.target.set(0, 0, 0);
@@ -312,8 +319,8 @@ function main(data) {
 
     /**
      * 创建全局光照，包含环境光及平行光。
-     * @param color: 指定环境光颜色，默认白色。
-     * @param intensity: 指定环境光强度，默认为1。
+     * @param {*} color: 指定环境光颜色，默认白色。
+     * @param {number} intensity: 指定环境光强度，默认为1。
      */
     function createLight(color = 'white', intensity = 1) {
       envLight = new THREE.AmbientLight(color, intensity);
@@ -330,11 +337,18 @@ function main(data) {
 
   /**
    * 根据地图数据创建地图及建筑。
-   * @param mapData: json格式的地图数据。
+   * @param {object} mapData: json格式的地图数据。
+   * @param {Array} mapData.blockInfo: 砖块对象数组。
    */
   function createMap(mapData) {
     const {
-      mapWidth, mapHeight, resources, blockInfo, light, waves, enemyNum,
+      mapWidth,
+      mapHeight,
+      resources,
+      blockInfo,
+      light,
+      waves,
+      enemyNum,
     } = mapData;
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
@@ -350,7 +364,7 @@ function main(data) {
 
     /* 构建地图几何 */
     {
-      const mapGeo = new MapGeometry(9, 4, blockInfo);
+      const mapGeo = new MapGeometry(mapWidth, mapHeight, blockInfo);
       const {
         positions,
         normals,
@@ -415,16 +429,23 @@ function main(data) {
 
     /* 定义地图灯光 */
     {
-      const { envIntensity, envColor } = light;
+      const {
+        envIntensity,
+        envColor,
+        color,
+        intensity,
+        hour,
+        phi,
+      } = light;
       envLight.intensity = envIntensity;
       envLight.color.set(envColor);
-      sunLight.color.set(light.color);
-      sunLight.intensity = light.intensity;
+      sunLight.color.set(color);
+      sunLight.intensity = intensity;
 
       const hasHour = Object.prototype.hasOwnProperty.call(light, 'hour');
-      let hour = hasHour ? light.hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
-      if (hour < 6 || hour > 18) { // 定义夜间光源
-        hour = hour < 6 ? hour + 12 : hour % 12;
+      let mapHour = hasHour ? hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
+      if (mapHour < 6 || mapHour > 18) { // 定义夜间光源
+        mapHour = mapHour < 6 ? mapHour + 12 : mapHour % 12;
         sunLight.intensity = 0.6;
         sunLight.color.set(0xffffff);
         envLight.color.set(0x5C6C7C);
@@ -432,13 +453,13 @@ function main(data) {
 
       const hasPhi = Object.prototype.hasOwnProperty.call(light, 'phi');
       const randomDeg = Math.floor(Math.random() * 360) + 1;
-      const phi = hasPhi ? light.phi : randomDeg; // 如果未指定方位角，则使用随机方位角
+      const mapPhi = hasPhi ? phi : randomDeg; // 如果未指定方位角，则使用随机方位角
       const lightRad = maxSize; // 光源半径为地图最大尺寸
-      const theta = 140 - hour * 12; // 从地图时间计算天顶角
+      const theta = 140 - mapHour * 12; // 从地图时间计算天顶角
       const cosTheta = Math.cos(THREE.Math.degToRad(theta)); // 计算光源位置
       const sinTheta = Math.sin(THREE.Math.degToRad(theta));
-      const cosPhi = Math.cos(THREE.Math.degToRad(phi));
-      const sinPhi = Math.sin(THREE.Math.degToRad(phi));
+      const cosPhi = Math.cos(THREE.Math.degToRad(mapPhi));
+      const sinPhi = Math.sin(THREE.Math.degToRad(mapPhi));
       const lightPosX = lightRad * sinTheta * cosPhi + centerX;
       const lightPosY = lightRad * cosTheta;
       const lightPosZ = lightRad * sinTheta * sinPhi + centerZ;
@@ -464,7 +485,7 @@ function main(data) {
 
   /**
    * 初始化敌人并更新维护敌人状态。
-   * @param axisTime: 时间轴时刻。
+   * @param {number} axisTime: 时间轴时刻。
    */
   function updateEnemyStatus(axisTime) {
     if (map.waves.length) {
@@ -492,7 +513,7 @@ function main(data) {
 
   /**
    * 更新敌人当前坐标。
-   * @param rAFTime: 当前帧时刻。
+   * @param {number} rAFTime: 当前帧时刻。
    */
   function updateEnemyPosition(rAFTime) {
     const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
@@ -548,8 +569,8 @@ function main(data) {
 
   /**
    * 游戏状态更新函数。
-   * @param axisTime: 时间轴时刻。
-   * @param rAFTime: 当前帧时刻。
+   * @param {number} axisTime: 时间轴时刻。
+   * @param {number} rAFTime: 当前帧时刻。
    */
   function updateMap(axisTime, rAFTime) {
     if (map.enemyNum) { // 检查剩余敌人数量
@@ -564,7 +585,7 @@ function main(data) {
   }
 
 
-  /* 检查渲染尺寸是否改变 */
+  /** 检查渲染尺寸是否改变 */
   function checkResize() {
     const container = renderer.domElement;
     const width = container.clientWidth;
@@ -579,7 +600,7 @@ function main(data) {
     }
   }
 
-  /* 静态动画循环，只能由requestStaticRender调用 */
+  /** 静态动画循环，只能由requestStaticRender调用 */
   function staticRender() {
     // console.log('静态');
     needRender = false;
@@ -588,7 +609,7 @@ function main(data) {
     renderer.render(scene, camera);
   }
 
-  /* 静态渲染入口点函数 */
+  /** 静态渲染入口点函数 */
   function requestStaticRender() {
     sysStatus.renderType = 'static';
     if (!needRender) {
@@ -597,7 +618,10 @@ function main(data) {
     }
   }
 
-  /* 动态动画循环，只能由requestDynamicRender及动画控制函数调用 */
+  /**
+   * 动态动画循环，只能由requestDynamicRender及动画控制函数调用。
+   * @param {number} rAFTime: 当前帧时刻。
+   */
   function dynamicRender(rAFTime) {
     // console.log('动态');
     // eslint-disable-next-line max-len
@@ -615,7 +639,7 @@ function main(data) {
     }
   }
 
-  /* 动态渲染入口点函数 */
+  /** 动态渲染入口点函数 */
   function requestDynamicRender() {
     sysStatus.renderType = 'dynamic';
     document.addEventListener('visibilitychange', () => {
@@ -628,14 +652,14 @@ function main(data) {
   }
 
 
-  /* 动画暂停函数 */
+  /** 动画暂停函数 */
   function pauseAnimate() {
     setState(statusEnum.CONTINUE); // 必须放在stop()之前
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
   }
 
-  /* 继续动画函数 */
+  /** 继续动画函数 */
   function continueAnimate() {
     setState(statusEnum.PAUSE);
     timeAxis.continue();
@@ -643,7 +667,7 @@ function main(data) {
     rAF = requestAnimationFrame(dynamicRender);
   }
 
-  /* 重置动画函数 */
+  /** 重置动画函数 */
   function resetAnimate() { // TODO: 重置游戏应为重玩本图
     cancelAnimationFrame(rAF);
     timeAxis.stop(); // 先取消动画后再停止时间轴
@@ -651,7 +675,10 @@ function main(data) {
     setState(statusEnum.RESET);
   }
 
-  /* 改变时间轴控制按钮状态及渲染模式 */
+  /**
+   * 改变时间轴控制按钮状态及渲染模式
+   * @param {string} state: 状态枚举值。
+   */
   function setState(state) {
     if (state === statusEnum.CONTINUE) {
       starter.textContent = '继续';
@@ -677,7 +704,7 @@ function main(data) {
   }
 
 
-  /* 创建辅助对象，包括灯光参数控制器等 */
+  /** 创建辅助对象，包括灯光参数控制器等 */
   function createHelpers() {
     const gui = new dat.GUI();
     const lightFolder = gui.addFolder('灯光');
@@ -731,7 +758,7 @@ function main(data) {
 
 /**
  * 设置加载管理器的回调函数。
- * @param data: 地图数据，需要传递给main()函数。
+ * @param {object} data: 地图数据，需要传递给main()函数。
  */
 function setLoadingManager(data) {
   const loadingBar = document.querySelector('#loading');
@@ -848,7 +875,8 @@ function setLoadingManager(data) {
 
 /**
  * 加载资源，包括贴图，模型等。
- * @param res: 需加载的资源对象。
+ * @param {object} res: 需加载的资源对象。
+ * @param {object} res.block: 砖块贴图资源对象。
  */
 function loadResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
