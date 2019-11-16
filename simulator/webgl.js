@@ -112,55 +112,55 @@ class MapGeometry {
       { // 左侧
         normal: [-1, 0, 0],
         corners: [
-          [0, 1, 0],
-          [0, 0, 0],
-          [0, 1, 1],
-          [0, 0, 1],
+          { pos: [0, 1, 0], uv: [0, 1] },
+          { pos: [0, 0, 0], uv: [0, 0] },
+          { pos: [0, 1, 1], uv: [1, 1] },
+          { pos: [0, 0, 1], uv: [1, 0] },
         ],
       },
       { // 右侧
         normal: [1, 0, 0],
         corners: [
-          [1, 1, 1],
-          [1, 0, 1],
-          [1, 1, 0],
-          [1, 0, 0],
-        ],
-      },
-      { // 底侧
-        normal: [0, -1, 0],
-        corners: [
-          [1, 0, 1],
-          [0, 0, 1],
-          [1, 0, 0],
-          [0, 0, 0],
-        ],
-      },
-      { // 顶侧
-        normal: [0, 1, 0],
-        corners: [
-          [0, 1, 1],
-          [1, 1, 1],
-          [0, 1, 0],
-          [1, 1, 0],
+          { pos: [1, 1, 1], uv: [0, 1] },
+          { pos: [1, 0, 1], uv: [0, 0] },
+          { pos: [1, 1, 0], uv: [1, 1] },
+          { pos: [1, 0, 0], uv: [1, 0] },
         ],
       },
       { // 上侧
         normal: [0, 0, -1],
         corners: [
-          [1, 0, 0],
-          [0, 0, 0],
-          [1, 1, 0],
-          [0, 1, 0],
+          { pos: [1, 0, 0], uv: [0, 0] },
+          { pos: [0, 0, 0], uv: [1, 0] },
+          { pos: [1, 1, 0], uv: [0, 1] },
+          { pos: [0, 1, 0], uv: [1, 1] },
         ],
       },
       { // 下侧
         normal: [0, 0, 1],
         corners: [
-          [0, 0, 1],
-          [1, 0, 1],
-          [0, 1, 1],
-          [1, 1, 1],
+          { pos: [0, 0, 1], uv: [0, 0] },
+          { pos: [1, 0, 1], uv: [1, 0] },
+          { pos: [0, 1, 1], uv: [0, 1] },
+          { pos: [1, 1, 1], uv: [1, 1] },
+        ],
+      },
+      { // 底侧
+        normal: [0, -1, 0],
+        corners: [
+          { pos: [1, 0, 1], uv: [1, 0] },
+          { pos: [0, 0, 1], uv: [0, 0] },
+          { pos: [1, 0, 0], uv: [1, 1] },
+          { pos: [0, 0, 0], uv: [0, 1] },
+        ],
+      },
+      { // 顶侧
+        normal: [0, 1, 0],
+        corners: [
+          { pos: [0, 1, 1], uv: [1, 1] },
+          { pos: [1, 1, 1], uv: [0, 1] },
+          { pos: [0, 1, 0], uv: [1, 0] },
+          { pos: [1, 1, 0], uv: [0, 0] },
         ],
       },
     ];
@@ -183,34 +183,54 @@ class MapGeometry {
   }
 
   generateGeometry() {
+    /**
+     * 构造地图几何数据及贴图映射数据。
+     * @namespace  block.heightAlpha: 砖块的高度系数。
+     * @return Object: 返回顶点坐标，法向量，顶点序列，UV信息，侧面顶点组信息的对象。
+     */
     const positions = []; // 存放顶点坐标
     const normals = []; // 存放面法向量
     const indices = []; // 存放顶点序列索引
+    const uvs = []; // 存放顶点UV信息
+    const sideGroup = []; // 侧面贴图顶点组信息，每个元素是一个组的[start, count]
+    let start = 0; // 贴图顶点组开始索引
+    let count = 0; // 贴图单顶点组计数
+
     for (let row = 0; row < this.height; row += 1) { // 遍历整个地图几何
       for (let column = 0; column < this.width; column += 1) {
         const thisBlock = this._getBlock(row, column);
         if (thisBlock) { // 该处有方块（不为null）才构造几何
           const thisHeight = thisBlock.heightAlpha;
 
-          for (const { normal, corners } of this.faces) {
+          this.faces.forEach(({ corners, normal }) => {
             const sideBlock = this._getBlock(row + normal[2], column + normal[0]);
             const sideHeight = sideBlock ? sideBlock.heightAlpha : 0; // 当前侧块的高度系数
             if (thisHeight - sideHeight > 0 || normal[1]) { // 当前侧面高于侧块或是上下表面
               const ndx = positions.length / 3; // 置于首次改变position数组之前
-              corners.forEach((pos) => {
+              corners.forEach(({ pos, uv }) => {
                 const x = pos[0] * blockUnit;
                 const y = pos[1] * thisHeight * blockUnit;
                 const z = pos[2] * blockUnit;
                 positions.push(x + column * blockUnit, y, z + row * blockUnit);
                 normals.push(...normal);
+                uvs.push(...uv);
               });
               indices.push(ndx, ndx + 1, ndx + 2, ndx + 2, ndx + 1, ndx + 3);
             }
-          }
+          });
+          count = indices.length - 12 - start; // 侧面组顶点新增数量
+          sideGroup.push([start, count]); // 加入侧面顶点数据
+          start = indices.length; // 下一组顶点的开始索引
         }
       }
     }
-    return { positions, normals, indices };
+    return {
+      positions,
+      normals,
+      uvs,
+      indices,
+      sideGroup,
+    };
   }
 }
 
@@ -314,7 +334,7 @@ function main(data) {
    */
   function createMap(mapData) {
     const {
-      mapWidth, mapHeight, blockInfo, light, waves, enemyNum,
+      mapWidth, mapHeight, resources, blockInfo, light, waves, enemyNum,
     } = mapData;
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
@@ -331,13 +351,44 @@ function main(data) {
     /* 构建地图几何 */
     {
       const mapGeo = new MapGeometry(9, 4, blockInfo);
-      const { positions, normals, indices } = mapGeo.generateGeometry();
+      const {
+        positions,
+        normals,
+        uvs,
+        indices,
+        sideGroup,
+      } = mapGeo.generateGeometry();
       const geometry = new THREE.BufferGeometry();
-      const material = new THREE.MeshLambertMaterial({ color: 'green', side: THREE.DoubleSide });
       geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
       geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+      geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2));
       geometry.setIndex(indices);
-      const mesh = new THREE.Mesh(geometry, material);
+
+      const materialList = []; // 创建所需的所有砖块表面贴图材质
+      const materialMap = { top: {}, side: {}, bottom: {} }; // 材质类型在材质列表中的索引
+      const { block } = resources;
+      ['top', 'side', 'bottom'].forEach((pos) => {
+        block[pos].forEach((type) => {
+          materialList.push(resList.block[pos][type].mat);
+          materialMap[pos][type] = materialList.length - 1;
+        });
+      });
+
+      blockInfo.forEach((item, ndx) => {
+        const { texture } = item;
+        const top = texture.top ? texture.top : 'default';
+        const side = texture.side ? texture.side : 'default';
+        const bottom = texture.bottom ? texture.bottom : 'default';
+        const [start, count] = sideGroup[ndx];
+        if (count) { // 侧面需要建面时添加侧面组
+          geometry.addGroup(start, count, materialMap.side[side]);
+        }
+        geometry.addGroup(start + count, 6, materialMap.bottom[bottom]); // 底面组
+        geometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
+      });
+      const mesh = new THREE.Mesh(geometry, materialList);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       scene.add(mesh);
     }
 
@@ -446,7 +497,7 @@ function main(data) {
   function updateEnemyPosition(rAFTime) {
     const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
 
-    for (const enemy of activeEnemy) {
+    activeEnemy.forEach((enemy) => {
       const { path, inst } = enemy;
       if (path.length) { // 判定敌人是否到达终点
         if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在停顿中
@@ -492,7 +543,7 @@ function main(data) {
         // eslint-disable-next-line max-len
         // console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
       }
-    }
+    });
   }
 
   /**
@@ -669,7 +720,6 @@ function main(data) {
     // scene.add(helper);
   }
 
-
   init(); // 初始化全局变量
   createMap(data); // 创建地图
   createHelpers(); // 创建辅助对象
@@ -690,9 +740,13 @@ function setLoadingManager(data) {
   const right = document.querySelector('#right');
   let errorCounter = 0; // 错误计数
 
-  /* 创建可复用的几何体及材质信息 */
-  function createGeometry() {
-    for (const item of Object.values(resList.IOPoint)) { // 构建进出点模型
+  /**
+   * 创建当前地图所需的几何体及材质信息。
+   * @param res: 地图需要加载的资源信息（resources属性）。
+   */
+  function createGeometry(res) {
+    const { block, enemy } = res;
+    Object.values(resList.IOPoint).forEach((item) => { // 构建进出点模型
       const { topTex, sideTex } = item;
       const topMat = new THREE.MeshBasicMaterial({
         alphaTest: 0.6,
@@ -706,22 +760,34 @@ function setLoadingManager(data) {
         side: THREE.DoubleSide,
         transparent: true,
       });
-      item.mat = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+      Object.defineProperty(item, 'mat', [sideMat, sideMat, topMat, sideMat, sideMat, sideMat]);
       const edge = blockUnit - 0.01;
-      item.geo = new THREE.BoxBufferGeometry(edge, edge, edge);
-    }
+      Object.defineProperty(item, 'geo', new THREE.BoxBufferGeometry(edge, edge, edge));
+    });
 
-    for (const item of Object.values(resList.enemy)) { // 构建敌人模型
-      const { width, height } = item.tex.image;
-      item.geo = new THREE.PlaneBufferGeometry(width, height);
-      item.mat = new THREE.MeshBasicMaterial({
+    ['top', 'side', 'bottom'].forEach((pos) => { // 构建砖块贴图材质
+      block[pos].forEach((type) => {
+        const thisTex = resList.block[pos][type].tex;
+        resList.block[pos][type].mat = new THREE.MeshPhysicalMaterial({
+          metalness: 0.1,
+          roughness: 0.6,
+          map: thisTex,
+        });
+      });
+    });
+
+    enemy.forEach((item) => { // 构建敌人模型
+      const thisEnemy = resList.enemy[item];
+      const { width, height } = thisEnemy.tex.image;
+      thisEnemy.geo = new THREE.PlaneBufferGeometry(width, height);
+      thisEnemy.mat = new THREE.MeshBasicMaterial({
         alphaTest: 0.6,
         depthWrite: false,
-        map: item.tex,
+        map: thisEnemy.tex,
         side: THREE.DoubleSide,
         transparent: true,
       });
-    }
+    });
   }
 
   /* 控制进度条及画布显隐 */
@@ -768,7 +834,8 @@ function setLoadingManager(data) {
   /* 加载完成回调函数 */
   function loadingFinished() {
     if (!errorCounter) {
-      createGeometry();
+      const { resources } = data;
+      createGeometry(resources);
       showCanvas();
       main(data); // 启动主函数
     }
@@ -790,32 +857,32 @@ function loadResources(res) {
 
   ['top', 'side', 'bottom'].forEach((surf) => { // 加载砖块贴图
     const texArray = block[surf];
-    texArray.push('default'); // 砖块默认贴图均需要加载
-    for (const name of texArray) {
+    texArray.forEach((name) => {
       const item = resList.block[surf][name];
       item.tex = texLoader.load(item.url);
       item.tex.encoding = THREE.sRGBEncoding;
       item.tex.anisotropy = 16;
-    }
+    });
   });
 
   ['destination', 'entry'].forEach((con) => { // 加载进出点贴图
     const texArray = resList.IOPoint[con];
-    for (const item of Object.values(texArray)) {
-      item.tex = texLoader.load(item.url);
-      item.tex.encoding = THREE.sRGBEncoding;
-      item.tex.anisotropy = 16;
-    }
+    Object.values(texArray).forEach((item) => {
+      const texture = texLoader.load(item.url);
+      texture.encoding = THREE.sRGBEncoding;
+      texture.anisotropy = 16;
+      Object.defineProperty(item, 'tex', texture);
+    });
   });
 
-  for (const name of enemy) { // 加载敌人贴图
+  enemy.forEach((name) => { // 加载敌人贴图
     const item = resList.enemy[name];
     item.tex = texLoader.load(item.url);
     item.tex.encoding = THREE.sRGBEncoding;
     item.tex.anisotropy = 16;
-  }
+  });
 
-  for (const name of model) { // 加载建筑模型
+  model.forEach((name) => { // 加载建筑模型
     const item = resList.model[name];
     gltfLoader.load(item.url, (gltf) => {
       item.gltf = {};
@@ -824,7 +891,7 @@ function loadResources(res) {
         item.gltf[type] = obj;
       });
     });
-  }
+  });
 
   // for (const name of operator) { // 加载干员贴图
   //   const item = texList.operator[name];
