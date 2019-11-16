@@ -5,20 +5,20 @@ import { blockUnit } from './basic.js';
 /**
  * 建筑的抽象基类。
  * 属性:
- *   rowSpan/colSpan: 建筑跨越的行/列。
- *   row/column: 建筑所在的行/列（左上角）。
- *   mesh: 建筑网格实体。
- *   position: 建筑所在的绝对坐标。
+ *   rowSpan/colSpan - 建筑跨越的行/列。
+ *   row/column - 建筑所在的行/列（左上角）。
+ *   mesh - 建筑网格实体。
+ *   position - 建筑所在的绝对坐标。
  * 方法:
- *   setLocation(row, column, block): 设置建筑所在的位置并设置建筑所在实际坐标。
- *   normalize(): 建筑大小标准化为绑定砖块尺寸大小。
+ *   setLocation(row, column, block) - 设置建筑所在的位置并设置建筑所在实际坐标。
+ *   normalize() - 建筑大小标准化为绑定砖块尺寸大小。
  */
 class Construction {
   /**
    * 定义地图建筑的位置及网格实体。
-   * @param colSpan: 建筑跨越的列数。
-   * @param rowSpan: 建筑跨越的行数。
-   * @param mesh: 建筑使用的网格实体。
+   * @param colSpan - 建筑跨越的列数。
+   * @param rowSpan - 建筑跨越的行数。
+   * @param mesh - 建筑使用的网格实体。
    */
   constructor(rowSpan, colSpan, mesh) {
     this.rowSpan = rowSpan;
@@ -28,9 +28,9 @@ class Construction {
 
   /**
    * 设置建筑所在的位置并设置建筑所在的实际坐标。
-   * @param row: 建筑所在的行。
-   * @param column: 建筑所在的列。
-   * @param block: 绑定的首个（左上角）砖块。
+   * @param row - 建筑所在的行。
+   * @param column - 建筑所在的列。
+   * @param block - 绑定的首个（左上角）砖块。
    */
   setLocation(row, column, block) {
     this.row = row;
@@ -65,7 +65,7 @@ class Construction {
 class IOPoint extends Construction {
   /**
    * 预设进入/目标点建筑，内部构建。
-   * @param mesh: 当前建筑的网格模型。
+   * @param mesh - 当前建筑的网格模型。
    */
   constructor(mesh) {
     super(1, 1, mesh);
@@ -76,7 +76,7 @@ class IOPoint extends Construction {
 class BuiltinCons extends Construction {
   /**
    * 预设的建筑/装饰建筑，外部导入。
-   * @param mesh: 导入的建筑模型mesh。
+   * @param mesh - 导入的建筑模型mesh。
    */
   constructor(mesh) {
     super(1, 1, mesh);
