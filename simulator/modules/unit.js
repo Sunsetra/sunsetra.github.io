@@ -2,19 +2,20 @@
 
 import { blockUnit } from './basic.js';
 
-/**
- * 所有单位的抽象基类。
- * 属性:
- *   mesh - 实体网格模型。
- *   width/height - 最终模型尺寸（仅X向的宽度及Y向的高度）。
- *   position - 模型的坐标（X向及Z向为抽象坐标，Y向为绝对坐标）。
- */
+
 class Unit {
   /**
-   * 定义单位模型及相对大小。
-   * @param mesh - 单位网格模型。
-   * @param sizeAlpha - 模型大小相对于单位砖块长度的尺寸系数。
-   * @param hp - 单位血量。
+   * 定义单位模型及相对大小
+   * @param {THREE.Object3D} mesh - 单位网格模型
+   * @param {THREE.Material} mesh.material - 模型材质
+   * @param {THREE.Vector3} mesh.scale - 模型缩放比例系数
+   * @param {number} sizeAlpha - 模型大小相对于单位砖块长度的尺寸系数
+   * @param {number} hp - 单位血量
+   *
+   * @property {THREE.Object3D} mesh - 单位网格模型
+   * @property {number} width - 单位模型宽度
+   * @property {number} height - 单位模型高度
+   * @property {THREE.Vector3} position - 单位模型所在位置
    */
   constructor(mesh, sizeAlpha, hp) {
     const { width } = mesh.material.map.image;
@@ -30,9 +31,9 @@ class Unit {
   }
 
   /**
-   * 设置模型的当前位置（可不设置Y向坐标）。
-   * 注：其中X向及Z向为抽象坐标，Y向为绝对坐标.
-   * @param pos - 包括三向坐标的对象（可不包含Y向）。
+   * 设置模型的当前位置（可不设置Y向坐标）
+   * 注：其中X向及Z向为抽象坐标，Y向为绝对坐标
+   * @param {object} pos - 包括三向坐标的对象（可不包含Y向）
    */
   set position(pos) {
     this._posX = pos.x;
@@ -52,11 +53,11 @@ class Unit {
 
 class Enemy extends Unit {
   /**
-   * 敌方单位的抽象基类，增加了移动速度属性。
-   * @param mesh - 敌人网格模型。
-   * @param size - 模型大小相对于单位砖块长度的尺寸系数。
-   * @param speed - 敌人的移动速度。
-   * @param hp - 敌人血量。
+   * 敌方单位的抽象基类，增加了移动速度属性
+   * @param {THREE.Object3D} mesh - 敌人网格模型
+   * @param {number} size - 模型大小相对于单位砖块长度的尺寸系数
+   * @param {number} speed - 敌人的移动速度
+   * @param {number} hp - 敌人血量
    */
   constructor(mesh, size, speed, hp) {
     super(mesh, size, hp);
@@ -67,8 +68,8 @@ class Enemy extends Unit {
 
 class Slime extends Enemy {
   /**
-   * 基础源石虫类，速度0.5，尺寸系数0.7，血量550。
-   * @param mesh - 源石虫网格模型。
+   * 基础源石虫类，速度0.5，尺寸系数0.7，血量550
+   * @param {THREE.Object3D} mesh - 源石虫网格模型
    */
   constructor(mesh) {
     super(mesh, 0.7, 0.5, 550);
@@ -78,8 +79,8 @@ class Slime extends Enemy {
 
 class Saber extends Enemy {
   /**
-   * 基础士兵类，速度0.55，尺寸系数0.7，血量1650。
-   * @param mesh - 源石虫网格模型。
+   * 基础士兵类，速度0.55，尺寸系数0.7，血量1650
+   * @param {THREE.Object3D} mesh - 源石虫网格模型
    */
   constructor(mesh) {
     super(mesh, 0.7, 0.55, 1650);
@@ -89,10 +90,10 @@ class Saber extends Enemy {
 
 // class Operator extends Unit {
 //   /**
-//    * 干员的抽象基类。
-//    * @param mesh - 干员网格模型。
-//    * @param size - 模型大小相对于单位砖块长度的尺寸系数。
-//    * @param hp - 干员血量。
+//    * 干员的抽象基类
+//    * @param mesh - 干员网格模型
+//    * @param size - 模型大小相对于单位砖块长度的尺寸系数
+//    * @param hp - 干员血量
 //    */
 //   constructor(mesh, size, hp) {
 //     super(mesh, size, hp);
@@ -100,4 +101,7 @@ class Saber extends Enemy {
 // }
 
 
-export { Slime, Saber };
+export {
+  Slime,
+  Saber,
+};

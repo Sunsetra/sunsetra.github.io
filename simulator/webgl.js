@@ -73,10 +73,10 @@ const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非
 };
 
 /**
- * @function - 模型前处理函数，包括复制mesh，旋转模型以及新建实例。
- * @param {object} consInfo - 模型信息对象。
- * @param {string} consInfo.desc - 模型类型名称。
- * @returns {Construction} - 返回建筑对象实例。
+ * @function - 模型前处理函数，包括复制mesh，旋转模型以及新建实例
+ * @param {object} consInfo - 模型信息对象
+ * @param {string} consInfo.desc - 模型类型名称
+ * @returns {Construction} - 返回建筑对象实例
  */
 const modelShop = (consInfo) => {
   const { desc, type, rotation } = consInfo;
@@ -93,8 +93,8 @@ const modelShop = (consInfo) => {
 
 
 /**
- * 游戏主函数，在资源加载完成后执行。
- * @param {object} data - 地图数据对象。
+ * 游戏主函数，在资源加载完成后执行
+ * @param {object} data - 地图数据对象
  */
 function main(data) {
   const canvas = document.querySelector('canvas');
@@ -118,9 +118,9 @@ function main(data) {
 
   function init() {
     /**
-     * 创建全局渲染器，当webgl2可用时使用webgl2上下文。
-     * @param {boolean} antialias - 是否开启抗锯齿，默认开启。
-     * @param {boolean} shadow - 是否开启阴影贴图，默认开启。
+     * 创建全局渲染器，当webgl2可用时使用webgl2上下文
+     * @param {boolean} antialias - 是否开启抗锯齿，默认开启
+     * @param {boolean} shadow - 是否开启阴影贴图，默认开启
      */
     function createRender(antialias = true, shadow = true) {
       let context;
@@ -139,9 +139,9 @@ function main(data) {
     }
 
     /**
-     * 创建全局场景。
-     * @param {*} color - 指定场景/雾气的背景色，默认黑色。
-     * @param {boolean} fog - 控制是否开启场景雾气，默认开启。
+     * 创建全局场景
+     * @param {*} color - 指定场景/雾气的背景色，默认黑色
+     * @param {boolean} fog - 控制是否开启场景雾气，默认开启
      */
     function createScene(color = 'black', fog = true) {
       scene = new THREE.Scene();
@@ -170,9 +170,9 @@ function main(data) {
     }
 
     /**
-     * 创建全局光照，包含环境光及平行光。
-     * @param {*} color - 指定环境光颜色，默认白色。
-     * @param {number} intensity - 指定环境光强度，默认为1。
+     * 创建全局光照，包含环境光及平行光
+     * @param {*} color - 指定环境光颜色，默认白色
+     * @param {number} intensity - 指定环境光强度，默认为1
      */
     function createLight(color = 'white', intensity = 1) {
       envLight = new THREE.AmbientLight(color, intensity);
@@ -188,9 +188,9 @@ function main(data) {
   }
 
   /**
-   * 根据地图数据创建地图及建筑。
-   * @param {object} mapData - json格式的地图数据。
-   * @param {Array} mapData.blockInfo - 砖块对象数组。
+   * 根据地图数据创建地图及建筑
+   * @param {object} mapData - json格式的地图数据
+   * @param {Array} mapData.blockInfo - 砖块对象数组
    */
   function createMap(mapData) {
     const {
@@ -241,7 +241,12 @@ function main(data) {
       });
 
       blockInfo.forEach((item, ndx) => {
-        const { texture } = item;
+        const {
+          row,
+          column,
+          texture,
+          consInfo,
+        } = item;
         const top = texture.top ? texture.top : 'default';
         const side = texture.side ? texture.side : 'default';
         const bottom = texture.bottom ? texture.bottom : 'default';
@@ -251,7 +256,13 @@ function main(data) {
         }
         geometry.addGroup(start + count, 6, materialMap.bottom[bottom]); // 底面组
         geometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
+
+        if (consInfo) { // 有建筑时添加建筑
+          const con = mapGeo.setConstruction(row, column, modelShop(consInfo));
+          scene.add(con.mesh);
+        }
       });
+
       const mesh = new THREE.Mesh(geometry, materialList);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -336,8 +347,8 @@ function main(data) {
   }
 
   /**
-   * 初始化敌人并更新维护敌人状态。
-   * @param {number} axisTime - 时间轴时刻。
+   * 初始化敌人并更新维护敌人状态
+   * @param {number} axisTime - 时间轴时刻
    */
   function updateEnemyStatus(axisTime) {
     if (map.waves.length) {
@@ -364,8 +375,8 @@ function main(data) {
   }
 
   /**
-   * 更新敌人当前坐标。
-   * @param {number} rAFTime - 当前帧时刻。
+   * 更新敌人当前坐标
+   * @param {number} rAFTime - 当前帧时刻
    */
   function updateEnemyPosition(rAFTime) {
     const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
@@ -420,9 +431,9 @@ function main(data) {
   }
 
   /**
-   * 游戏状态更新函数。
-   * @param {number} axisTime - 时间轴时刻。
-   * @param {number} rAFTime - 当前帧时刻。
+   * 游戏状态更新函数
+   * @param {number} axisTime - 时间轴时刻
+   * @param {number} rAFTime - 当前帧时刻
    */
   function updateMap(axisTime, rAFTime) {
     if (map.enemyNum) { // 检查剩余敌人数量
@@ -471,8 +482,8 @@ function main(data) {
   }
 
   /**
-   * 动态动画循环，只能由requestDynamicRender及动画控制函数调用。
-   * @param {number} rAFTime - 当前帧时刻。
+   * 动态动画循环，只能由requestDynamicRender及动画控制函数调用
+   * @param {number} rAFTime - 当前帧时刻
    */
   function dynamicRender(rAFTime) {
     // console.log('动态');
@@ -529,7 +540,7 @@ function main(data) {
 
   /**
    * 改变时间轴控制按钮状态及渲染模式
-   * @param {string} state - 状态枚举值。
+   * @param {string} state - 状态枚举值
    */
   function setState(state) {
     if (state === statusEnum.CONTINUE) {
@@ -609,8 +620,8 @@ function main(data) {
 
 
 /**
- * 设置加载管理器的回调函数。
- * @param {object} data - 地图数据，需要传递给main()函数。
+ * 设置加载管理器的回调函数
+ * @param {object} data - 地图数据，需要传递给main()函数
  */
 function setLoadingManager(data) {
   const loadingBar = document.querySelector('#loading');
@@ -620,8 +631,8 @@ function setLoadingManager(data) {
   let errorCounter = 0; // 错误计数
 
   /**
-   * 创建当前地图所需的几何体及材质信息。
-   * @param res - 地图需要加载的资源信息（resources属性）。
+   * 创建当前地图所需的几何体及材质信息
+   * @param res - 地图需要加载的资源信息（resources属性）
    */
   function createGeometry(res) {
     const { block, enemy } = res;
@@ -639,9 +650,9 @@ function setLoadingManager(data) {
         side: THREE.DoubleSide,
         transparent: true,
       });
-      Object.defineProperty(item, 'mat', [sideMat, sideMat, topMat, sideMat, sideMat, sideMat]);
+      Object.defineProperty(item, 'mat', { value: [sideMat, sideMat, topMat, sideMat, sideMat, sideMat] });
       const edge = blockUnit - 0.01;
-      Object.defineProperty(item, 'geo', new THREE.BoxBufferGeometry(edge, edge, edge));
+      Object.defineProperty(item, 'geo', { value: new THREE.BoxBufferGeometry(edge, edge, edge) });
     });
 
     ['top', 'side', 'bottom'].forEach((pos) => { // 构建砖块贴图材质
@@ -726,9 +737,9 @@ function setLoadingManager(data) {
 }
 
 /**
- * 加载资源，包括贴图，模型等。
- * @param {object} res - 需加载的资源对象。
- * @param {object} res.block - 砖块贴图资源对象。
+ * 加载资源，包括贴图，模型等
+ * @param {object} res - 需加载的资源对象
+ * @param {object} res.block - 砖块贴图资源对象
  */
 function loadResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
@@ -751,7 +762,7 @@ function loadResources(res) {
       const texture = texLoader.load(item.url);
       texture.encoding = THREE.sRGBEncoding;
       texture.anisotropy = 16;
-      Object.defineProperty(item, 'tex', texture);
+      Object.defineProperty(item, 'tex', { value: texture });
     });
   });
 
