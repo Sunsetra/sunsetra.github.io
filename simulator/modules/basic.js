@@ -7,76 +7,60 @@ const statusEnum = Object.freeze({ // 状态常量
   CONTINUE: 'continue',
 });
 
-/**
- * 地图信息类
- * 属性:
- *   width/height - 地图的长/宽（格数）
- *   enemyNum - 当前地图的敌人总数
- *   waves - 当前地图的敌人波次数据
- * 方法:
- *   getBlock(row, column) - 返回指定行/列的砖块
- *   getBlocks() - 返回所有砖块列表
- *   setBlock(row, column, block) - 设置/替换指定位置的砖块
- *   getCon(row, column) - 返回指定位置的建筑
- *   getCons() - 返回所有建筑列表
- *   addCon(row, column, con) - 向指定位置添加/替换建筑
- *   removeCon(row, column) - 移除指定位置的建筑
- */
-class MapInfo {
-  /**
-   * 存储地图的基本信息，包括敌人等
-   * @param {number} width - 定义地图在X方向的格数
-   * @param {number} height - 定义地图在Z方向的格数
-   * @param {number} enemyNum - 敌人总数，用以界定何时游戏结束
-   * @param {object} waves - 敌人波次数据
-   */
-  constructor(width, height, enemyNum, waves) {
-    this.width = width > 0 ? width : 2;
-    this.height = height > 0 ? height : 2;
-    this.enemyNum = enemyNum;
-    this.waves = waves;
+class ResourceTracker {
+  constructor() {
+    this.resources = new Set();
   }
 
-  // /**
-  //  * 返回指定行/列的砖块
-  //  * @param row - 砖块所在行，从0开始
-  //  * @param column - 砖块所在列，从0开始
-  //  * @returns {Block} - 返回指定位置的砖块对象
-  //  */
-  // getBlock(row, column) {
-  //   const index = row * this.width + column;
-  //   return this._blocks[index];
-  // }
+  /**
+   * 向追踪集合中添加资源
+   * @param resource
+   * @returns {{dispose}|*}
+   */
+  track(resource) {
+    if (resource.dispose) {
+      this.resources.add(resource);
+    }
+    return resource;
+  }
 
-  // /**
-  //  * 替换地图中指定行/列的砖块
-  //  * @param row - 要替换的砖块所在的行，从0开始
-  //  * @param column - 要替换的砖块所在的列，从0开始
-  //  * @param block - 要替换为的砖块对象
-  //  * @returns {Block} - 返回新设置的砖块对象
-  //  */
-  // setBlock(row, column, block) {
-  //   const index = row * this.width + column;
-  //   block.calBlockPosition(row, column);
-  //   this._blocks[index] = block;
-  //   return this._blocks[index];
-  // }
+  /**
+   * 从追踪集合中删除资源
+   * @param resource
+   */
+  untrack(resource) {
+    this.resources.delete(resource);
+  }
+
+  /** 释放追踪集合中的资源 */
+  dispose() {
+    this.resources.forEach((resource) => {
+      resource.dispose();
+    });
+    this.resources.clear();
+  }
 }
 
 
-class MapGeometry {
+class Map {
   /**
-   * 地图几何类，用于构建及存储地图的几何信息，包括尺寸、砖块及建筑信息
+   * 地图类，用于构建及存储地图的几何信息及游戏信息，包括尺寸、砖块及建筑信息
    * @param {number} width - 地图宽度（总列数）
    * @param {number} height - 地图高度（总行数）
    * @param {Array} blockInfo - 地图数据对象
+   * @param {number} enemyNum - 敌人数量
+   * @param {Array} waves - 敌人的波次数据
    *
    * @property {number} width - 地图的总列数
    * @property {number} height - 地图的总行数
+   * @property {number} enemyNum - 敌人数量
+   * @property {Array} waves - 敌人的波次数据
    */
-  constructor(width, height, blockInfo) {
+  constructor(width, height, blockInfo, enemyNum, waves) {
     this.width = width;
     this.height = height;
+    this.enemyNum = enemyNum;
+    this.waves = waves;
     this.blockData = new Array(width * height).fill(null); // 数组砖块数据
     blockInfo.forEach((block) => { // 构造元素数组，无砖块的位置为null
       const { row, column, heightAlpha } = block;
@@ -229,7 +213,7 @@ class MapGeometry {
     const { consInfo } = block;
     const { rowSpan, colSpan } = con;
     if (Object.prototype.hasOwnProperty.call(consInfo, 'inst')) {
-      this.removeCon(row, column); // 指定位置已有建筑时删除它
+      this.removeConstruction(row, column); // 指定位置已有建筑时删除它
     }
 
     /**
@@ -293,36 +277,23 @@ class MapGeometry {
    * @param {number} row - 需移除建筑所在的行，从0开始
    * @param {number} column - 需移除建筑所在的列，从0开始
    */
-  removeCon(row, column) {
-    const { rowSpan, colSpan, mesh } = this.getBlock(row, column).consInfo.inst; // 假定该处一定有建筑
-    if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
-
-    mesh.children.forEach(({ geometry, material }) => { // 释放资源
-      geometry.dispose();
-      if (material) { // 判定是否有材质
-        if (material instanceof Array) { // 判定为材质数组
-          material.forEach((m) => {
-            Object.values(m).forEach((value) => { // 遍历material下Texture的实例并废弃
-              if (value instanceof THREE.Texture) { value.dispose(); }
-              m.dispose(); // 废弃材质
-            });
-          });
-        } else { // 否则废弃单个材质
-          material.forEach((value) => { // 遍历material下Texture的实例并废弃
-            if (value instanceof THREE.Texture) { value.dispose(); }
-          });
-          material.dispose();
-        }
-      }
-    });
-
-    for (let x = 0; x < rowSpan; x += 1) { // 从建筑所在范围的格子中删除建筑
-      for (let z = 0; z < colSpan; z += 1) {
-        const thisBlock = this.getBlock(row + x, column + z);
-        delete thisBlock.consInfo.inst;
-      }
-    }
-  }
+  // removeConstruction(row, column) {
+  //   const { rowSpan, colSpan, mesh } = this.getBlock(row, column).consInfo.inst; // 假定该处一定有建筑
+  //   if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
+  //
+  //   mesh.children.forEach(({ geometry, material }) => { // 释放资源
+  //     // TODO: 完善资源管理类
+  //     disposer(geometry);
+  //     disposer(material);
+  //   });
+  //
+  //   for (let x = 0; x < rowSpan; x += 1) { // 从建筑所在范围的格子中删除建筑
+  //     for (let z = 0; z < colSpan; z += 1) {
+  //       const thisBlock = this.getBlock(row + x, column + z);
+  //       delete thisBlock.consInfo.inst;
+  //     }
+  //   }
+  // }
 }
 
 
@@ -370,7 +341,7 @@ class TimeAxis extends THREE.Clock {
 export {
   blockUnit,
   statusEnum,
-  MapInfo,
-  MapGeometry,
+  Map,
   TimeAxis,
+  ResourceTracker,
 };

@@ -2,9 +2,9 @@ import { WEBGL } from './lib/WebGL.js';
 import {
   blockUnit,
   statusEnum,
-  MapInfo,
-  MapGeometry,
+  Map,
   TimeAxis,
+  ResourceTracker,
 } from './modules/basic.js';
 import { IOPoint, BuiltinCons } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
@@ -101,6 +101,7 @@ function main(data) {
   const timer = document.querySelector('#timer'); // 全局计时器显示
   const starter = document.querySelector('#starter');
   const reset = document.querySelector('#reset');
+  const resTracker = new ResourceTracker();
 
   const timeAxis = new TimeAxis(); // 全局时间轴
   let renderer; // 全局渲染器
@@ -205,7 +206,7 @@ function main(data) {
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
-    map = new MapInfo(mapWidth, mapHeight, enemyNum, waves); // 初始化地图
+    map = new Map(mapWidth, mapHeight, blockInfo, enemyNum, waves); // 初始化地图
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -216,14 +217,13 @@ function main(data) {
 
     /* 构建地图几何 */
     {
-      const mapGeo = new MapGeometry(mapWidth, mapHeight, blockInfo);
       const {
         positions,
         normals,
         uvs,
         indices,
         sideGroup,
-      } = mapGeo.generateGeometry();
+      } = map.generateGeometry();
       const geometry = new THREE.BufferGeometry();
       geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
       geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
@@ -240,7 +240,7 @@ function main(data) {
         });
       });
 
-      blockInfo.forEach((item, ndx) => {
+      blockInfo.forEach((item, ndx) => { // 添加贴图顶点组及放置建筑
         const {
           row,
           column,
@@ -258,7 +258,7 @@ function main(data) {
         geometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
 
         if (consInfo) { // 有建筑时添加建筑
-          const con = mapGeo.setConstruction(row, column, modelShop(consInfo));
+          const con = map.setConstruction(row, column, modelShop(consInfo));
           scene.add(con.mesh);
         }
       });
@@ -269,26 +269,6 @@ function main(data) {
       scene.add(mesh);
     }
 
-    // blockInfo.forEach((item) => { // 构造地面砖块及建筑
-    //   const {
-    //     row, column, blockType, placeable, heightAlpha, texture, consInfo,
-    //   } = item;
-    //
-    //   const { top, side, bottom } = texture;
-    //   const blockTex = {
-    //     topTex: top ? resList.block.top[top].tex : resList.block.top.default.tex,
-    //     sideTex: side ? resList.block.side[side].tex : resList.block.side.default.tex,
-    //     bottomTex: bottom ? resList.block.bottom[bottom].tex : resList.block.bottom.default.tex,
-    //   };
-    //   const blockInst = new Block(blockType, heightAlpha, blockTex, placeable); // 砖块Mesh只能在主函数构建
-    //   const block = map.setBlock(row, column, blockInst);
-    //   scene.add(block.mesh);
-    //
-    //   if (consInfo) { // 有建筑时添加建筑
-    //     const con = map.addCon(row, column, modelShop(consInfo));
-    //     scene.add(con.mesh);
-    //   }
-    // });
 
     /* 定义地图灯光 */
     {
