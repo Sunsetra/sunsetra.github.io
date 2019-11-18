@@ -7,40 +7,6 @@ const statusEnum = Object.freeze({ // 状态常量
   CONTINUE: 'continue',
 });
 
-class ResourceTracker {
-  constructor() {
-    this.resources = new Set();
-  }
-
-  /**
-   * 向追踪集合中添加资源
-   * @param resource
-   * @returns {{dispose}|*}
-   */
-  track(resource) {
-    if (resource.dispose) {
-      this.resources.add(resource);
-    }
-    return resource;
-  }
-
-  /**
-   * 从追踪集合中删除资源
-   * @param resource
-   */
-  untrack(resource) {
-    this.resources.delete(resource);
-  }
-
-  /** 释放追踪集合中的资源 */
-  dispose() {
-    this.resources.forEach((resource) => {
-      resource.dispose();
-    });
-    this.resources.clear();
-  }
-}
-
 
 class Map {
   /**
@@ -210,7 +176,7 @@ class Map {
   setConstruction(row, column, con) {
     const block = this.getBlock(row, column);
     if (!block) { return false; }
-    const { consInfo } = block;
+    const { consInfo } = block; // 当前砖块的建筑信息类
     const { rowSpan, colSpan } = con;
     if (Object.prototype.hasOwnProperty.call(consInfo, 'inst')) {
       this.removeConstruction(row, column); // 指定位置已有建筑时删除它
@@ -241,14 +207,16 @@ class Map {
       const y = con.size.y / 2 + block.size.y - 0.01;
       const z = (row + rowSpan / 2) * block.size.z;
       con.mesh.position.set(x, y, z);
+      con.setPosition(row, column);
     };
 
     if (colSpan > 1 || rowSpan > 1) { // 添加的建筑跨度大于1格
-      if (verifyLocation(row, column, colSpan, rowSpan)) {
+      if (verifyLocation(row, column, colSpan, rowSpan)) { // 若地形等高
         for (let x = 0; x < rowSpan; x += 1) {
           for (let y = 0; y < colSpan; y += 1) {
             /** @namespace thisBlock.consInfo - 建筑信息 */
-            const thisBlock = this.getBlock(x, y);
+            const thisBlock = this.getBlock(row + x, column + y);
+            console.log(thisBlock);
             Object.defineProperty(thisBlock.consInfo, 'inst', {
               value: con, // 所有砖块中包含的建筑实例共享同一个
               writable: true,
@@ -262,38 +230,50 @@ class Map {
       }
       return false;
     }
-    setLocation(); // 添加的建筑只占1格
-    Object.defineProperty(consInfo, 'inst', {
+    Object.defineProperty(consInfo, 'inst', { // 添加的建筑只占1格
       value: con,
       writable: true,
       enumerable: true,
       configurable: true,
     });
+    setLocation();
     return consInfo.inst;
   }
 
   /**
    * 从地图中移除指定位置的建筑，调用前需要检查该处是否有建筑
-   * @param {number} row - 需移除建筑所在的行，从0开始
-   * @param {number} column - 需移除建筑所在的列，从0开始
+   * 导入的建筑顶层必定是Object3D
+   * @param {number} r - 需移除建筑的行，从0开始
+   * @param {number} c - 需移除建筑的列，从0开始
    */
-  // removeConstruction(row, column) {
-  //   const { rowSpan, colSpan, mesh } = this.getBlock(row, column).consInfo.inst; // 假定该处一定有建筑
-  //   if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
-  //
-  //   mesh.children.forEach(({ geometry, material }) => { // 释放资源
-  //     // TODO: 完善资源管理类
-  //     disposer(geometry);
-  //     disposer(material);
-  //   });
-  //
-  //   for (let x = 0; x < rowSpan; x += 1) { // 从建筑所在范围的格子中删除建筑
-  //     for (let z = 0; z < colSpan; z += 1) {
-  //       const thisBlock = this.getBlock(row + x, column + z);
-  //       delete thisBlock.consInfo.inst;
-  //     }
-  //   }
-  // }
+  removeConstruction(r, c) {
+    const {
+      row,
+      column,
+      rowSpan,
+      colSpan,
+      mesh,
+    } = this.getBlock(r, c).consInfo.inst; // 假定该处一定有建筑
+    if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
+
+    mesh.children.forEach(({ geometry, material }) => { // 释放网格体中的资源
+      geometry.dispose();
+      if (Array.isArray(material)) { // 材质数组的情形
+        material.forEach((mat) => {
+          Object.values(mat).forEach((child) => { // 释放材质中的贴图对象
+            if (child instanceof THREE.Texture) { child.dispose(); }
+          });
+        });
+      } else { material.dispose(); } // 材质非数组的情形
+    });
+
+    for (let x = 0; x < rowSpan; x += 1) { // 从建筑所在范围的格子中删除建筑
+      for (let z = 0; z < colSpan; z += 1) {
+        const thisBlock = this.getBlock(row + x, column + z);
+        delete thisBlock.consInfo.inst;
+      }
+    }
+  }
 }
 
 
@@ -343,5 +323,4 @@ export {
   statusEnum,
   Map,
   TimeAxis,
-  ResourceTracker,
 };

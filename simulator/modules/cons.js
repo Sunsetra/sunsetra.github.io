@@ -2,28 +2,24 @@
 
 import { blockUnit } from './basic.js';
 
-/**
- * 建筑的抽象基类
- * 属性:
- *   rowSpan/colSpan - 建筑跨越的行/列
- *   row/column - 建筑所在的行/列（左上角）
- *   mesh - 建筑网格实体
- *   position - 建筑所在的绝对坐标
- * 方法:
- *   setLocation(row, column, block) - 设置建筑所在的位置并设置建筑所在实际坐标
- *   normalize() - 建筑大小标准化为绑定砖块尺寸大小
- */
+
 class Construction {
   /**
    * 定义地图建筑对象
    * @param {number} colSpan - 建筑跨越的列数
    * @param {number} rowSpan - 建筑跨越的行数
    * @param {THREE.Object3D} mesh - 建筑使用的网格实体
+   *
+   * @property {number} colSpan - 建筑跨越的列数
+   * @property {number} rowSpan - 建筑跨越的行数
+   * @property {THREE.Object3D} mesh - 建筑网格实体
+   * @property {THREE.Vector3} position - 建筑所在的绝对坐标
    */
   constructor(rowSpan, colSpan, mesh) {
     this.rowSpan = rowSpan;
     this.colSpan = colSpan;
     this.mesh = mesh;
+
     const box = new THREE.Box3().setFromObject(this.mesh);
     this.size = new THREE.Vector3();
     box.getSize(this.size);
@@ -48,6 +44,16 @@ class Construction {
     this.size = new THREE.Vector3(); // 更新为缩放后的尺寸
     box.getSize(this.size);
   }
+
+  /**
+   * 设置建筑在地图中的位置
+   * @param {number} row - 建筑在地图中的行数
+   * @param {number} column - 建筑在地图中的列数
+   */
+  setPosition(row, column) {
+    this.row = row;
+    this.column = column;
+  }
 }
 
 
@@ -64,11 +70,13 @@ class IOPoint extends Construction {
 
 class BuiltinCons extends Construction {
   /**
-   * 预设的建筑/装饰建筑，外部导入
+   * 外部导入的建筑/装饰建筑，含内置建筑及自定义建筑
+   * @param {number} rowSpan - 建筑跨越的列数
+   * @param {number} colSpan - 建筑跨越的行数
    * @param {THREE.Object3D} mesh - 导入的建筑模型mesh
    */
-  constructor(mesh) {
-    super(1, 1, mesh);
+  constructor(rowSpan, colSpan, mesh) {
+    super(rowSpan, colSpan, mesh);
     this.mesh.material.side = THREE.FrontSide;
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;

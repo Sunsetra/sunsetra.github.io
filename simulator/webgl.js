@@ -4,7 +4,6 @@ import {
   statusEnum,
   Map,
   TimeAxis,
-  ResourceTracker,
 } from './modules/basic.js';
 import { IOPoint, BuiltinCons } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
@@ -79,7 +78,13 @@ const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非
  * @returns {Construction} - 返回建筑对象实例
  */
 const modelShop = (consInfo) => {
-  const { desc, type, rotation } = consInfo;
+  const {
+    desc,
+    type,
+    rotation,
+    rowSpan, // 第三方建筑需要在consInfo中指定所占区域
+    colSpan,
+  } = consInfo;
 
   if (desc === 'destination' || desc === 'entry') {
     const { geo, mat } = resList.IOPoint[desc];
@@ -88,7 +93,10 @@ const modelShop = (consInfo) => {
   }
   const mesh = resList.model[desc].gltf[type].clone();
   mesh.rotation.y = THREE.Math.degToRad(rotation);
-  return new BuiltinCons(mesh);
+  if (rowSpan && colSpan) { // 若是第三方建筑则需要指定所占宽高
+    return new BuiltinCons(rowSpan, colSpan, mesh);
+  }
+  return new BuiltinCons(2, 1, mesh); // 默认的内置建筑均为1x1
 };
 
 
@@ -101,7 +109,6 @@ function main(data) {
   const timer = document.querySelector('#timer'); // 全局计时器显示
   const starter = document.querySelector('#starter');
   const reset = document.querySelector('#reset');
-  const resTracker = new ResourceTracker();
 
   const timeAxis = new TimeAxis(); // 全局时间轴
   let renderer; // 全局渲染器
@@ -259,7 +266,7 @@ function main(data) {
 
         if (consInfo) { // 有建筑时添加建筑
           const con = map.setConstruction(row, column, modelShop(consInfo));
-          scene.add(con.mesh);
+          if (con) { scene.add(con.mesh); }
         }
       });
 
@@ -361,6 +368,10 @@ function main(data) {
   function updateEnemyPosition(rAFTime) {
     const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
 
+    /**
+     * @namespace {Array} enemy.path - 敌人运动路径数组
+     * @namespace {Unit} enemy.inst - 敌人单位对象
+     */
     activeEnemy.forEach((enemy) => {
       const { path, inst } = enemy;
       if (path.length) { // 判定敌人是否到达终点
@@ -401,7 +412,8 @@ function main(data) {
             path.shift();
           }
         }
-      } else { // TODO: 到达则删除它并从scene中移除
+      } else {
+        scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
         activeEnemy.delete(enemy);
         map.enemyNum -= 1;
         // eslint-disable-next-line max-len
