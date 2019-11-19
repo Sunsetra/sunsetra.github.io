@@ -214,9 +214,15 @@ class Map {
       if (verifyLocation(row, column, colSpan, rowSpan)) { // 若地形等高
         for (let x = 0; x < rowSpan; x += 1) {
           for (let y = 0; y < colSpan; y += 1) {
-            /** @namespace thisBlock.consInfo - 建筑信息 */
             const thisBlock = this.getBlock(row + x, column + y);
-            console.log(thisBlock);
+            if (!Object.prototype.hasOwnProperty.call(thisBlock, 'consInfo')) {
+              Object.defineProperty(thisBlock, 'consInfo', {
+                value: consInfo, // 为未定义建筑的砖块新建建筑信息属性
+                writable: true,
+                enumerable: true,
+                configurable: true,
+              });
+            }
             Object.defineProperty(thisBlock.consInfo, 'inst', {
               value: con, // 所有砖块中包含的建筑实例共享同一个
               writable: true,
@@ -254,23 +260,25 @@ class Map {
       colSpan,
       mesh,
     } = this.getBlock(r, c).consInfo.inst; // 假定该处一定有建筑
-    if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
 
-    mesh.children.forEach(({ geometry, material }) => { // 释放网格体中的资源
-      geometry.dispose();
-      if (Array.isArray(material)) { // 材质数组的情形
-        material.forEach((mat) => {
-          Object.values(mat).forEach((child) => { // 释放材质中的贴图对象
-            if (child instanceof THREE.Texture) { child.dispose(); }
-          });
-        });
-      } else { material.dispose(); } // 材质非数组的情形
-    });
-
-    for (let x = 0; x < rowSpan; x += 1) { // 从建筑所在范围的格子中删除建筑
+    for (let x = 0; x < rowSpan; x += 1) { // 从主建筑开始，删除所在范围格子中的建筑
       for (let z = 0; z < colSpan; z += 1) {
         const thisBlock = this.getBlock(row + x, column + z);
-        delete thisBlock.consInfo.inst;
+        if (x === 0 && z === 0) { // 主建筑
+          if (mesh.parent) { mesh.parent.remove(mesh); } // 从父级删除mesh
+          mesh.children.forEach(({ geometry, material }) => { // 释放网格体中的资源
+            geometry.dispose();
+            if (Array.isArray(material)) { // 材质数组的情形
+              material.forEach((mat) => {
+                Object.values(mat).forEach((child) => { // 释放材质中的贴图对象
+                  if (child instanceof THREE.Texture) { child.dispose(); }
+                });
+              });
+            } else { material.dispose(); } // 材质非数组的情形
+          });
+        } else {
+          delete thisBlock.consInfo; // 非主建筑则只删除建筑信息属性
+        }
       }
     }
   }

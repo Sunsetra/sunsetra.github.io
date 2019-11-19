@@ -96,7 +96,7 @@ const modelShop = (consInfo) => {
   if (rowSpan && colSpan) { // 若是第三方建筑则需要指定所占宽高
     return new BuiltinCons(rowSpan, colSpan, mesh);
   }
-  return new BuiltinCons(2, 1, mesh); // 默认的内置建筑均为1x1
+  return new BuiltinCons(1, 1, mesh); // 默认的内置建筑均为1x1
 };
 
 
@@ -264,7 +264,7 @@ function main(data) {
         geometry.addGroup(start + count, 6, materialMap.bottom[bottom]); // 底面组
         geometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
 
-        if (consInfo) { // 有建筑时添加建筑
+        if (consInfo && !Object.prototype.hasOwnProperty.call(consInfo, 'inst')) { // 有建筑时添加建筑
           const con = map.setConstruction(row, column, modelShop(consInfo));
           if (con) { scene.add(con.mesh); }
         }
