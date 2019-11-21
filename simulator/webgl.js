@@ -105,26 +105,20 @@ const modelShop = (consInfo) => {
  * @param {object} data - 地图数据对象
  */
 function main(data) {
-  const canvas = document.querySelector('canvas');
-  const timer = document.querySelector('#timer'); // 全局计时器显示
-  const starter = document.querySelector('#starter');
-  const reset = document.querySelector('#reset');
-
-  const timeAxis = new TimeAxis(); // 全局时间轴
   let renderer; // 全局渲染器
-  let scene; // 全局场景
   let camera; // 全局摄影机
+  let scene; // 全局场景
   let controls; // 全局镜头控制器
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
   let map; // 全局当前地图对象
-  const activeEnemy = new Set(); // 场上敌人集合
 
   let needRender = false; // 静态渲染需求Flag
-  let rAF; // 动态渲染取消标志
-  let lastTime = 0; // 上次渲染的rAF时刻
 
+  /** 初始化场景相关全局变量 */
   function init() {
+    const canvas = document.querySelector('canvas');
+
     /**
      * 创建全局渲染器，当webgl2可用时使用webgl2上下文
      * @param {boolean} antialias - 是否开启抗锯齿，默认开启
@@ -177,22 +171,43 @@ function main(data) {
       controls.update();
     }
 
-    /**
-     * 创建全局光照，包含环境光及平行光
-     * @param {*} color - 指定环境光颜色，默认白色
-     * @param {number} intensity - 指定环境光强度，默认为1
-     */
-    function createLight(color = 'white', intensity = 1) {
-      envLight = new THREE.AmbientLight(color, intensity);
-      sunLight = new THREE.DirectionalLight();
-      scene.add(envLight);
-    }
-
     createRender(true, true);
     createScene('black', true);
     createCamera();
     createControls();
-    createLight(0xFFFFFF, 0.1);
+  }
+
+  /** 检查渲染尺寸是否改变 */
+  function checkResize() {
+    const container = renderer.domElement;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    const needResize = container.width !== width || container.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height; // 每帧更新相机宽高比
+      camera.updateProjectionMatrix();
+      sysStatus.width = width;
+      sysStatus.height = height;
+    }
+  }
+
+  /** 静态动画循环，只能由requestStaticRender调用 */
+  function staticRender() {
+    // console.log('静态');
+    needRender = false;
+    checkResize();
+    controls.update(); // 开启阻尼惯性时需调用
+    renderer.render(scene, camera);
+  }
+
+  /** 静态渲染入口点函数 */
+  function requestStaticRender() {
+    sysStatus.renderType = 'static';
+    if (!needRender) {
+      needRender = true;
+      requestAnimationFrame(staticRender);
+    }
   }
 
   /**
@@ -204,16 +219,16 @@ function main(data) {
     const {
       mapWidth,
       mapHeight,
+      enemyNum,
       resources,
       blockInfo,
       light,
       waves,
-      enemyNum,
     } = mapData;
+    map = new Map(mapWidth, mapHeight, blockInfo, enemyNum, waves); // 初始化地图
     const maxSize = Math.max(mapWidth, mapHeight) * blockUnit; // 地图最长尺寸
     const centerX = (mapWidth * blockUnit) / 2; // 地图X向中心
     const centerZ = (mapHeight * blockUnit) / 2; // 地图Z向中心
-    map = new Map(mapWidth, mapHeight, blockInfo, enemyNum, waves); // 初始化地图
 
     scene.fog.near = maxSize; // 不受雾气影响的范围为1倍最长尺寸
     scene.fog.far = maxSize * 2; // 2倍最长尺寸外隐藏
@@ -266,7 +281,9 @@ function main(data) {
 
         if (consInfo && !Object.prototype.hasOwnProperty.call(consInfo, 'inst')) { // 有建筑时添加建筑
           const con = map.setConstruction(row, column, modelShop(consInfo));
-          if (con) { scene.add(con.mesh); }
+          if (con) {
+            scene.add(con.mesh);
+          }
         }
       });
 
@@ -287,14 +304,12 @@ function main(data) {
         hour,
         phi,
       } = light;
-      envLight.intensity = envIntensity;
-      envLight.color.set(envColor);
-      sunLight.color.set(color);
-      sunLight.intensity = intensity;
+      envLight = new THREE.AmbientLight(envColor, envIntensity);
+      sunLight = new THREE.DirectionalLight(color, intensity);
 
       const hasHour = Object.prototype.hasOwnProperty.call(light, 'hour');
       let mapHour = hasHour ? hour : new Date().getHours(); // 如果未指定地图时间，则获取本地时间
-      if (mapHour < 6 || mapHour > 18) { // 定义夜间光源
+      if (mapHour < 6 || mapHour > 18) { // 时间为夜间时定义夜间光源
         mapHour = mapHour < 6 ? mapHour + 12 : mapHour % 12;
         sunLight.intensity = 0.6;
         sunLight.color.set(0xffffff);
@@ -328,286 +343,262 @@ function main(data) {
       sunLight.shadow.mapSize.set(4096, 4096);
       sunLight.shadow.camera.updateProjectionMatrix();
 
+      scene.add(envLight);
       scene.add(sunLight);
       scene.add(sunLight.target);
+
+      /** 创建辅助对象，包括灯光参数控制器等 */
+      const gui = new dat.GUI();
+      const lightFolder = gui.addFolder('灯光');
+      lightFolder.open();
+      lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
+      lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
+      lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
+
+      // const meshFolder = gui.addFolder('网格');
+      //
+      // class AxisGridHelper {
+      //   constructor(element, gridSize) {
+      //     const axes = new THREE.AxesHelper();
+      //     axes.material.depthTest = false;
+      //     axes.renderOrder = 2;
+      //     element.add(axes);
+      //
+      //     const grid = new THREE.GridHelper(gridSize, gridSize);
+      //     grid.material.depthTest = false;
+      //     grid.renderOrder = 1;
+      //     element.add(grid);
+      //
+      //     this.grid = grid;
+      //     this.axes = axes;
+      //     this.visible = false;
+      //   }
+      //
+      //   get visible() { return this._visible; }
+      //
+      //   set visible(v) {
+      //     this._visible = v;
+      //     this.grid.visible = v;
+      //     this.axes.visible = v;
+      //   }
+      // }
+      // const sceneHelper = new AxisGridHelper(scene, 300);
+      // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestStaticRender);
+      // const helper = new THREE.DirectionalLightHelper(sunLight);
+      // helper.update();
+      // scene.add(helper);
     }
-  }
-
-  /**
-   * 初始化敌人并更新维护敌人状态
-   * @param {number} axisTime - 时间轴时刻
-   */
-  function updateEnemyStatus(axisTime) {
-    if (map.waves.length) {
-      const { fragments } = map.waves[0]; // 当前波次的分段
-      const thisFrag = fragments[0];
-      const { time, enemy, path } = thisFrag; // 首只敌人信息
-
-      if (axisTime >= time) { // 检查应出现的新敌人
-        thisFrag.inst = enemyShop[enemy](); // 创建敌人实例
-
-        const { x, z } = path[0]; // 读取首个路径点
-        const y = map.getBlock(z, x).size.y + thisFrag.inst.height / 2;
-        thisFrag.inst.position = { x, y, z }; // 敌人初始定位
-        scene.add(thisFrag.inst.mesh);
-        path.shift(); // 删除首个路径点
-
-        activeEnemy.add(thisFrag); // 新增活跃敌人
-        fragments.shift(); // 从当前波次中删除该敌人
-        // eslint-disable-next-line max-len
-        // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
-        if (!fragments.length) { map.waves.shift(); } // 若当前波次中剩余敌人为0则删除当前波次
-      }
-    }
-  }
-
-  /**
-   * 更新敌人当前坐标
-   * @param {number} rAFTime - 当前帧时刻
-   */
-  function updateEnemyPosition(rAFTime) {
-    const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
-
-    /**
-     * @namespace {Array} enemy.path - 敌人运动路径数组
-     * @namespace {Unit} enemy.inst - 敌人单位对象
-     */
-    activeEnemy.forEach((enemy) => {
-      const { path, inst } = enemy;
-      if (path.length) { // 判定敌人是否到达终点
-        if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在停顿中
-          inst.pause -= interval;
-          if (inst.pause <= 0) { // 取消停顿恢复移动
-            path.shift();
-            delete inst.pause;
-            // console.log(`恢复 ${enemy.time}秒 出现的敌人`);
-          }
-        } else if (Object.prototype.hasOwnProperty.call(path[0], 'pause')) { // 判定敌人是否停顿
-          const { pause } = path[0];
-          inst.pause = pause - interval;
-          // console.log(`暂停 ${enemy.time}秒 出现的敌人 ${pause}秒`);
-        } else { // 没有停顿则正常移动
-          const oldX = inst.position.x;
-          const oldZ = inst.position.z;
-          const newX = path[0].x;
-          const newZ = path[0].z;
-          const { speed } = inst;
-
-          let velocityX = speed / Math.sqrt(((newZ - oldZ) / (newX - oldX)) ** 2 + 1);
-          velocityX = newX >= oldX ? velocityX : -velocityX;
-          let velocityZ = Math.abs(((newZ - oldZ) / (newX - oldX)) * velocityX);
-          velocityZ = newZ >= oldZ ? velocityZ : -velocityZ;
-
-          const stepX = interval * velocityX + oldX;
-          const stepZ = interval * velocityZ + oldZ;
-          inst.position = { x: stepX, z: stepZ };
-
-          const rotateDeg = Math.atan((newZ - oldZ) / (newX - oldX));
-          inst.mesh.rotation.y = Math.PI - rotateDeg; // 调整运动方向
-
-          const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
-          const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
-          if (ifDeltaX && ifDeltaZ) { // 判定是否到达当前路径点，到达则移除当前路径点
-            // console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
-            path.shift();
-          }
-        }
-      } else {
-        scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
-        activeEnemy.delete(enemy);
-        map.enemyNum -= 1;
-        // eslint-disable-next-line max-len
-        // console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
-      }
-    });
-  }
-
-  /**
-   * 游戏状态更新函数
-   * @param {number} axisTime - 时间轴时刻
-   * @param {number} rAFTime - 当前帧时刻
-   */
-  function updateMap(axisTime, rAFTime) {
-    if (map.enemyNum) { // 检查剩余敌人数量
-      updateEnemyStatus(axisTime); // 更新维护敌人状态
-      updateEnemyPosition(rAFTime); // 更新敌人位置
-    } else { // TODO: 剩余敌人总数为空时游戏结束
-      rAF = null; // 置空rAF以取消动画
-      timeAxis.stop();
-      setState(statusEnum.RESET);
-      console.log('游戏结束');
-    }
-  }
-
-
-  /** 检查渲染尺寸是否改变 */
-  function checkResize() {
-    const container = renderer.domElement;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    const needResize = container.width !== width || container.height !== height;
-    if (needResize) {
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height; // 每帧更新相机宽高比
-      camera.updateProjectionMatrix();
-      sysStatus.width = width;
-      sysStatus.height = height;
-    }
-  }
-
-  /** 静态动画循环，只能由requestStaticRender调用 */
-  function staticRender() {
-    // console.log('静态');
-    needRender = false;
-    checkResize();
-    controls.update(); // 开启阻尼惯性时需调用
-    renderer.render(scene, camera);
-  }
-
-  /** 静态渲染入口点函数 */
-  function requestStaticRender() {
-    sysStatus.renderType = 'static';
-    if (!needRender) {
-      needRender = true;
-      requestAnimationFrame(staticRender);
-    }
-  }
-
-  /**
-   * 动态动画循环，只能由requestDynamicRender及动画控制函数调用
-   * @param {number} rAFTime - 当前帧时刻
-   */
-  function dynamicRender(rAFTime) {
-    // console.log('动态');
-    // eslint-disable-next-line max-len
-    // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
-    updateMap(timeAxis.getElapsedTimeN(), rAFTime); // 更新敌人位置
-    lastTime = rAFTime;
-    const { min, secs, msecs } = timeAxis.getElapsedTimeO();
-    timer.textContent = `${min}:${secs}.${msecs}`; // 更新计时器
-
-    checkResize();
-    controls.update(); // 开启阻尼惯性时需调用
-    renderer.render(scene, camera);
-    if (rAF) { // 从动画回调内部取消动画
-      rAF = requestAnimationFrame(dynamicRender);
-    }
-  }
-
-  /** 动态渲染入口点函数 */
-  function requestDynamicRender() {
-    sysStatus.renderType = 'dynamic';
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') { pauseAnimate(); }
-    });
-    setState(statusEnum.PAUSE);
-    timeAxis.start();
-    lastTime = window.performance.now(); // 设置首帧时间
-    rAF = requestAnimationFrame(dynamicRender);
-  }
-
-
-  /** 动画暂停函数 */
-  function pauseAnimate() {
-    setState(statusEnum.CONTINUE); // 必须放在stop()之前
-    cancelAnimationFrame(rAF);
-    timeAxis.stop(); // 先取消动画后再停止时间轴
-  }
-
-  /** 继续动画函数 */
-  function continueAnimate() {
-    setState(statusEnum.PAUSE);
-    timeAxis.continue();
-    lastTime = window.performance.now(); // 设置首帧时间
-    rAF = requestAnimationFrame(dynamicRender);
-  }
-
-  /** 重置动画函数 */
-  function resetAnimate() { // TODO: 重置游戏应为重玩本图
-    cancelAnimationFrame(rAF);
-    timeAxis.stop(); // 先取消动画后再停止时间轴
-    timer.textContent = '00:00.000'; // 重置计时
-    setState(statusEnum.RESET);
-  }
-
-  /**
-   * 改变时间轴控制按钮状态及渲染模式
-   * @param {string} state - 状态枚举值
-   */
-  function setState(state) {
-    if (state === statusEnum.CONTINUE) {
-      starter.textContent = '继续';
-      starter.removeEventListener('click', pauseAnimate);
-      starter.addEventListener('click', continueAnimate);
-      controls.addEventListener('change', requestStaticRender);
-      window.addEventListener('resize', requestStaticRender);
-    } else if (state === statusEnum.PAUSE) {
-      starter.textContent = '暂停';
-      starter.removeEventListener('click', requestDynamicRender);
-      starter.removeEventListener('click', continueAnimate);
-      starter.addEventListener('click', pauseAnimate);
-      controls.removeEventListener('change', requestStaticRender);
-      window.removeEventListener('resize', requestStaticRender);
-    } else if (state === statusEnum.RESET) {
-      starter.textContent = '开始';
-      starter.removeEventListener('click', pauseAnimate);
-      starter.removeEventListener('click', continueAnimate);
-      starter.addEventListener('click', requestDynamicRender);
-      controls.addEventListener('change', requestStaticRender);
-      window.addEventListener('resize', requestStaticRender);
-    }
-  }
-
-
-  /** 创建辅助对象，包括灯光参数控制器等 */
-  function createHelpers() {
-    const gui = new dat.GUI();
-    const lightFolder = gui.addFolder('灯光');
-    lightFolder.open();
-    lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
-    lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
-    lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
-
-    // const meshFolder = gui.addFolder('网格');
-    //
-    // class AxisGridHelper {
-    //   constructor(element, gridSize) {
-    //     const axes = new THREE.AxesHelper();
-    //     axes.material.depthTest = false;
-    //     axes.renderOrder = 2;
-    //     element.add(axes);
-    //
-    //     const grid = new THREE.GridHelper(gridSize, gridSize);
-    //     grid.material.depthTest = false;
-    //     grid.renderOrder = 1;
-    //     element.add(grid);
-    //
-    //     this.grid = grid;
-    //     this.axes = axes;
-    //     this.visible = false;
-    //   }
-    //
-    //   get visible() { return this._visible; }
-    //
-    //   set visible(v) {
-    //     this._visible = v;
-    //     this.grid.visible = v;
-    //     this.axes.visible = v;
-    //   }
-    // }
-    // const sceneHelper = new AxisGridHelper(scene, 300);
-    // meshFolder.add(sceneHelper, 'visible').name('场景网格').onChange(requestStaticRender);
-    // const helper = new THREE.DirectionalLightHelper(sunLight);
-    // helper.update();
-    // scene.add(helper);
   }
 
   init(); // 初始化全局变量
-  createMap(data); // 创建地图
-  createHelpers(); // 创建辅助对象
   requestStaticRender(); // 发出渲染请求
-  reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时
-  setState(statusEnum.RESET);
+  createMap(data); // 创建地图
+
+
+  function gameStart() {
+    const timer = document.querySelector('#timer'); // 全局计时器显示
+    const starter = document.querySelector('#starter');
+    const reset = document.querySelector('#reset');
+
+    const timeAxis = new TimeAxis(); // 全局时间轴
+    const activeEnemy = new Set(); // 场上敌人集合
+
+    let rAF = null; // 动态渲染取消标志
+    let lastTime = 0; // 上次渲染的rAF时刻
+
+    /**
+     * 游戏状态更新函数
+     * @param {number} axisTime - 时间轴时刻
+     * @param {number} rAFTime - 当前帧时刻
+     */
+    function updateMap(axisTime, rAFTime) {
+      /** @function - 初始化敌人并更新维护敌人状态 */
+      const updateEnemyStatus = () => {
+        if (map.waves.length) {
+          const { fragments } = map.waves[0]; // 当前波次的分段
+          const thisFrag = fragments[0];
+          const { time, enemy, path } = thisFrag; // 首只敌人信息
+
+          if (axisTime >= time) { // 检查应出现的新敌人
+            thisFrag.inst = enemyShop[enemy](); // 创建敌人实例
+
+            const { x, z } = path[0]; // 读取首个路径点
+            const y = map.getBlock(z, x).size.y + thisFrag.inst.height / 2;
+            thisFrag.inst.position = { x, y, z }; // 敌人初始定位
+            scene.add(thisFrag.inst.mesh);
+            path.shift(); // 删除首个路径点
+
+            activeEnemy.add(thisFrag); // 新增活跃敌人
+            fragments.shift(); // 从当前波次中删除该敌人
+            // eslint-disable-next-line max-len
+            // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
+            if (!fragments.length) {
+              map.waves.shift();
+            } // 若当前波次中剩余敌人为0则删除当前波次
+          }
+        }
+      };
+
+      /** @function - 更新敌人当前坐标 */
+      const updateEnemyPosition = () => {
+        const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
+        /**
+         * @namespace {Array} enemy.path - 敌人运动路径数组
+         * @namespace {Unit} enemy.inst - 敌人单位对象
+         */
+        activeEnemy.forEach((enemy) => {
+          const { path, inst } = enemy;
+          if (path.length) { // 判定敌人是否到达终点
+            if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在停顿中
+              inst.pause -= interval;
+              if (inst.pause <= 0) { // 取消停顿恢复移动
+                path.shift();
+                delete inst.pause;
+                // console.log(`恢复 ${enemy.time}秒 出现的敌人`);
+              }
+            } else if (Object.prototype.hasOwnProperty.call(path[0], 'pause')) { // 判定敌人是否停顿
+              const { pause } = path[0];
+              inst.pause = pause - interval;
+              // console.log(`暂停 ${enemy.time}秒 出现的敌人 ${pause}秒`);
+            } else { // 没有停顿则正常移动
+              const oldX = inst.position.x;
+              const oldZ = inst.position.z;
+              const newX = path[0].x;
+              const newZ = path[0].z;
+              const { speed } = inst;
+
+              let velocityX = speed / Math.sqrt(((newZ - oldZ) / (newX - oldX)) ** 2 + 1);
+              velocityX = newX >= oldX ? velocityX : -velocityX;
+              let velocityZ = Math.abs(((newZ - oldZ) / (newX - oldX)) * velocityX);
+              velocityZ = newZ >= oldZ ? velocityZ : -velocityZ;
+
+              const stepX = interval * velocityX + oldX;
+              const stepZ = interval * velocityZ + oldZ;
+              inst.position = { x: stepX, z: stepZ };
+
+              const rotateDeg = Math.atan((newZ - oldZ) / (newX - oldX));
+              inst.mesh.rotation.y = Math.PI - rotateDeg; // 调整运动方向
+
+              const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
+              const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
+              if (ifDeltaX && ifDeltaZ) { // 判定是否到达当前路径点，到达则移除当前路径点
+                // console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
+                path.shift();
+              }
+            }
+          } else {
+            scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
+            activeEnemy.delete(enemy);
+            map.enemyNum -= 1;
+            // eslint-disable-next-line max-len
+            // console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
+          }
+        });
+      };
+
+      if (map.enemyNum) { // 检查剩余敌人数量
+        updateEnemyStatus(); // 更新维护敌人状态
+        updateEnemyPosition(); // 更新敌人位置
+      } else { // TODO: 剩余敌人总数为空时游戏结束
+        rAF = null; // 置空rAF以取消动画
+        timeAxis.stop();
+        setState(statusEnum.RESET); // 独立为函数
+        console.log('游戏结束');
+      }
+    }
+
+    /**
+     * 动态动画循环，只能由requestDynamicRender及动画控制函数调用
+     * @param {number} rAFTime - 当前帧时刻
+     */
+    function dynamicRender(rAFTime) {
+      // console.log('动态');
+      // eslint-disable-next-line max-len
+      // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
+      updateMap(timeAxis.getElapsedTimeN(), rAFTime); // 更新敌人位置
+      lastTime = rAFTime;
+      const { min, secs, msecs } = timeAxis.getElapsedTimeO();
+      timer.textContent = `${min}:${secs}.${msecs}`; // 更新计时器
+
+      checkResize();
+      controls.update(); // 开启阻尼惯性时需调用
+      renderer.render(scene, camera);
+      if (rAF) { // 从动画回调内部取消动画
+        rAF = requestAnimationFrame(dynamicRender);
+      }
+    }
+
+    /** 动态渲染入口点函数 */
+    function requestDynamicRender() {
+      sysStatus.renderType = 'dynamic';
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          pauseAnimate();
+        }
+      });
+      setState(statusEnum.PAUSE);
+      timeAxis.start();
+      lastTime = window.performance.now(); // 设置首帧时间
+      rAF = requestAnimationFrame(dynamicRender);
+    }
+
+
+    /** 动画暂停函数 */
+    function pauseAnimate() {
+      setState(statusEnum.CONTINUE); // 必须放在stop()之前
+      cancelAnimationFrame(rAF);
+      timeAxis.stop(); // 先取消动画后再停止时间轴
+    }
+
+    /** 继续动画函数 */
+    function continueAnimate() {
+      setState(statusEnum.PAUSE);
+      timeAxis.continue();
+      lastTime = window.performance.now(); // 设置首帧时间
+      rAF = requestAnimationFrame(dynamicRender);
+    }
+
+    /** 重置动画函数 */
+    function resetAnimate() { // TODO: 重置游戏应为重玩本图
+      cancelAnimationFrame(rAF);
+      timeAxis.stop(); // 先取消动画后再停止时间轴
+      timer.textContent = '00:00.000'; // 重置计时
+      setState(statusEnum.RESET);
+    }
+
+    /**
+     * 改变时间轴控制按钮状态及渲染模式
+     * @param {string} state - 状态枚举值
+     */
+    function setState(state) {
+      if (state === statusEnum.CONTINUE) {
+        starter.textContent = '继续';
+        starter.removeEventListener('click', pauseAnimate);
+        starter.addEventListener('click', continueAnimate);
+        controls.addEventListener('change', requestStaticRender);
+        window.addEventListener('resize', requestStaticRender);
+      } else if (state === statusEnum.PAUSE) {
+        starter.textContent = '暂停';
+        starter.removeEventListener('click', requestDynamicRender);
+        starter.removeEventListener('click', continueAnimate);
+        starter.addEventListener('click', pauseAnimate);
+        controls.removeEventListener('change', requestStaticRender);
+        window.removeEventListener('resize', requestStaticRender);
+      } else if (state === statusEnum.RESET) {
+        starter.textContent = '开始';
+        starter.removeEventListener('click', pauseAnimate);
+        starter.removeEventListener('click', continueAnimate);
+        starter.addEventListener('click', requestDynamicRender);
+        controls.addEventListener('change', requestStaticRender);
+        window.addEventListener('resize', requestStaticRender);
+      }
+    }
+
+    reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时
+    setState(statusEnum.RESET);
+  }
+
+  gameStart();
 }
 
 
@@ -620,6 +611,8 @@ function setLoadingManager(data) {
   const bar = document.querySelector('#bar');
   const left = document.querySelector('#left');
   const right = document.querySelector('#right');
+  const tip = document.querySelector('#progress_tip');
+  const mainFrame = document.querySelector('main');
   let errorCounter = 0; // 错误计数
 
   /**
@@ -628,6 +621,17 @@ function setLoadingManager(data) {
    */
   function createGeometry(res) {
     const { block, enemy } = res;
+    ['top', 'side', 'bottom'].forEach((surf) => { // 构建砖块贴图材质
+      block[surf].forEach((type) => {
+        const thisTex = resList.block[surf][type].tex;
+        resList.block[surf][type].mat = new THREE.MeshPhysicalMaterial({
+          metalness: 0.1,
+          roughness: 0.6,
+          map: thisTex,
+        });
+      });
+    });
+
     Object.values(resList.IOPoint).forEach((item) => { // 构建进出点模型
       const { topTex, sideTex } = item;
       const topMat = new THREE.MeshBasicMaterial({
@@ -647,17 +651,6 @@ function setLoadingManager(data) {
       Object.defineProperty(item, 'geo', { value: new THREE.BoxBufferGeometry(edge, edge, edge) });
     });
 
-    ['top', 'side', 'bottom'].forEach((pos) => { // 构建砖块贴图材质
-      block[pos].forEach((type) => {
-        const thisTex = resList.block[pos][type].tex;
-        resList.block[pos][type].mat = new THREE.MeshPhysicalMaterial({
-          metalness: 0.1,
-          roughness: 0.6,
-          map: thisTex,
-        });
-      });
-    });
-
     enemy.forEach((item) => { // 构建敌人模型
       const thisEnemy = resList.enemy[item];
       const { width, height } = thisEnemy.tex.image;
@@ -674,8 +667,6 @@ function setLoadingManager(data) {
 
   /* 控制进度条及画布显隐 */
   function showCanvas() {
-    const mainFrame = document.querySelector('main');
-
     loadingBar.style.opacity = '0'; // 渐隐加载进度条
     setTimeout(() => {
       loadingBar.style.display = 'none';
@@ -700,15 +691,12 @@ function setLoadingManager(data) {
       bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
       left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
       right.textContent = `${Math.round(percent)}%`;
-      if (percent >= 100) {
-        right.style.display = 'none';
-      }
+      if (percent >= 100) { right.style.display = 'none'; }
     }
   }
 
   /* 加载错误处理函数 */
   function loadingError(url) {
-    const tip = document.querySelector('#progress_tip');
     errorCounter += 1;
     tip.innerText += `\n加载${url}时发生错误`;
   }
@@ -738,32 +726,39 @@ function loadResources(res) {
   const gltfLoader = new THREE.GLTFLoader(loadManager);
   const { block, model, enemy } = res;
 
+  const loadTex = (url, obj) => {
+    const texture = texLoader.load(url);
+    texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = 16;
+    Object.defineProperty(obj, 'tex', { value: texture });
+  };
+
   ['top', 'side', 'bottom'].forEach((surf) => { // 加载砖块贴图
     const texArray = block[surf];
     texArray.forEach((name) => {
       const item = resList.block[surf][name];
-      item.tex = texLoader.load(item.url);
-      item.tex.encoding = THREE.sRGBEncoding;
-      item.tex.anisotropy = 16;
+      loadTex(item.url, item);
     });
   });
 
   ['destination', 'entry'].forEach((con) => { // 加载进出点贴图
     const texArray = resList.IOPoint[con];
     Object.values(texArray).forEach((item) => {
-      const texture = texLoader.load(item.url);
-      texture.encoding = THREE.sRGBEncoding;
-      texture.anisotropy = 16;
-      Object.defineProperty(item, 'tex', { value: texture });
+      loadTex(item.url, item);
     });
   });
 
   enemy.forEach((name) => { // 加载敌人贴图
     const item = resList.enemy[name];
-    item.tex = texLoader.load(item.url);
-    item.tex.encoding = THREE.sRGBEncoding;
-    item.tex.anisotropy = 16;
+    loadTex(item.url, item);
   });
+
+  // for (const name of operator) { // 加载干员贴图
+  //   const item = texList.operator[name];
+  //   item.tex = texLoader.load(item.url);
+  //   item.tex.encoding = THREE.sRGBEncoding;
+  //   item.anisotropy = 16;
+  // }
 
   model.forEach((name) => { // 加载建筑模型
     const item = resList.model[name];
@@ -775,13 +770,6 @@ function loadResources(res) {
       });
     });
   });
-
-  // for (const name of operator) { // 加载干员贴图
-  //   const item = texList.operator[name];
-  //   item.tex = texLoader.load(item.url);
-  //   item.tex.encoding = THREE.sRGBEncoding;
-  //   item.anisotropy = 16;
-  // }
 }
 
 function preLoading() { // 通过传入地图信息加载资源
