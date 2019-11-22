@@ -18,10 +18,13 @@
     完蛋，浏览器不支持canvas元素呢！换最新的<a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank">Chrome</a>
     或者<a href="https://www.mozilla.org/zh-CN/firefox/new/" target="_blank">Firefox</a>试试呢？
   </canvas>
-  <div class="controller">
-    <div id="timer">00:00.000</div>
-    <button id="starter">开始</button>
-    <button id="reset">重置</button>
+  <div class="ui">
+    <div class="time-axis">
+      <div id="axis"></div>
+      <div id="timer">00:00.000</div>
+      <button class="time-axis-controller" id="starter">▶</button>
+      <button class="time-axis-controller" id="reset">↺</button>
+    </div>
   </div>
 </main>
 
@@ -32,7 +35,7 @@
         <div class="percentage" id="right">0%</div>
       </div>
     </div>
-  <div id="progress_tip">正在加载...</div>
+  <div id="progress-tip">正在加载...</div>
 </div>
 </body>
 </html>

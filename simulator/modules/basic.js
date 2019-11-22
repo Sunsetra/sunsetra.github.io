@@ -26,7 +26,9 @@ class Map {
     this.width = width;
     this.height = height;
     this.enemyNum = enemyNum;
+    this.enemyNumAll = enemyNum; // 总敌人数量
     this.waves = waves;
+    this.wavesAll = JSON.parse(JSON.stringify(waves)); // 原始波次信息
     this.blockData = new Array(width * height).fill(null); // 数组砖块数据
     blockInfo.forEach((block) => { // 构造元素数组，无砖块的位置为null
       const { row, column, heightAlpha } = block;
@@ -281,6 +283,12 @@ class Map {
         }
       }
     }
+  }
+
+  /** 重置地图参数 */
+  resetMap() {
+    this.enemyNum = this.enemyNumAll;
+    this.waves = JSON.parse(JSON.stringify(this.wavesAll));
   }
 }
 

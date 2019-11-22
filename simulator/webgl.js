@@ -350,7 +350,6 @@ function main(data) {
       /** 创建辅助对象，包括灯光参数控制器等 */
       const gui = new dat.GUI();
       const lightFolder = gui.addFolder('灯光');
-      lightFolder.open();
       lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
       lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
       lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
@@ -392,7 +391,7 @@ function main(data) {
 
   init(); // 初始化全局变量
   requestStaticRender(); // 发出渲染请求
-  createMap(data); // 创建地图
+  createMap(JSON.parse(JSON.stringify(data))); // 创建地图
 
 
   function gameStart() {
@@ -490,8 +489,7 @@ function main(data) {
             scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
             activeEnemy.delete(enemy);
             map.enemyNum -= 1;
-            // eslint-disable-next-line max-len
-            // console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
+            console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
           }
         });
       };
@@ -499,12 +497,40 @@ function main(data) {
       if (map.enemyNum) { // 检查剩余敌人数量
         updateEnemyStatus(); // 更新维护敌人状态
         updateEnemyPosition(); // 更新敌人位置
-      } else { // TODO: 剩余敌人总数为空时游戏结束
+      } else { // 存活敌人为0时游戏结束，需要手动重置战场以重玩
         rAF = null; // 置空rAF以取消动画
         timeAxis.stop();
-        setState(statusEnum.RESET); // 独立为函数
+        setState(statusEnum.RESET);
         console.log('游戏结束');
       }
+    }
+
+    /**
+     * 递归释放参数对象中包含的资源
+     * @param resource - 包含资源的对象
+     * @returns - 返回被释放的对象
+     */
+    function destroyMap(resource) {
+      if (!resource) { return resource; } // 传入空对象时直接返回
+
+      if (Array.isArray(resource)) { // 传入数组（材质对象或Object3D的children）
+        resource.forEach((res) => destroyMap(res));
+        return resource;
+      }
+
+      if (resource instanceof THREE.Object3D) { // 解包Object3D中的资源
+        destroyMap(resource.geometry);
+        destroyMap(resource.material);
+        destroyMap(resource.children);
+      } else if (resource instanceof THREE.Material) {
+        Object.values(resource).forEach((value) => { // 遍历材质对象中的属性值
+          if (value instanceof THREE.Texture) { value.dispose(); } // 废弃其中的贴图实例
+        });
+        resource.dispose(); // 废弃材质对象
+      } else if (resource instanceof THREE.BufferGeometry) {
+        resource.dispose(); // 废弃几何体对象
+      }
+      return resource;
     }
 
     /**
@@ -559,11 +585,20 @@ function main(data) {
     }
 
     /** 重置动画函数 */
-    function resetAnimate() { // TODO: 重置游戏应为重玩本图
+    function resetAnimate() {
       cancelAnimationFrame(rAF);
-      timeAxis.stop(); // 先取消动画后再停止时间轴
-      timer.textContent = '00:00.000'; // 重置计时
+      timeAxis.stop(); // 取消动画并停止时间轴
+
+      activeEnemy.forEach((enemy) => {
+        scene.remove(enemy.inst.mesh);
+        activeEnemy.delete(enemy);
+      });
+      map.resetMap(); // 重置游戏变量
+      destroyMap(scene); // 释放资源
+
       setState(statusEnum.RESET);
+      timer.textContent = '00:00.000';
+      requestStaticRender();
     }
 
     /**
@@ -572,20 +607,20 @@ function main(data) {
      */
     function setState(state) {
       if (state === statusEnum.CONTINUE) {
-        starter.textContent = '继续';
+        starter.textContent = '▶';
         starter.removeEventListener('click', pauseAnimate);
         starter.addEventListener('click', continueAnimate);
         controls.addEventListener('change', requestStaticRender);
         window.addEventListener('resize', requestStaticRender);
       } else if (state === statusEnum.PAUSE) {
-        starter.textContent = '暂停';
+        starter.textContent = '⏸';
         starter.removeEventListener('click', requestDynamicRender);
         starter.removeEventListener('click', continueAnimate);
         starter.addEventListener('click', pauseAnimate);
         controls.removeEventListener('change', requestStaticRender);
         window.removeEventListener('resize', requestStaticRender);
       } else if (state === statusEnum.RESET) {
-        starter.textContent = '开始';
+        starter.textContent = '▶';
         starter.removeEventListener('click', pauseAnimate);
         starter.removeEventListener('click', continueAnimate);
         starter.addEventListener('click', requestDynamicRender);
@@ -594,7 +629,7 @@ function main(data) {
       }
     }
 
-    reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时
+    reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时及地图状态
     setState(statusEnum.RESET);
   }
 
