@@ -408,21 +408,48 @@ function main(data) {
     let rAF = null; // 动态渲染取消标志
     let lastTime = 0; // 上次渲染的rAF时刻
 
-    function createAxisNode(type, name, action, time) {
+    /**
+     * 创建显示在时间轴上的敌人节点
+     * @param type - 节点单位类型
+     * @param enemyFrag - 敌人信息片断
+     * @param action - 节点行为类型
+     * @param nodeTime - 节点时间（来自时间轴）
+     * @returns {HTMLDivElement} - 返回时间轴节点
+     */
+    function createAxisNode(type, enemyFrag, action, nodeTime) {
+      const { enemy, time } = enemyFrag;
+      const createTime = String(time).replace('.', '_');
       const node = document.createElement('div'); // 创建容器节点
-      node.setAttribute('class', 'mark-icon');
+      node.setAttribute('class', `mark-icon ${enemy}${createTime}`);
+
+      node.onmouseover = () => {
+        const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
+        nodes.forEach((item) => {
+          const icon = item.querySelector('.icon');
+          icon.style.filter = 'brightness(2)';
+          icon.style.zIndex = '999';
+        });
+      };
+      node.onmouseout = () => {
+        const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
+        nodes.forEach((item) => {
+          const icon = item.querySelector('.icon');
+          icon.style.filter = 'none';
+          icon.style.zIndex = '1';
+        });
+      };
 
       const markNode = document.createElement('div'); // 创建时间轴标记节点
       markNode.setAttribute('class', `mark ${type} ${action}`);
 
       const iconNode = document.createElement('div'); // 创建图标标记节点
       iconNode.setAttribute('class', 'icon');
-      const icon = resList.enemy[name].url;
+      const icon = resList.enemy[enemy].url;
       iconNode.style.backgroundImage = `url("${icon}")`;
 
       const detailNode = document.createElement('div'); // 创建详细时间节点
       detailNode.setAttribute('class', 'detail');
-      detailNode.textContent = time;
+      detailNode.textContent = nodeTime;
 
       node.appendChild(markNode);
       node.appendChild(iconNode);
@@ -454,7 +481,7 @@ function main(data) {
 
             activeEnemy.add(thisFrag); // 新增活跃敌人
             fragments.shift(); // 从当前波次中删除该敌人
-            axisNodes[axisTime] = createAxisNode('enemy', enemy, 'create', timeAxis.getElapsedTimeS());
+            axisNodes[axisTime] = createAxisNode('enemy', thisFrag, 'create', timeAxis.getElapsedTimeS());
             axis.appendChild(axisNodes[axisTime]);
             // eslint-disable-next-line max-len
             // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
@@ -514,7 +541,7 @@ function main(data) {
             scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
             activeEnemy.delete(enemy);
             map.enemyNum -= 1;
-            axisNodes[axisTime] = createAxisNode('enemy', enemy.enemy, 'lose', timeAxis.getElapsedTimeS());
+            axisNodes[axisTime] = createAxisNode('enemy', enemy, 'lose', timeAxis.getElapsedTimeS());
             axis.appendChild(axisNodes[axisTime]);
             console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
           }

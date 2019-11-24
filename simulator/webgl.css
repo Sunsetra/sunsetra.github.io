@@ -59,8 +59,8 @@ canvas {
 
 .icon {
   position: relative;
-  height: 1rem;
-  width: 1rem;
+  height: 1.5rem;
+  width: 1.5rem;
   top: 0.3rem;
   transform: translateX(-50%); /* 匹配标记刻线居中 */
   background-size: contain;
@@ -69,7 +69,7 @@ canvas {
 
 .detail {
   position: relative;
-  top: -3.6rem;
+  top: -4rem;
   width: 5rem;
   text-align: center;
   transform: translateX(-50%);
@@ -81,11 +81,6 @@ canvas {
 .mark-icon:hover .detail {
   display: block;
 }
-
-.mark-icon:hover .icon {
-  filter: brightness(2);
-}
-
 
 #timer {
   margin: 0 auto;
