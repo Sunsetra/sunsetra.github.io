@@ -394,16 +394,41 @@ function main(data) {
   createMap(JSON.parse(JSON.stringify(data))); // 创建地图
 
 
+  /** 启动游戏流程 */
   function gameStart() {
     const timer = document.querySelector('#timer'); // 全局计时器显示
     const starter = document.querySelector('#starter');
     const reset = document.querySelector('#reset');
+    const axis = document.querySelector('#axis');
 
     const timeAxis = new TimeAxis(); // 全局时间轴
     const activeEnemy = new Set(); // 场上敌人集合
+    const axisNodes = {}; // 需要显示在时间轴元素上的子节点，格式为{axisTime: node}
 
     let rAF = null; // 动态渲染取消标志
     let lastTime = 0; // 上次渲染的rAF时刻
+
+    function createAxisNode(type, name, action, time) {
+      const node = document.createElement('div'); // 创建容器节点
+      node.setAttribute('class', 'mark-icon');
+
+      const markNode = document.createElement('div'); // 创建时间轴标记节点
+      markNode.setAttribute('class', `mark ${type} ${action}`);
+
+      const iconNode = document.createElement('div'); // 创建图标标记节点
+      iconNode.setAttribute('class', 'icon');
+      const icon = resList.enemy[name].url;
+      iconNode.style.backgroundImage = `url("${icon}")`;
+
+      const detailNode = document.createElement('div'); // 创建详细时间节点
+      detailNode.setAttribute('class', 'detail');
+      detailNode.textContent = time;
+
+      node.appendChild(markNode);
+      node.appendChild(iconNode);
+      node.appendChild(detailNode);
+      return node;
+    }
 
     /**
      * 游戏状态更新函数
@@ -429,11 +454,11 @@ function main(data) {
 
             activeEnemy.add(thisFrag); // 新增活跃敌人
             fragments.shift(); // 从当前波次中删除该敌人
+            axisNodes[axisTime] = createAxisNode('enemy', enemy, 'create', timeAxis.getElapsedTimeS());
+            axis.appendChild(axisNodes[axisTime]);
             // eslint-disable-next-line max-len
             // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
-            if (!fragments.length) {
-              map.waves.shift();
-            } // 若当前波次中剩余敌人为0则删除当前波次
+            if (!fragments.length) { map.waves.shift(); } // 若当前波次中剩余敌人为0则删除当前波次
           }
         }
       };
@@ -481,22 +506,33 @@ function main(data) {
               const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
               const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
               if (ifDeltaX && ifDeltaZ) { // 判定是否到达当前路径点，到达则移除当前路径点
-                // console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
                 path.shift();
+                // console.log(`移除 ${enemy.time}秒 出现的敌人路径 (${path[0].x}, ${path[0].z})`);
               }
             }
-          } else {
+          } else { // 敌人到达终点时
             scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
             activeEnemy.delete(enemy);
             map.enemyNum -= 1;
+            axisNodes[axisTime] = createAxisNode('enemy', enemy.enemy, 'lose', timeAxis.getElapsedTimeS());
+            axis.appendChild(axisNodes[axisTime]);
             console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
           }
+        });
+      };
+
+      /** @function - 更新时间轴上的子节点位置 */
+      const updateTimeAxis = () => {
+        Object.keys(axisNodes).forEach((keyTime) => {
+          const pos = ((keyTime / axisTime) * 100).toFixed(2);
+          axisNodes[keyTime].style.left = `${pos}%`;
         });
       };
 
       if (map.enemyNum) { // 检查剩余敌人数量
         updateEnemyStatus(); // 更新维护敌人状态
         updateEnemyPosition(); // 更新敌人位置
+        updateTimeAxis();
       } else { // 存活敌人为0时游戏结束，需要手动重置战场以重玩
         rAF = null; // 置空rAF以取消动画
         timeAxis.stop();
@@ -541,10 +577,9 @@ function main(data) {
       // console.log('动态');
       // eslint-disable-next-line max-len
       // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
-      updateMap(timeAxis.getElapsedTimeN(), rAFTime); // 更新敌人位置
+      updateMap(timeAxis.getElapsedTimeN().toFixed(4), rAFTime); // 更新敌人位置
       lastTime = rAFTime;
-      const { min, secs, msecs } = timeAxis.getElapsedTimeO();
-      timer.textContent = `${min}:${secs}.${msecs}`; // 更新计时器
+      timer.textContent = timeAxis.getElapsedTimeS(); // 更新计时器
 
       checkResize();
       controls.update(); // 开启阻尼惯性时需调用
@@ -588,6 +623,10 @@ function main(data) {
     function resetAnimate() {
       cancelAnimationFrame(rAF);
       timeAxis.stop(); // 取消动画并停止时间轴
+
+      while (axis.firstChild) { // 清除时间轴的子节点
+        axis.removeChild(axis.firstChild);
+      }
 
       activeEnemy.forEach((enemy) => {
         scene.remove(enemy.inst.mesh);

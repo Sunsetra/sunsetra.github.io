@@ -296,7 +296,7 @@ class Map {
 /**
  * 派生自THREE内置Clock类的时间轴类
  * 方法:
- *   getElapsedTimeO() - 以对象的形式返回分、秒、毫秒
+ *   getElapsedTimeS() - 以对象的形式返回分、秒、毫秒
  *   getElapsedTimeN() - 原生方法，以浮点的形式返回秒
  *   continue() - 继续已停止的计时器（对正在计时的无效）
  */
@@ -307,15 +307,15 @@ class TimeAxis extends THREE.Clock {
   }
 
   /**
-   * 格式化输出当前时间（对象）
-   * @returns {{min: string, secs: string, msecs: string}} - 格式化为字符串对象的当前时间
+   * 格式化输出当前时间（字符串）
+   * @returns string - 格式化为字符串的当前时间
    */
-  getElapsedTimeO() {
+  getElapsedTimeS() {
     const elapsed = super.getElapsedTime().toFixed(3);
     const msecs = (Math.floor(elapsed * 1000) % 1000).toString().padStart(3, '0');
     const secs = Math.floor(elapsed % 60).toString().padStart(2, '0');
     const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
-    return { min, secs, msecs };
+    return `${min}:${secs}.${msecs}`;
   }
 
   /** 返回当前时间（浮点秒） */

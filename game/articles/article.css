@@ -159,11 +159,13 @@ p {
 
 .hide {
   transition: color 0.5s;
-  padding: 0 0.5rem;
+  margin: 0 0.3rem;
+  background-color: black;
+  color: black;
 }
 
 .hide:hover {
-  color: currentColor;
+  color: white;
 }
 
 .cg_middle {
