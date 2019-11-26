@@ -1,6 +1,7 @@
 html, body {
   height: 100%;
   background-color: black;
+  overflow: hidden;
 }
 
 main {
@@ -69,12 +70,24 @@ canvas {
 
 .detail {
   position: relative;
-  top: -4rem;
-  width: 5rem;
+  top: -3.8rem;
+  width: 4rem;
   text-align: center;
+  font-size: small;
   transform: translateX(-50%);
   border-radius: 0.3rem;
   background-color: white;
+  display: none;
+  z-index: 1;
+}
+
+.detail-arrow {
+  position: relative;
+  background-color: white;
+  width: 0.5rem;
+  height: 0.5rem;
+  transform: translateX(-50%) rotate(45deg);
+  top: -4.2rem;
   display: none;
 }
 

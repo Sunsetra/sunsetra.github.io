@@ -1,7 +1,6 @@
 import { WEBGL } from './lib/WebGL.js';
 import {
   blockUnit,
-  statusEnum,
   Map,
   TimeAxis,
 } from './modules/basic.js';
@@ -423,6 +422,8 @@ function main(data) {
           icon.style.zIndex = '999';
           const detail = item.querySelector('.detail');
           detail.style.display = 'block';
+          const arrow = item.querySelector('.detail-arrow');
+          arrow.style.display = 'block';
         });
       });
       node.addEventListener('mouseout', () => {
@@ -430,9 +431,11 @@ function main(data) {
         nodes.forEach((item) => {
           const icon = item.querySelector('.icon');
           icon.style.filter = 'none';
-          icon.style.zIndex = '1';
+          icon.style.zIndex = '0';
           const detail = item.querySelector('.detail');
           detail.style.display = 'none';
+          const arrow = item.querySelector('.detail-arrow');
+          arrow.style.display = 'none';
         });
       });
 
@@ -447,10 +450,13 @@ function main(data) {
       const detailNode = document.createElement('div'); // 创建详细时间节点
       detailNode.setAttribute('class', 'detail');
       detailNode.textContent = nodeTime;
+      const detailArrow = document.createElement('div'); // 创建小箭头节点
+      detailArrow.setAttribute('class', 'detail-arrow');
 
       node.appendChild(markNode);
       node.appendChild(iconNode);
       node.appendChild(detailNode);
+      node.appendChild(detailArrow);
       return node;
     }
 
@@ -560,7 +566,13 @@ function main(data) {
       } else { // 存活敌人为0时游戏结束，需要手动重置战场以重玩
         rAF = null; // 置空rAF以取消动画
         timeAxis.stop();
-        setState(statusEnum.RESET);
+
+        starter.textContent = '▶';
+        starter.removeEventListener('click', pauseAnimate);
+        starter.removeEventListener('click', continueAnimate);
+        starter.addEventListener('click', requestDynamicRender);
+        controls.addEventListener('change', requestStaticRender);
+        window.addEventListener('resize', requestStaticRender);
         console.log('游戏结束');
       }
     }
@@ -616,11 +628,14 @@ function main(data) {
     function requestDynamicRender() {
       sysStatus.renderType = 'dynamic';
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          pauseAnimate();
-        }
+        if (document.visibilityState === 'hidden') { pauseAnimate(); }
       });
-      setState(statusEnum.PAUSE);
+      starter.textContent = '⏸';
+      starter.removeEventListener('click', requestDynamicRender);
+      starter.addEventListener('click', pauseAnimate);
+      controls.removeEventListener('change', requestStaticRender);
+      window.removeEventListener('resize', requestStaticRender);
+
       timeAxis.start();
       lastTime = window.performance.now(); // 设置首帧时间
       rAF = requestAnimationFrame(dynamicRender);
@@ -628,17 +643,28 @@ function main(data) {
 
     /** 动画暂停函数 */
     function pauseAnimate() {
-      setState(statusEnum.CONTINUE); // 必须放在stop()之前
+      starter.textContent = '▶'; // UI控制
+      starter.removeEventListener('click', pauseAnimate);
+      starter.addEventListener('click', continueAnimate);
+      controls.addEventListener('change', requestStaticRender);
+      window.addEventListener('resize', requestStaticRender);
+
       cancelAnimationFrame(rAF);
       timeAxis.stop(); // 先取消动画后再停止时间轴
     }
 
     /** 继续动画函数 */
     function continueAnimate() {
-      setState(statusEnum.PAUSE);
+      starter.textContent = '⏸';
+      starter.removeEventListener('click', requestDynamicRender);
+      starter.removeEventListener('click', continueAnimate);
+      starter.addEventListener('click', pauseAnimate);
+      controls.removeEventListener('change', requestStaticRender);
+      window.removeEventListener('resize', requestStaticRender);
+
       timeAxis.continue();
       lastTime = window.performance.now(); // 设置首帧时间
-      rAF = requestAnimationFrame(dynamicRender);
+      rAF = requestAnimationFrame(dynamicRender); // TODO: 是否应调用requestDynamicRender？
     }
 
     /** 重置动画函数 */
@@ -657,41 +683,23 @@ function main(data) {
       map.resetMap(); // 重置游戏变量
       destroyMap(scene); // 释放资源
 
-      setState(statusEnum.RESET);
+      starter.textContent = '▶';
+      starter.removeEventListener('click', pauseAnimate);
+      starter.removeEventListener('click', continueAnimate);
+      starter.addEventListener('click', requestDynamicRender);
+      controls.addEventListener('change', requestStaticRender);
+      window.addEventListener('resize', requestStaticRender);
       timer.textContent = '00:00.000';
       requestStaticRender();
     }
 
-    /**
-     * 改变时间轴控制按钮状态及渲染模式
-     * @param {string} state - 状态枚举值
-     */
-    function setState(state) {
-      if (state === statusEnum.CONTINUE) {
-        starter.textContent = '▶';
-        starter.removeEventListener('click', pauseAnimate);
-        starter.addEventListener('click', continueAnimate);
-        controls.addEventListener('change', requestStaticRender);
-        window.addEventListener('resize', requestStaticRender);
-      } else if (state === statusEnum.PAUSE) {
-        starter.textContent = '⏸';
-        starter.removeEventListener('click', requestDynamicRender);
-        starter.removeEventListener('click', continueAnimate);
-        starter.addEventListener('click', pauseAnimate);
-        controls.removeEventListener('change', requestStaticRender);
-        window.removeEventListener('resize', requestStaticRender);
-      } else if (state === statusEnum.RESET) {
-        starter.textContent = '▶';
-        starter.removeEventListener('click', pauseAnimate);
-        starter.removeEventListener('click', continueAnimate);
-        starter.addEventListener('click', requestDynamicRender);
-        controls.addEventListener('change', requestStaticRender);
-        window.addEventListener('resize', requestStaticRender);
-      }
-    }
-
     reset.addEventListener('click', resetAnimate); // 仅点击重置按钮时重置计时及地图状态
-    setState(statusEnum.RESET);
+    starter.textContent = '▶';
+    starter.removeEventListener('click', pauseAnimate);
+    starter.removeEventListener('click', continueAnimate);
+    starter.addEventListener('click', requestDynamicRender);
+    controls.addEventListener('change', requestStaticRender);
+    window.addEventListener('resize', requestStaticRender);
   }
 
 
@@ -872,8 +880,8 @@ function loadResources(res) {
   });
 }
 
-function preLoading() { // 通过传入地图信息加载资源
-  fetch('maps/0-1.json')
+function preLoading(mapPath) { // 通过传入地图信息加载资源
+  fetch(mapPath)
     .then((data) => data.json())
     .then((data) => {
       const { name, resources } = data;
@@ -883,4 +891,4 @@ function preLoading() { // 通过传入地图信息加载资源
     });
 }
 
-preLoading();
+preLoading('maps/0-1.json');

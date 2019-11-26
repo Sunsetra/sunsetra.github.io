@@ -1,11 +1,6 @@
 /* global THREE */
 
 const blockUnit = 10; // 砖块单位长度常量
-const statusEnum = Object.freeze({ // 状态常量
-  RESET: 'reset',
-  PAUSE: 'pause',
-  CONTINUE: 'continue',
-});
 
 
 class Map {
@@ -292,7 +287,6 @@ class Map {
   }
 }
 
-
 /**
  * 派生自THREE内置Clock类的时间轴类
  * 方法:
@@ -336,7 +330,6 @@ class TimeAxis extends THREE.Clock {
 
 export {
   blockUnit,
-  statusEnum,
   Map,
   TimeAxis,
 };
