@@ -78,10 +78,6 @@ canvas {
   display: none;
 }
 
-.mark-icon:hover .detail {
-  display: block;
-}
-
 #timer {
   margin: 0 auto;
   color: white;

@@ -105,6 +105,7 @@ const modelShop = (consInfo) => {
  * @param {object} data - 地图数据对象
  */
 function main(data) {
+  const canvas = document.querySelector('canvas');
   let renderer; // 全局渲染器
   let camera; // 全局摄影机
   let scene; // 全局场景
@@ -117,8 +118,6 @@ function main(data) {
 
   /** 初始化场景相关全局变量 */
   function init() {
-    const canvas = document.querySelector('canvas');
-
     /**
      * 创建全局渲染器，当webgl2可用时使用webgl2上下文
      * @param {boolean} antialias - 是否开启抗锯齿，默认开启
@@ -194,7 +193,6 @@ function main(data) {
 
   /** 静态动画循环，只能由requestStaticRender调用 */
   function staticRender() {
-    // console.log('静态');
     needRender = false;
     checkResize();
     controls.update(); // 开启阻尼惯性时需调用
@@ -246,11 +244,11 @@ function main(data) {
         indices,
         sideGroup,
       } = map.generateGeometry();
-      const geometry = new THREE.BufferGeometry();
-      geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-      geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
-      geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2));
-      geometry.setIndex(indices);
+      const mapGeometry = new THREE.BufferGeometry();
+      mapGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+      mapGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+      mapGeometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvs), 2));
+      mapGeometry.setIndex(indices);
 
       const materialList = []; // 创建所需的所有砖块表面贴图材质
       const materialMap = { top: {}, side: {}, bottom: {} }; // 材质类型在材质列表中的索引
@@ -274,10 +272,10 @@ function main(data) {
         const bottom = texture.bottom ? texture.bottom : 'default';
         const [start, count] = sideGroup[ndx];
         if (count) { // 侧面需要建面时添加侧面组
-          geometry.addGroup(start, count, materialMap.side[side]);
+          mapGeometry.addGroup(start, count, materialMap.side[side]);
         }
-        geometry.addGroup(start + count, 6, materialMap.bottom[bottom]); // 底面组
-        geometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
+        mapGeometry.addGroup(start + count, 6, materialMap.bottom[bottom]); // 底面组
+        mapGeometry.addGroup(start + count + 6, 6, materialMap.top[top]); // 顶面组
 
         if (consInfo && !Object.prototype.hasOwnProperty.call(consInfo, 'inst')) { // 有建筑时添加建筑
           const con = map.setConstruction(row, column, modelShop(consInfo));
@@ -287,7 +285,7 @@ function main(data) {
         }
       });
 
-      const mesh = new THREE.Mesh(geometry, materialList);
+      const mesh = new THREE.Mesh(mapGeometry, materialList);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
@@ -389,11 +387,6 @@ function main(data) {
     }
   }
 
-  init(); // 初始化全局变量
-  requestStaticRender(); // 发出渲染请求
-  createMap(JSON.parse(JSON.stringify(data))); // 创建地图
-
-
   /** 启动游戏流程 */
   function gameStart() {
     const timer = document.querySelector('#timer'); // 全局计时器显示
@@ -422,22 +415,26 @@ function main(data) {
       const node = document.createElement('div'); // 创建容器节点
       node.setAttribute('class', `mark-icon ${enemy}${createTime}`);
 
-      node.onmouseover = () => {
+      node.addEventListener('mouseover', () => {
         const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
         nodes.forEach((item) => {
           const icon = item.querySelector('.icon');
           icon.style.filter = 'brightness(2)';
           icon.style.zIndex = '999';
+          const detail = item.querySelector('.detail');
+          detail.style.display = 'block';
         });
-      };
-      node.onmouseout = () => {
+      });
+      node.addEventListener('mouseout', () => {
         const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
         nodes.forEach((item) => {
           const icon = item.querySelector('.icon');
           icon.style.filter = 'none';
           icon.style.zIndex = '1';
+          const detail = item.querySelector('.detail');
+          detail.style.display = 'none';
         });
-      };
+      });
 
       const markNode = document.createElement('div'); // 创建时间轴标记节点
       markNode.setAttribute('class', `mark ${type} ${action}`);
@@ -601,7 +598,6 @@ function main(data) {
      * @param {number} rAFTime - 当前帧时刻
      */
     function dynamicRender(rAFTime) {
-      // console.log('动态');
       // eslint-disable-next-line max-len
       // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
       updateMap(timeAxis.getElapsedTimeN().toFixed(4), rAFTime); // 更新敌人位置
@@ -629,7 +625,6 @@ function main(data) {
       lastTime = window.performance.now(); // 设置首帧时间
       rAF = requestAnimationFrame(dynamicRender);
     }
-
 
     /** 动画暂停函数 */
     function pauseAnimate() {
@@ -699,6 +694,10 @@ function main(data) {
     setState(statusEnum.RESET);
   }
 
+
+  init(); // 初始化全局变量
+  requestStaticRender(); // 发出渲染请求
+  createMap(JSON.parse(JSON.stringify(data))); // 创建地图
   gameStart();
 }
 
