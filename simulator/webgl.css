@@ -102,6 +102,97 @@ canvas {
   font-size: larger;
 }
 
+.ui-left {
+  position: absolute;
+  height: 100%;
+  width: 20%;
+  min-width: 15rem;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: grey;
+  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  transform: translateX(-90%);
+  transition: transform 0.5s cubic-bezier(.17,.84,.44,1);
+  user-select: none;
+}
+
+.ui-left:hover {
+  transform: translateX(0);
+}
+
+.chapter {
+  padding: 1rem 0;
+  letter-spacing: 0.1rem;
+  background-color: transparent;
+  width: 80%;
+  transition: color 0.5s, background-color 0.5s, width 0.5s;
+  cursor: pointer;
+  border-top: thin solid currentColor;
+}
+
+.chapter:last-child {
+  border-bottom: thin solid currentColor;
+}
+
+.chapter:hover {
+  background-color: DimGray;
+  color: WhiteSmoke;
+  transition: color 0.5s, background-color 0.5s;
+  border-bottom: thin solid currentColor;
+}
+
+.ui-left:hover .chapter {
+  width: 100%;
+  transition: width 0.5s;
+}
+
+.chapter:hover + section {
+  border-top: none;
+}
+
+.chapter header {
+  padding: 0 1.5rem;
+}
+
+.ui-left > header {
+  margin: 1.5rem auto;
+  font-size: x-large;
+  letter-spacing: 1rem;
+}
+
+.map-item {
+  display: none;
+  margin: 1rem 1rem 0;
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.map-item figure {
+  flex: initial;
+  width: 40%;
+  margin: 0;
+  padding: 4%;
+  border: thin solid transparent;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.5s;
+}
+
+.map-item figure:hover {
+  border-color: currentColor;
+  transition: none;
+}
+
+.map-item img {
+  width: 100%;
+}
+
+.map-item figcaption {
+  letter-spacing: 0;
+  font-size: smaller;
+}
+
 #loading {
   position: absolute;
   top: 0;
