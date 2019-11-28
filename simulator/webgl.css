@@ -17,6 +17,8 @@ canvas {
   height: 100%;
 }
 
+
+/* 上方的时间轴UI */
 .ui-top {
   position: absolute;
   top: 6%;
@@ -102,6 +104,8 @@ canvas {
   font-size: larger;
 }
 
+
+/* 左侧边栏：地图选取 */
 .ui-left {
   position: absolute;
   height: 100%;
@@ -121,12 +125,34 @@ canvas {
   transform: translateX(0);
 }
 
+.ui-left #hide-title {
+  position: absolute;
+  right: 0;
+  top: 15%;
+  width: 10%;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.4s, top 0.4s;
+}
+
+.ui-left:hover #hide-title {
+  top: 10%;
+  opacity: 0;
+}
+
+.ui-left #hide-title div {
+  display: inline-block;
+  writing-mode: vertical-lr;
+  letter-spacing: 1.5rem;
+  font-size: large;
+}
+
 .chapter {
   padding: 1rem 0;
   letter-spacing: 0.1rem;
   background-color: transparent;
-  width: 80%;
-  transition: color 0.5s, background-color 0.5s, width 0.5s;
+  color: inherit;
+  transition: color 0.5s, background-color 0.5s;
   cursor: pointer;
   border-top: thin solid currentColor;
 }
@@ -138,16 +164,21 @@ canvas {
 .chapter:hover {
   background-color: DimGray;
   color: WhiteSmoke;
-  transition: color 0.5s, background-color 0.5s;
+  transition: none;
   border-bottom: thin solid currentColor;
 }
 
-.ui-left:hover .chapter {
-  width: 100%;
-  transition: width 0.5s;
+.map-menu {
+  transform: translateX(-20%);
+  transition: transform 0.5s;
 }
 
-.chapter:hover + section {
+.ui-left:hover .map-menu {
+  transform: translateX(0);
+  transition: transform 0.5s;
+}
+
+.chapter:hover + section { /* 章标题行为 */
   border-top: none;
 }
 
@@ -193,6 +224,8 @@ canvas {
   font-size: smaller;
 }
 
+
+/* 加载画面 */
 #loading {
   position: absolute;
   top: 0;
