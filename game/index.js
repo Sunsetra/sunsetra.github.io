@@ -32,7 +32,7 @@ viewer.addEventListener('click', () => { // 渐隐框架
 });
 
 const articleEntry = document.querySelectorAll('td img');
-for (const entry of articleEntry) {
+articleEntry.forEach((entry) => {
   entry.addEventListener('click', (event) => {
     const { url } = entry.dataset;
     const frame = document.querySelector('#viewer iframe');
@@ -44,4 +44,4 @@ for (const entry of articleEntry) {
       viewer.style.opacity = '1';
     }, 20);
   });
-}
+});

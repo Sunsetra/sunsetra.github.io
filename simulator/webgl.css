@@ -148,7 +148,6 @@ canvas {
 }
 
 .chapter {
-  padding: 1rem 0;
   letter-spacing: 0.1rem;
   background-color: transparent;
   color: inherit;
@@ -169,7 +168,7 @@ canvas {
 }
 
 .map-menu {
-  transform: translateX(-20%);
+  transform: translateX(-50%);
   transition: transform 0.5s;
 }
 
@@ -183,7 +182,7 @@ canvas {
 }
 
 .chapter header {
-  padding: 0 1.5rem;
+  padding: 1rem 1.5rem;
 }
 
 .ui-left > header {
@@ -193,10 +192,21 @@ canvas {
 }
 
 .map-item {
-  display: none;
-  margin: 1rem 1rem 0;
+  opacity: 0;
+  display: flex;
+  overflow: hidden;
+  padding: 0 1rem;
+  max-height: 0;
   flex-wrap: wrap;
   cursor: default;
+  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
+}
+
+.map-item.map-item-clicked { /* 点击章节标题时切换地图列表显示 */
+  opacity: 1;
+  padding-bottom: 1rem;
+  max-height: 7rem;
+  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
 }
 
 .map-item figure {

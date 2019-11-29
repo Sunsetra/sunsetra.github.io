@@ -1,11 +1,8 @@
 import { WEBGL } from './lib/WebGL.js';
-import {
-  blockUnit,
-  Map,
-  TimeAxis,
-} from './modules/basic.js';
-import { IOPoint, BuiltinCons } from './modules/cons.js';
+import { blockUnit, Map, TimeAxis } from './modules/basic.js';
+import { BuiltinCons, IOPoint } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
+import UIController from './modules/ui.js';
 
 /* global THREE, dat */
 
@@ -892,3 +889,4 @@ function preLoading(mapPath) { // 通过传入地图信息加载资源
 }
 
 preLoading('maps/0-1.json');
+UIController.initUI();
