@@ -701,8 +701,8 @@ function main(data) {
 
 
   init(); // 初始化全局变量
-  requestStaticRender(); // 发出渲染请求
   createMap(JSON.parse(JSON.stringify(data))); // 创建地图
+  requestStaticRender(); // 发出渲染请求
   gameStart();
 }
 
@@ -712,12 +712,10 @@ function main(data) {
  * @param {object} data - 地图数据，需要传递给main()函数
  */
 function setLoadingManager(data) {
-  const loadingBar = document.querySelector('#loading');
   const bar = document.querySelector('#bar');
   const left = document.querySelector('#left');
   const right = document.querySelector('#right');
   const tip = document.querySelector('#progress_tip');
-  const canvas = document.querySelector('canvas');
   let errorCounter = 0; // 错误计数
 
   /**
@@ -770,19 +768,6 @@ function setLoadingManager(data) {
     });
   }
 
-  /* 控制进度条及画布显隐 */
-  function showCanvas() {
-    loadingBar.style.opacity = '0'; // 渐隐加载进度条
-    setTimeout(() => {
-      loadingBar.style.display = 'none';
-    }, 1000);
-
-    canvas.style.display = 'block'; // 渐显画布
-    setTimeout(() => {
-      canvas.style.opacity = '1';
-    }, 1000);
-  }
-
   /* 加载进度监控函数 */
   function loadingProgress(url, itemsLoaded, itemsTotal) {
     if (itemsLoaded) { // 开始加载后的百分比样式
@@ -811,7 +796,7 @@ function setLoadingManager(data) {
     if (!errorCounter) {
       const { resources } = data;
       createGeometry(resources);
-      showCanvas();
+      UIController.loadingToGameFrame();
       main(data); // 启动主函数
     }
   }
@@ -889,4 +874,4 @@ function preLoading(mapPath) { // 通过传入地图信息加载资源
 }
 
 UIController.initUI();
-UIController.addMapLoadingListener(preLoading);
+UIController.mapSelectToLoading(preLoading);
