@@ -7,16 +7,176 @@ html, body {
 main {
   width: 100%;
   height: 100%;
-  display: none;
-  opacity: 0;
   transition: opacity 1s;
+}
+
+
+/* 地图选取框架开始 */
+
+/* 地图选取窗口状态A：初始选取 */
+
+.map-select {
+  position: absolute;
+  height: 80%;
+  width: 50%;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  background-color: grey;
+  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  text-align: center;
+  transform: translateX(-50%) translateY(-50%);
+  transition: all 0.5s cubic-bezier(.17,.84,.44,1);
+  user-select: none;
+}
+
+.map-select #hide-title {
+  display: none;
+}
+
+.map-select > header {
+  margin: 1.5rem auto;
+  font-size: x-large;
+  letter-spacing: 1rem;
+}
+
+.chapter { /* 各章节标题 */
+  letter-spacing: 0.1rem;
+  background-color: transparent;
+  /*color: inherit;*/
+  transition: color 0.5s, background-color 0.5s;
+  cursor: pointer;
+  border-top: thin solid currentColor;
+}
+
+.chapter:hover { /* 章标题变色 */
+  background-color: DimGray;
+  color: WhiteSmoke;
+  transition: none;
+  border-bottom: thin solid currentColor;
+}
+
+.chapter:hover + section { /* 章标题上边框无 */
+  border-top: none;
+}
+
+.chapter:last-child { /* 末章标题下边框 */
+  border-bottom: thin solid currentColor;
+}
+
+.chapter header { /* 章标题名 */
+  padding: 1rem 1.5rem;
+}
+
+.map-item { /* 章地图集 */
+  opacity: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 0.5rem;
+  overflow: hidden;
+  padding: 0 1rem;
+  max-height: 0; /* TODO: js计算max-height*/
+  cursor: default;
+  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
+}
+
+.map-item.map-item-clicked { /* 点击章节标题切换显示 */
+  opacity: 1;
+  padding-bottom: 1rem;
+  max-height: 27rem;
+  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
+}
+
+.map-item figure {
+  margin: 0;
+  padding: 4%;
+  border: thin solid transparent;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.5s;
+}
+
+.map-item figure:hover {
+  border-color: currentColor;
+  transition: none;
+}
+
+.map-item img {
+  width: 100%;
+}
+
+.map-item figcaption {
+  letter-spacing: 0;
+  font-size: smaller;
+}
+
+/* 地图选取窗口状态B：左侧边栏 */
+
+.map-select.side-bar {
+  height: 100%;
+  width: 20%;
+  min-width: 15rem;
+  top: 0;
+  left: 0;
+  transform: translateX(-90%);
+}
+
+.map-select.side-bar:hover {
+  transform: translateX(0);
+}
+
+.map-select.side-bar #hide-title {
+  position: absolute;
+  display: block;
+  right: 0;
+  top: 15%;
+  width: 10%;
+  opacity: 1;
+  transition: opacity 0.4s, top 0.4s;
+}
+
+.map-select.side-bar:hover #hide-title {
+  top: 10%;
+  opacity: 0;
+}
+
+.map-select.side-bar #hide-title div {
+  display: inline-block;
+  writing-mode: vertical-lr;
+  letter-spacing: 1.5rem;
+  font-size: large;
+}
+
+.map-select.side-bar .chapter {
+  transform: translateX(-50%);
+  transition: transform 0.5s;
+}
+
+.map-select.side-bar:hover .chapter {
+  transform: translateX(0);
+  transition: transform 0.5s;
+}
+
+.map-select.side-bar .map-item {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* 地图选取框架结束 */
+
+
+/* 主游戏框架开始 */
+
+.game-frame { /* TODO: 游戏框架，选择地图后显示 */
+  display: none;
 }
 
 canvas {
   width: 100%;
   height: 100%;
+  display: none;
+  opacity: 0;
 }
-
 
 /* 上方的时间轴UI */
 .ui-top {
@@ -105,143 +265,13 @@ canvas {
 }
 
 
-/* 左侧边栏：地图选取 */
-.ui-left {
-  position: absolute;
-  height: 100%;
-  width: 20%;
-  min-width: 15rem;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  background-color: grey;
-  font-family: "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
-  transform: translateX(-90%);
-  transition: transform 0.5s cubic-bezier(.17,.84,.44,1);
-  user-select: none;
-}
-
-.ui-left:hover {
-  transform: translateX(0);
-}
-
-.ui-left #hide-title {
-  position: absolute;
-  right: 0;
-  top: 15%;
-  width: 10%;
-  text-align: center;
-  opacity: 1;
-  transition: opacity 0.4s, top 0.4s;
-}
-
-.ui-left:hover #hide-title {
-  top: 10%;
-  opacity: 0;
-}
-
-.ui-left #hide-title div {
-  display: inline-block;
-  writing-mode: vertical-lr;
-  letter-spacing: 1.5rem;
-  font-size: large;
-}
-
-.chapter {
-  letter-spacing: 0.1rem;
-  background-color: transparent;
-  color: inherit;
-  transition: color 0.5s, background-color 0.5s;
-  cursor: pointer;
-  border-top: thin solid currentColor;
-}
-
-.chapter:last-child {
-  border-bottom: thin solid currentColor;
-}
-
-.chapter:hover {
-  background-color: DimGray;
-  color: WhiteSmoke;
-  transition: none;
-  border-bottom: thin solid currentColor;
-}
-
-.map-menu {
-  transform: translateX(-50%);
-  transition: transform 0.5s;
-}
-
-.ui-left:hover .map-menu {
-  transform: translateX(0);
-  transition: transform 0.5s;
-}
-
-.chapter:hover + section { /* 章标题行为 */
-  border-top: none;
-}
-
-.chapter header {
-  padding: 1rem 1.5rem;
-}
-
-.ui-left > header {
-  margin: 1.5rem auto;
-  font-size: x-large;
-  letter-spacing: 1rem;
-}
-
-.map-item {
-  opacity: 0;
-  display: flex;
-  overflow: hidden;
-  padding: 0 1rem;
-  max-height: 0;
-  flex-wrap: wrap;
-  cursor: default;
-  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
-}
-
-.map-item.map-item-clicked { /* 点击章节标题时切换地图列表显示 */
-  opacity: 1;
-  padding-bottom: 1rem;
-  max-height: 7rem;
-  transition: padding 0.3s, max-height 0.5s, opacity 0.5s;
-}
-
-.map-item figure {
-  flex: initial;
-  width: 40%;
-  margin: 0;
-  padding: 4%;
-  border: thin solid transparent;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.5s;
-}
-
-.map-item figure:hover {
-  border-color: currentColor;
-  transition: none;
-}
-
-.map-item img {
-  width: 100%;
-}
-
-.map-item figcaption {
-  letter-spacing: 0;
-  font-size: smaller;
-}
-
-
 /* 加载画面 */
 #loading {
   position: absolute;
   top: 0;
   width: 100%;
   height: 100%;
-  display: flex;
+  display: none;
   opacity: 1;
   flex-direction: column;
   align-items: center;

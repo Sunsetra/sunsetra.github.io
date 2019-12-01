@@ -717,7 +717,7 @@ function setLoadingManager(data) {
   const left = document.querySelector('#left');
   const right = document.querySelector('#right');
   const tip = document.querySelector('#progress_tip');
-  const mainFrame = document.querySelector('main');
+  const canvas = document.querySelector('canvas');
   let errorCounter = 0; // 错误计数
 
   /**
@@ -777,9 +777,9 @@ function setLoadingManager(data) {
       loadingBar.style.display = 'none';
     }, 1000);
 
-    mainFrame.style.display = 'block'; // 渐显画布
+    canvas.style.display = 'block'; // 渐显画布
     setTimeout(() => {
-      mainFrame.style.opacity = '1';
+      canvas.style.opacity = '1';
     }, 1000);
   }
 
@@ -888,5 +888,5 @@ function preLoading(mapPath) { // 通过传入地图信息加载资源
     });
 }
 
-preLoading('maps/0-1.json');
 UIController.initUI();
+UIController.addMapLoadingListener(preLoading);

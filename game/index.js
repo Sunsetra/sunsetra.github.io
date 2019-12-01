@@ -1,6 +1,6 @@
 /* 单击游戏条目时显隐动画效果 */
 const gameItem = document.querySelectorAll('tbody tr');
-for (const item of gameItem) {
+gameItem.forEach((item) => {
   item.addEventListener('click', () => {
     const detail = item.querySelector('.detail');
     if (detail.style.display === 'none' || detail.style.display === '') { // 渐显详情
@@ -19,7 +19,7 @@ for (const item of gameItem) {
       }, 500);
     }
   });
-}
+});
 
 /* 控制文章框架动画显隐 */
 const viewer = document.querySelector('#viewer');
