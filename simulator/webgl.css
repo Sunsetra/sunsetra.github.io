@@ -49,16 +49,18 @@ main {
   background-color: transparent;
   transition: color 0.5s, background-color 0.5s;
   border-top: thin solid currentColor;
+  cursor: pointer;
 }
 
-.chapter:hover { /* 章标题变色 */
-  background-color: DimGray;
+.chapter:hover { /* 当前章标题变色 */
+  background: linear-gradient(to right, transparent -25%, DimGray, transparent 125%);
   color: WhiteSmoke;
   transition: none;
   border-bottom: thin solid currentColor;
+  border-image: linear-gradient(to right, DimGray -25%, currentColor, DimGray 125%) 1 1;
 }
 
-.chapter:hover + section { /* 章标题上边框无 */
+.chapter:hover + section { /* 下个章标题隐藏上边框 */
   border-top: none;
 }
 

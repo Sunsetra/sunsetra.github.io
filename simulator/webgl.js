@@ -873,5 +873,5 @@ function preLoading(mapPath) { // 通过传入地图信息加载资源
     });
 }
 
-UIController.initUI();
+UIController.initUI(); // 初始化UI为整个程序入口点
 UIController.mapSelectToLoading(preLoading);
