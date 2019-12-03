@@ -9,7 +9,8 @@ import UIController from './modules/ui.js';
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
 
-const resList = { // 总资源列表
+/* 总资源列表 */
+const resList = {
   block: {
     top: {
       whiteTile: { url: 'res/texture/block/white_tile.png' },
@@ -46,7 +47,8 @@ const resList = { // 总资源列表
   },
 };
 
-const sysStatus = { // 状态对象，用于保存当前画布的各种状态信息
+/* 状态对象，用于保存当前画布的各种状态信息 */
+const sysStatus = {
   width: undefined, // 画布宽度
   height: undefined, // 画布高度
   context: undefined, // 渲染上下文种类，使用webgl/webgl2
@@ -54,7 +56,8 @@ const sysStatus = { // 状态对象，用于保存当前画布的各种状态信
   map: undefined, // 当前加载的地图名
 };
 
-const enemyShop = { // 敌人实例列表，可以通过参数扩展为具有非标血量等属性的特殊敌人
+/* 敌人实例列表，可以通过参数扩展为具有非标血量等属性的特殊敌人 */
+const enemyShop = {
   slime: () => {
     const { mat, geo } = resList.enemy.slime;
     const mesh = new THREE.Mesh(geo, mat);
@@ -95,82 +98,82 @@ const modelShop = (consInfo) => {
   return new BuiltinCons(1, 1, mesh); // 默认的内置建筑均为1x1
 };
 
+const canvas = document.querySelector('canvas');
+const scene = new THREE.Scene(); // 全局场景
+let renderer; // 全局渲染器
+let camera; // 全局摄影机
+let controls; // 全局镜头控制器
+
+/** 初始化场景相关全局变量 */
+function init() {
+  /**
+   * 创建全局渲染器，当webgl2可用时使用webgl2上下文
+   * @param {boolean} antialias - 是否开启抗锯齿，默认开启
+   * @param {boolean} shadow - 是否开启阴影贴图，默认开启
+   */
+  function createRender(antialias = true, shadow = true) {
+    let context;
+    if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
+      context = canvas.getContext('webgl2');
+    } else {
+      context = canvas.getContext('webgl');
+    }
+    renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
+    sysStatus.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = shadow;
+    renderer.gammaFactor = 2.2;
+    renderer.gammaOutput = true; // 伽玛输出
+    renderer.physicallyCorrectLights = true; // 物理修正模式
+  }
+
+  /**
+   * 创建全局场景
+   * @param {*} color - 指定场景/雾气的背景色，默认黑色
+   * @param {boolean} fog - 控制是否开启场景雾气，默认开启
+   */
+  function createScene(color = 'black', fog = true) {
+    scene.background = new THREE.Color(color);
+    if (fog) {
+      scene.fog = new THREE.Fog(color, 100, 200);
+    }
+  }
+
+  /** 创建全局摄影机 */
+  function createCamera() {
+    const fov = 75;
+    const aspect = canvas.clientWidth / canvas.clientHeight;
+    const near = 0.1;
+    const far = 500;
+    camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  }
+
+  /** 创建全局镜头控制器 */
+  function createControls() {
+    controls = new THREE.OrbitControls(camera, canvas);
+    controls.target.set(0, 0, 0);
+    controls.enableDamping = true; // 开启阻尼惯性
+    controls.dampingFactor = 0.2;
+    controls.update();
+  }
+
+  createRender(true, true);
+  createScene('black', true);
+  createCamera();
+  createControls();
+}
+
 
 /**
  * 游戏主函数，在资源加载完成后执行
  * @param {object} data - 地图数据对象
  */
 function main(data) {
-  const canvas = document.querySelector('canvas');
-  let renderer; // 全局渲染器
-  let camera; // 全局摄影机
-  let scene; // 全局场景
-  let controls; // 全局镜头控制器
   let envLight; // 全局环境光
   let sunLight; // 全局平行光
   let map; // 全局当前地图对象
 
   let needRender = false; // 静态渲染需求Flag
-
-  /** 初始化场景相关全局变量 */
-  function init() {
-    /**
-     * 创建全局渲染器，当webgl2可用时使用webgl2上下文
-     * @param {boolean} antialias - 是否开启抗锯齿，默认开启
-     * @param {boolean} shadow - 是否开启阴影贴图，默认开启
-     */
-    function createRender(antialias = true, shadow = true) {
-      let context;
-      if (WEBGL.isWebGL2Available()) { // 可用时使用webgl2上下文
-        context = canvas.getContext('webgl2');
-      } else {
-        context = canvas.getContext('webgl');
-      }
-      renderer = new THREE.WebGLRenderer({ canvas, context, antialias });
-      sysStatus.context = renderer.capabilities.isWebGL2 ? 'webgl2' : 'webgl';
-      renderer.shadowMap.enabled = shadow;
-      renderer.gammaFactor = 2.2;
-      renderer.gammaOutput = true; // 伽玛输出
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.physicallyCorrectLights = true; // 物理修正模式
-    }
-
-    /**
-     * 创建全局场景
-     * @param {*} color - 指定场景/雾气的背景色，默认黑色
-     * @param {boolean} fog - 控制是否开启场景雾气，默认开启
-     */
-    function createScene(color = 'black', fog = true) {
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(color);
-      if (fog) {
-        scene.fog = new THREE.Fog(color, 100, 200);
-      }
-    }
-
-    /** 创建全局摄影机 */
-    function createCamera() {
-      const fov = 75;
-      const aspect = canvas.clientWidth / canvas.clientHeight;
-      const near = 0.1;
-      const far = 500;
-      camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    }
-
-    /** 创建全局镜头控制器 */
-    function createControls() {
-      controls = new THREE.OrbitControls(camera, canvas);
-      controls.target.set(0, 0, 0);
-      controls.enableDamping = true; // 开启阻尼惯性
-      controls.dampingFactor = 0.2;
-      controls.update();
-    }
-
-    createRender(true, true);
-    createScene('black', true);
-    createCamera();
-    createControls();
-  }
 
   /** 检查渲染尺寸是否改变 */
   function checkResize() {
@@ -493,10 +496,6 @@ function main(data) {
       /** @function - 更新敌人当前坐标 */
       const updateEnemyPosition = () => {
         const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
-        /**
-         * @namespace {Array} enemy.path - 敌人运动路径数组
-         * @namespace {Unit} enemy.inst - 敌人单位对象
-         */
         activeEnemy.forEach((enemy) => {
           const { path, inst } = enemy;
           if (path.length) { // 判定敌人是否到达终点
@@ -575,34 +574,6 @@ function main(data) {
     }
 
     /**
-     * 递归释放参数对象中包含的资源
-     * @param resource - 包含资源的对象
-     * @returns - 返回被释放的对象
-     */
-    function destroyMap(resource) {
-      if (!resource) { return resource; } // 传入空对象时直接返回
-
-      if (Array.isArray(resource)) { // 传入数组（材质对象或Object3D的children）
-        resource.forEach((res) => destroyMap(res));
-        return resource;
-      }
-
-      if (resource instanceof THREE.Object3D) { // 解包Object3D中的资源
-        destroyMap(resource.geometry);
-        destroyMap(resource.material);
-        destroyMap(resource.children);
-      } else if (resource instanceof THREE.Material) {
-        Object.values(resource).forEach((value) => { // 遍历材质对象中的属性值
-          if (value instanceof THREE.Texture) { value.dispose(); } // 废弃其中的贴图实例
-        });
-        resource.dispose(); // 废弃材质对象
-      } else if (resource instanceof THREE.BufferGeometry) {
-        resource.dispose(); // 废弃几何体对象
-      }
-      return resource;
-    }
-
-    /**
      * 动态动画循环，只能由requestDynamicRender及动画控制函数调用
      * @param {number} rAFTime - 当前帧时刻
      */
@@ -678,7 +649,6 @@ function main(data) {
         activeEnemy.delete(enemy);
       });
       map.resetMap(); // 重置游戏变量
-      destroyMap(scene); // 释放资源
 
       starter.textContent = '▶';
       starter.removeEventListener('click', pauseAnimate);
@@ -706,6 +676,35 @@ function main(data) {
   gameStart();
 }
 
+/**
+ * 递归释放参数对象中包含的资源
+ * @param resource - 包含资源的对象
+ * @returns - 返回被释放的对象
+ */
+function destroyMap(resource) {
+  if (!resource) { return resource; } // 传入空对象时直接返回
+
+  if (Array.isArray(resource)) { // 传入数组（材质对象或Object3D的children）
+    resource.forEach((res) => destroyMap(res));
+    return resource;
+  }
+
+  if (resource instanceof THREE.Object3D) { // 解包Object3D中的资源
+    scene.remove(resource); // 从场景中移除Object3D对象
+    // if (resource instanceof THREE.Light) { console.log('删除灯光'); }
+    destroyMap(resource.geometry);
+    destroyMap(resource.material);
+    destroyMap(resource.children);
+  } else if (resource instanceof THREE.Material) {
+    Object.values(resource).forEach((value) => { // 遍历材质对象中的属性值
+      if (value instanceof THREE.Texture) { value.dispose(); } // 废弃其中的贴图实例
+    });
+    resource.dispose(); // 废弃材质对象
+  } else if (resource instanceof THREE.BufferGeometry) {
+    resource.dispose(); // 废弃几何体对象
+  }
+  return resource;
+}
 
 /**
  * 设置加载管理器的回调函数
@@ -726,45 +725,57 @@ function setLoadingManager(data) {
     const { block, enemy } = res;
     ['top', 'side', 'bottom'].forEach((surf) => { // 构建砖块贴图材质
       block[surf].forEach((type) => {
-        const thisTex = resList.block[surf][type].tex;
-        resList.block[surf][type].mat = new THREE.MeshPhysicalMaterial({
-          metalness: 0.1,
-          roughness: 0.6,
-          map: thisTex,
+        const thisItem = resList.block[surf][type];
+        if (!Object.prototype.hasOwnProperty.call(thisItem, 'mat')) {
+          const { tex } = thisItem;
+          thisItem.mat = new THREE.MeshPhysicalMaterial({
+            metalness: 0.1,
+            roughness: 0.6,
+            map: tex,
+          });
+        }
+      });
+    });
+
+    /** 仅在资源列表中没有构建进出点的材质和几何体时创建 */
+    Object.values(resList.IOPoint).forEach((item) => {
+      if (!Object.prototype.hasOwnProperty.call(item, 'mat') && !Object.prototype.hasOwnProperty.call(item, 'geo')) {
+        /** @property {THREE.Texture} topTex.tex - 顶面贴图实例 */
+        const { topTex } = item;
+        const topMat = new THREE.MeshBasicMaterial({
+          alphaTest: 0.6,
+          map: topTex.tex,
+          side: THREE.DoubleSide,
+          transparent: true,
         });
-      });
+        /** @property {THREE.Texture} sideTex.tex - 侧面贴图实例 */
+        const { sideTex } = item;
+        const sideMat = new THREE.MeshBasicMaterial({
+          alphaTest: 0.6,
+          map: sideTex.tex,
+          side: THREE.DoubleSide,
+          transparent: true,
+        });
+        Object.defineProperty(item, 'mat', { value: [sideMat, sideMat, topMat, sideMat, sideMat, sideMat] });
+        const edge = blockUnit - 0.01;
+        Object.defineProperty(item, 'geo', { value: new THREE.BoxBufferGeometry(edge, edge, edge) });
+      }
     });
 
-    Object.values(resList.IOPoint).forEach((item) => { // 构建进出点模型
-      const { topTex, sideTex } = item;
-      const topMat = new THREE.MeshBasicMaterial({
-        alphaTest: 0.6,
-        map: topTex.tex,
-        side: THREE.DoubleSide,
-        transparent: true,
-      });
-      const sideMat = new THREE.MeshBasicMaterial({
-        alphaTest: 0.6,
-        map: sideTex.tex,
-        side: THREE.DoubleSide,
-        transparent: true,
-      });
-      Object.defineProperty(item, 'mat', { value: [sideMat, sideMat, topMat, sideMat, sideMat, sideMat] });
-      const edge = blockUnit - 0.01;
-      Object.defineProperty(item, 'geo', { value: new THREE.BoxBufferGeometry(edge, edge, edge) });
-    });
-
-    enemy.forEach((item) => { // 构建敌人模型
+    /** 仅在敌人的模型及材质未构建时构建 */
+    enemy.forEach((item) => {
       const thisEnemy = resList.enemy[item];
-      const { width, height } = thisEnemy.tex.image;
-      thisEnemy.geo = new THREE.PlaneBufferGeometry(width, height);
-      thisEnemy.mat = new THREE.MeshBasicMaterial({
-        alphaTest: 0.6,
-        depthWrite: false,
-        map: thisEnemy.tex,
-        side: THREE.DoubleSide,
-        transparent: true,
-      });
+      if (!Object.prototype.hasOwnProperty.call(thisEnemy, 'geo') && !Object.prototype.hasOwnProperty.call(thisEnemy, 'mat')) {
+        const { width, height } = thisEnemy.tex.image;
+        thisEnemy.geo = new THREE.PlaneBufferGeometry(width, height);
+        thisEnemy.mat = new THREE.MeshBasicMaterial({
+          alphaTest: 0.6,
+          depthWrite: false,
+          map: thisEnemy.tex,
+          side: THREE.DoubleSide,
+          transparent: true,
+        });
+      }
     });
   }
 
@@ -807,20 +818,24 @@ function setLoadingManager(data) {
 }
 
 /**
- * 加载资源，包括贴图，模型等
+ * 加载总资源列表中未加载的资源，包括贴图，模型等
  * @param {object} res - 需加载的资源对象
  * @param {object} res.block - 砖块贴图资源对象
  */
 function loadResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
   const gltfLoader = new THREE.GLTFLoader(loadManager);
+  let loadingFlag = false; // 加载资源标志位，
   const { block, model, enemy } = res;
 
   const loadTex = (url, obj) => {
-    const texture = texLoader.load(url);
-    texture.encoding = THREE.sRGBEncoding;
-    texture.anisotropy = 16;
-    Object.defineProperty(obj, 'tex', { value: texture });
+    if (!Object.prototype.hasOwnProperty.call(obj, 'tex')) {
+      const texture = texLoader.load(url);
+      texture.encoding = THREE.sRGBEncoding;
+      texture.anisotropy = 16;
+      Object.defineProperty(obj, 'tex', { value: texture });
+      loadingFlag = true;
+    }
   };
 
   ['top', 'side', 'bottom'].forEach((surf) => { // 加载砖块贴图
@@ -852,17 +867,22 @@ function loadResources(res) {
 
   model.forEach((name) => { // 加载建筑模型
     const item = resList.model[name];
-    gltfLoader.load(item.url, (gltf) => {
-      item.gltf = {};
-      gltf.scene.children.forEach((obj) => { // 模型命名尾缀为模型种类
-        const type = obj.name.split('_').pop();
-        item.gltf[type] = obj;
+    if (!Object.prototype.hasOwnProperty.call(item, 'gltf')) {
+      gltfLoader.load(item.url, (gltf) => {
+        item.gltf = {};
+        gltf.scene.children.forEach((obj) => { // 模型命名尾缀为模型种类
+          const type = obj.name.split('_').pop();
+          item.gltf[type] = obj;
+        });
       });
-    });
+      loadingFlag = true;
+    }
   });
+  if (!loadingFlag) { loadManager.onLoad(); } // 未实际加载时手动调用加载完成回调
 }
 
 function preLoading(mapPath) { // 通过传入地图信息加载资源
+  destroyMap(scene); // 废弃原地图中的资源
   fetch(mapPath)
     .then((data) => data.json())
     .then((data) => {
