@@ -4,7 +4,7 @@ import { BuiltinCons, IOPoint } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
 import UIController from './modules/ui.js';
 
-/* global THREE, dat */
+/* global THREE */
 
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
@@ -344,12 +344,16 @@ function main(data) {
       scene.add(sunLight);
       scene.add(sunLight.target);
 
-      /** 创建辅助对象，包括灯光参数控制器等 */
-      const gui = new dat.GUI();
-      const lightFolder = gui.addFolder('灯光');
-      lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
-      lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
-      lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
+      // /** 创建辅助对象，包括灯光参数控制器等 */
+      // /* global dat */
+      // const gui = new dat.GUI();
+      // const lightFolder = gui.addFolder('灯光');
+      // eslint-disable-next-line max-len
+      // lightFolder.add(sunLight, 'intensity', 0, 5, 0.05).name('阳光强度').onChange(requestStaticRender);
+      // eslint-disable-next-line max-len
+      // lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
+      // eslint-disable-next-line max-len
+      // lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
 
       // const meshFolder = gui.addFolder('网格');
       //
@@ -690,17 +694,23 @@ function destroyMap(resource) {
   }
 
   if (resource instanceof THREE.Object3D) { // 解包Object3D中的资源
-    scene.remove(resource); // 从场景中移除Object3D对象
-    // if (resource instanceof THREE.Light) { console.log('删除灯光'); }
     destroyMap(resource.geometry);
-    destroyMap(resource.material);
-    destroyMap(resource.children);
+
+    if (resource.material && Array.isArray(resource.material)) { // 解包Mesh中的材质
+      resource.material.forEach((mat) => destroyMap(mat));
+    } else { destroyMap(resource.material); }
+
+    while (resource.children.length) { // 解包Object3D的子对象
+      const firstObj = resource.children[0];
+      resource.remove(firstObj);
+      destroyMap(firstObj);
+    }
   } else if (resource instanceof THREE.Material) {
     Object.values(resource).forEach((value) => { // 遍历材质对象中的属性值
       if (value instanceof THREE.Texture) { value.dispose(); } // 废弃其中的贴图实例
     });
     resource.dispose(); // 废弃材质对象
-  } else if (resource instanceof THREE.BufferGeometry) {
+  } else if (resource instanceof THREE.BufferGeometry || resource instanceof THREE.Geometry) {
     resource.dispose(); // 废弃几何体对象
   }
   return resource;
