@@ -710,7 +710,7 @@ function destroyMap(resource) {
       if (value instanceof THREE.Texture) { value.dispose(); } // 废弃其中的贴图实例
     });
     resource.dispose(); // 废弃材质对象
-  } else if (resource instanceof THREE.BufferGeometry || resource instanceof THREE.Geometry) {
+  } else if (resource instanceof THREE.BufferGeometry) {
     resource.dispose(); // 废弃几何体对象
   }
   return resource;
