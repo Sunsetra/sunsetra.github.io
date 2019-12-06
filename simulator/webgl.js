@@ -2,7 +2,7 @@ import { WEBGL } from './lib/WebGL.js';
 import { blockUnit, Map, TimeAxis } from './modules/basic.js';
 import { BuiltinCons, IOPoint } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
-import UIController from './modules/ui.js';
+import { UIController, TimeAxisUI } from './modules/ui.js';
 
 /* global THREE */
 
@@ -354,7 +354,6 @@ function main(data) {
       // lightFolder.add(envLight, 'intensity', 0, 5, 0.05).name('环境光强度').onChange(requestStaticRender).listen();
       // eslint-disable-next-line max-len
       // lightFolder.add(sunLight.shadow, 'bias', -0.01, 0.01, 0.0001).name('阴影偏差').onChange(requestStaticRender);
-
       // const meshFolder = gui.addFolder('网格');
       //
       // class AxisGridHelper {
@@ -395,74 +394,15 @@ function main(data) {
     const timer = document.querySelector('#timer'); // 全局计时器显示
     const starter = document.querySelector('#starter');
     const reset = document.querySelector('#reset');
-    const axis = document.querySelector('#axis');
 
-    const timeAxis = new TimeAxis(); // 全局时间轴
-    const activeEnemy = new Set(); // 场上敌人集合
-    const axisNodes = {}; // 需要显示在时间轴元素上的子节点，格式为{axisTime: node}
+    const timeAxis = new TimeAxis(); // 计时用时间轴对象
+    const axisUI = new TimeAxisUI(); // 时间轴UI
+    const activeEnemy = new Set(); // 场上存活敌人集合
+    let enemyLeft = map.enemyNum;
+    let enemyCount = 0; // 已出场敌人唯一ID计数
 
     let rAF = null; // 动态渲染取消标志
     let lastTime = 0; // 上次渲染的rAF时刻
-
-    /**
-     * 创建显示在时间轴上的敌人节点
-     * @param type - 节点单位类型
-     * @param enemyFrag - 敌人信息片断
-     * @param action - 节点行为类型
-     * @param nodeTime - 节点时间（来自时间轴）
-     * @returns {HTMLDivElement} - 返回时间轴节点
-     */
-    function createAxisNode(type, enemyFrag, action, nodeTime) {
-      const { enemy, time } = enemyFrag;
-      const createTime = String(time).replace('.', '_');
-      const node = document.createElement('div'); // 创建容器节点
-      node.setAttribute('class', `mark-icon ${enemy}${createTime}`);
-
-      node.addEventListener('mouseover', () => {
-        const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
-        nodes.forEach((item) => {
-          const icon = item.querySelector('.icon');
-          icon.style.filter = 'brightness(2)';
-          icon.style.zIndex = '999';
-          const detail = item.querySelector('.detail');
-          detail.style.display = 'block';
-          const arrow = item.querySelector('.detail-arrow');
-          arrow.style.display = 'block';
-        });
-      });
-      node.addEventListener('mouseout', () => {
-        const nodes = axis.querySelectorAll(`.${enemy}${createTime}`);
-        nodes.forEach((item) => {
-          const icon = item.querySelector('.icon');
-          icon.style.filter = 'none';
-          icon.style.zIndex = '0';
-          const detail = item.querySelector('.detail');
-          detail.style.display = 'none';
-          const arrow = item.querySelector('.detail-arrow');
-          arrow.style.display = 'none';
-        });
-      });
-
-      const markNode = document.createElement('div'); // 创建时间轴标记节点
-      markNode.setAttribute('class', `mark ${type} ${action}`);
-
-      const iconNode = document.createElement('div'); // 创建图标标记节点
-      iconNode.setAttribute('class', 'icon');
-      const icon = resList.enemy[enemy].url;
-      iconNode.style.backgroundImage = `url("${icon}")`;
-
-      const detailNode = document.createElement('div'); // 创建详细时间节点
-      detailNode.setAttribute('class', 'detail');
-      detailNode.textContent = nodeTime;
-      const detailArrow = document.createElement('div'); // 创建小箭头节点
-      detailArrow.setAttribute('class', 'detail-arrow');
-
-      node.appendChild(markNode);
-      node.appendChild(iconNode);
-      node.appendChild(detailNode);
-      node.appendChild(detailArrow);
-      return node;
-    }
 
     /**
      * 游戏状态更新函数
@@ -475,23 +415,23 @@ function main(data) {
         if (map.waves.length) {
           const { fragments } = map.waves[0]; // 当前波次的分段
           const thisFrag = fragments[0];
-          const { time, enemy, path } = thisFrag; // 首只敌人信息
+          const { time, name, path } = thisFrag; // 首只敌人信息
 
           if (axisTime >= time) { // 检查应出现的新敌人
-            thisFrag.inst = enemyShop[enemy](); // 创建敌人实例
+            thisFrag.inst = enemyShop[name](); // 创建敌人实例
+            thisFrag.id = enemyCount;
+            enemyCount += 1;
 
             const { x, z } = path[0]; // 读取首个路径点
             const y = map.getBlock(z, x).size.y + thisFrag.inst.height / 2;
-            thisFrag.inst.position = { x, y, z }; // 敌人初始定位
+            thisFrag.inst.position = { x, y, z }; // 敌人初始定位（抽象）
             scene.add(thisFrag.inst.mesh);
-            path.shift(); // 删除首个路径点
-
+            axisUI.createAxisNode('enemy create', `${name}-${thisFrag.id}`, resList.enemy[name].url, timeAxis.getElapsedTimeN().toFixed(4), timeAxis.getElapsedTimeS());
             activeEnemy.add(thisFrag); // 新增活跃敌人
+            path.shift(); // 删除首个路径点
             fragments.shift(); // 从当前波次中删除该敌人
-            axisNodes[axisTime] = createAxisNode('enemy', thisFrag, 'create', timeAxis.getElapsedTimeS());
-            axis.appendChild(axisNodes[axisTime]);
             // eslint-disable-next-line max-len
-            // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${map.enemyNum}`);
+            // console.log(`创建 ${time}秒 出现的敌人，场上敌人剩余 ${activeEnemy.size} ，当前波次敌人剩余 ${fragments.length} ，总敌人剩余 ${enemyLeft}`);
             if (!fragments.length) { map.waves.shift(); } // 若当前波次中剩余敌人为0则删除当前波次
           }
         }
@@ -501,7 +441,7 @@ function main(data) {
       const updateEnemyPosition = () => {
         const interval = (rAFTime - lastTime) / 1000; // 帧间隔时间
         activeEnemy.forEach((enemy) => {
-          const { path, inst } = enemy;
+          const { path, name, inst } = enemy;
           if (path.length) { // 判定敌人是否到达终点
             if (Object.prototype.hasOwnProperty.call(inst, 'pause')) { // 判定是否正在停顿中
               inst.pause -= interval;
@@ -542,27 +482,18 @@ function main(data) {
             }
           } else { // 敌人到达终点时
             scene.remove(enemy.inst.mesh); // 从场景中移除该敌人而不需释放其共用的几何与贴图
+            axisUI.createAxisNode('enemy drop', `${enemy.name}-${enemy.id}`, resList.enemy[name].url, timeAxis.getElapsedTimeN().toFixed(4), timeAxis.getElapsedTimeS());
             activeEnemy.delete(enemy);
-            map.enemyNum -= 1;
-            axisNodes[axisTime] = createAxisNode('enemy', enemy, 'lose', timeAxis.getElapsedTimeS());
-            axis.appendChild(axisNodes[axisTime]);
-            console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${map.enemyNum}`);
+            enemyLeft -= 1;
+            console.log(`移除 ${enemy.time}秒 出现的敌人实例，场上敌人剩余 ${activeEnemy.size} ，总敌人剩余 ${enemyLeft}`);
           }
         });
       };
 
-      /** @function - 更新时间轴上的子节点位置 */
-      const updateTimeAxis = () => {
-        Object.keys(axisNodes).forEach((keyTime) => {
-          const pos = ((keyTime / axisTime) * 100).toFixed(2);
-          axisNodes[keyTime].style.left = `${pos}%`;
-        });
-      };
-
-      if (map.enemyNum) { // 检查剩余敌人数量
+      if (enemyLeft) { // 检查剩余敌人数量
         updateEnemyStatus(); // 更新维护敌人状态
         updateEnemyPosition(); // 更新敌人位置
-        updateTimeAxis();
+        axisUI.updateAxisNodes(axisTime);
       } else { // 存活敌人为0时游戏结束，需要手动重置战场以重玩
         rAF = null; // 置空rAF以取消动画
         timeAxis.stop();
@@ -643,15 +574,13 @@ function main(data) {
     function resetAnimate() {
       cancelAnimationFrame(rAF);
       timeAxis.stop(); // 取消动画并停止时间轴
-
-      while (axis.firstChild) { // 清除时间轴的子节点
-        axis.removeChild(axis.firstChild);
-      }
+      axisUI.clearNodes();
 
       activeEnemy.forEach((enemy) => {
         scene.remove(enemy.inst.mesh);
         activeEnemy.delete(enemy);
       });
+      enemyLeft = map.enemyNum;
       map.resetMap(); // 重置游戏变量
 
       starter.textContent = '▶';
@@ -673,8 +602,6 @@ function main(data) {
     window.addEventListener('resize', requestStaticRender);
   }
 
-
-  init(); // 初始化全局变量
   createMap(JSON.parse(JSON.stringify(data))); // 创建地图
   requestStaticRender(); // 发出渲染请求
   gameStart();
@@ -903,5 +830,6 @@ function preLoading(mapPath) { // 通过传入地图信息加载资源
     });
 }
 
+init(); // 初始化全局变量
 UIController.initUI(); // 初始化UI为整个程序入口点
 UIController.mapSelectToLoading(preLoading);

@@ -9,19 +9,18 @@ class Map {
    * @param {number} width - 地图宽度（总列数）
    * @param {number} height - 地图高度（总行数）
    * @param {Array} blockInfo - 地图数据对象
-   * @param {number} enemyNum - 敌人数量
+   * @param {number} enemyNum - 敌人总数量
    * @param {Array} waves - 敌人的波次数据
    *
    * @property {number} width - 地图的总列数
    * @property {number} height - 地图的总行数
-   * @property {number} enemyNum - 敌人数量
+   * @property {number} enemyNum - 敌人总数量
    * @property {Array} waves - 敌人的波次数据
    */
   constructor(width, height, blockInfo, enemyNum, waves) {
     this.width = width;
     this.height = height;
     this.enemyNum = enemyNum;
-    this.enemyNumAll = enemyNum; // 总敌人数量
     this.waves = waves;
     this.wavesAll = JSON.parse(JSON.stringify(waves)); // 原始波次信息
     this.blockData = new Array(width * height).fill(null); // 数组砖块数据
@@ -282,7 +281,6 @@ class Map {
 
   /** 重置地图参数 */
   resetMap() {
-    this.enemyNum = this.enemyNumAll;
     this.waves = JSON.parse(JSON.stringify(this.wavesAll));
   }
 }

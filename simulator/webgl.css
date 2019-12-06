@@ -222,11 +222,15 @@ canvas {
   transform: translateX(-50%); /* 匹配图标居中 */
 }
 
-.mark-icon > .enemy.create { /* 创建敌人时 */
+.mark-icon > .enemy { /* 橙色节点表示敌人 */
   background-color: orange;
 }
 
-.mark-icon > .enemy.lose { /* 敌人进入目标点时 */
+.mark-icon > .ally { /* 蓝色节点表示友方 */
+  background-color: dodgerblue;
+}
+
+.mark-icon > .enemy.drop { /* 红色节点表示漏怪 */
   background-color: red;
 }
 

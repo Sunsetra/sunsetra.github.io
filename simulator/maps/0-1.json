@@ -484,7 +484,7 @@
       "fragments": [
         {
           "time": 5,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -496,7 +496,7 @@
         },
         {
           "time": 16,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -508,7 +508,7 @@
         },
         {
           "time": 18,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -520,7 +520,7 @@
         },
         {
           "time": 29,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -532,7 +532,7 @@
         },
         {
           "time": 29.7,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -544,7 +544,7 @@
         },
         {
           "time": 34,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -556,7 +556,7 @@
         },
         {
           "time": 45,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -568,7 +568,7 @@
         },
         {
           "time": 45.7,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -580,7 +580,7 @@
         },
         {
           "time": 52,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -592,7 +592,7 @@
         },
         {
           "time": 52.7,
-          "enemy": "slime",
+          "name": "slime",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
@@ -604,7 +604,7 @@
         },
         {
           "time": 63.7,
-          "enemy": "saber",
+          "name": "saber",
           "path": [
             { "x": 8, "z": 2 },
             { "x": 7, "z": 2 },
