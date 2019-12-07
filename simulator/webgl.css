@@ -319,7 +319,7 @@ canvas {
   margin: 0 auto;
   background-color: black;
   color: yellow;
-  transition: width 0.5s;
+  transition: width 0.5s linear;
 }
 
 .percentage {

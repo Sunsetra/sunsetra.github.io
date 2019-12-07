@@ -1,10 +1,13 @@
-import { WEBGL } from './lib/WebGL.js';
+import * as THREE from './lib/three/build/three.module.js';
+import { OrbitControls } from './lib/three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from './lib/three/examples/jsm/loaders/GLTFLoader.js';
+import { WEBGL } from './lib/three/examples/jsm/WebGL.js';
+
 import { blockUnit, Map, TimeAxis } from './modules/basic.js';
 import { BuiltinCons, IOPoint } from './modules/cons.js';
 import * as Unit from './modules/unit.js';
 import { UIController, TimeAxisUI } from './modules/ui.js';
 
-/* global THREE */
 
 /* 全局变量 */
 const loadManager = new THREE.LoadingManager();
@@ -150,7 +153,7 @@ function init() {
 
   /** 创建全局镜头控制器 */
   function createControls() {
-    controls = new THREE.OrbitControls(camera, canvas);
+    controls = new OrbitControls(camera, canvas);
     controls.target.set(0, 0, 0);
     controls.enableDamping = true; // 开启阻尼惯性
     controls.dampingFactor = 0.2;
@@ -327,7 +330,7 @@ function main(data) {
       const lightPosZ = lightRad * sinTheta * sinPhi + centerZ;
       sunLight.position.set(lightPosX, lightPosY, lightPosZ);
       sunLight.target.position.set(centerX, 0, centerZ); // 设置光源终点
-      sunLight.target.updateWorldMatrix();
+      sunLight.target.updateWorldMatrix(false, true);
 
       sunLight.castShadow = true; // 设置光源阴影
       sunLight.shadow.camera.left = -maxSize / 2; // 按地图最大尺寸定义光源阴影
@@ -345,7 +348,7 @@ function main(data) {
       scene.add(sunLight.target);
 
       // /** 创建辅助对象，包括灯光参数控制器等 */
-      // /* global dat */
+      // import * as dat from './lib/three/dat.gui.module.js';
       // const gui = new dat.GUI();
       // const lightFolder = gui.addFolder('灯光');
       // eslint-disable-next-line max-len
@@ -647,10 +650,6 @@ function destroyMap(resource) {
  * @param {object} data - 地图数据，需要传递给main()函数
  */
 function setLoadingManager(data) {
-  const bar = document.querySelector('#bar');
-  const left = document.querySelector('#left');
-  const right = document.querySelector('#right');
-  const tip = document.querySelector('#progress_tip');
   let errorCounter = 0; // 错误计数
 
   /**
@@ -676,7 +675,7 @@ function setLoadingManager(data) {
     /** 仅在资源列表中没有构建进出点的材质和几何体时创建 */
     Object.values(resList.IOPoint).forEach((item) => {
       if (!Object.prototype.hasOwnProperty.call(item, 'mat') && !Object.prototype.hasOwnProperty.call(item, 'geo')) {
-        /** @property {THREE.Texture} topTex.tex - 顶面贴图实例 */
+        /** @property {Texture} topTex.tex - 顶面贴图实例 */
         const { topTex } = item;
         const topMat = new THREE.MeshBasicMaterial({
           alphaTest: 0.6,
@@ -684,7 +683,7 @@ function setLoadingManager(data) {
           side: THREE.DoubleSide,
           transparent: true,
         });
-        /** @property {THREE.Texture} sideTex.tex - 侧面贴图实例 */
+        /** @property {Texture} sideTex.tex - 侧面贴图实例 */
         const { sideTex } = item;
         const sideMat = new THREE.MeshBasicMaterial({
           alphaTest: 0.6,
@@ -717,25 +716,15 @@ function setLoadingManager(data) {
 
   /* 加载进度监控函数 */
   function loadingProgress(url, itemsLoaded, itemsTotal) {
-    if (itemsLoaded) { // 开始加载后的百分比样式
-      left.style.margin = '0';
-      left.style.transform = 'translateX(-50%)';
-      right.style.margin = '0';
-      right.style.transform = 'translateX(50%)';
-    }
     if (!errorCounter) { // 没有加载错误时更新百分比
-      const percent = (itemsLoaded / itemsTotal) * 100;
-      bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-      left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
-      right.textContent = `${Math.round(percent)}%`;
-      if (percent >= 100) { right.style.display = 'none'; }
+      UIController.updateLoadingBar(itemsLoaded, itemsTotal);
     }
   }
 
   /* 加载错误处理函数 */
   function loadingError(url) {
     errorCounter += 1;
-    tip.innerText += `\n加载${url}时发生错误`;
+    UIController.updateTip(`\n加载${url}时发生错误`);
   }
 
   /* 加载完成回调函数 */
@@ -760,7 +749,7 @@ function setLoadingManager(data) {
  */
 function loadResources(res) {
   const texLoader = new THREE.TextureLoader(loadManager);
-  const gltfLoader = new THREE.GLTFLoader(loadManager);
+  const gltfLoader = new GLTFLoader(loadManager);
   let loadingFlag = false; // 加载资源标志位，
   const { block, model, enemy } = res;
 

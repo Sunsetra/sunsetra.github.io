@@ -1,4 +1,4 @@
-/* global THREE */
+import * as THREE from '../lib/three/build/three.module.js';
 
 const blockUnit = 10; // 砖块单位长度常量
 

@@ -65,6 +65,33 @@ class UIController {
     });
   }
 
+  /* 更新加载进度条 */
+  static updateLoadingBar(itemsLoaded, itemsTotal) {
+    const bar = document.querySelector('#bar');
+    const left = document.querySelector('#left');
+    const right = document.querySelector('#right');
+
+    left.style.margin = '0';
+    left.style.transform = 'translateX(-50%)';
+    right.style.margin = '0';
+    right.style.transform = 'translateX(50%)';
+
+    const percent = (itemsLoaded / itemsTotal) * 100;
+    bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
+    left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
+    right.textContent = `${Math.round(percent)}%`;
+    if (percent >= 100) { right.style.display = 'none'; }
+  }
+
+  /**
+   * 更新加载提示
+   * @param {string} text - 要拼接在原文本后的加载提示信息
+   */
+  static updateTip(text) {
+    const tip = document.querySelector('#progress_tip');
+    tip.innerText += text;
+  }
+
   /** 隐藏加载进度条并显示画布 */
   static loadingToGameFrame() {
     const loadingBar = document.querySelector('#loading');

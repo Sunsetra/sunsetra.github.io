@@ -1,4 +1,4 @@
-/* global THREE */
+import * as THREE from '../lib/three/build/three.module.js';
 
 import { blockUnit } from './basic.js';
 
@@ -8,12 +8,12 @@ class Construction {
    * 定义地图建筑对象
    * @param {number} colSpan - 建筑跨越的列数
    * @param {number} rowSpan - 建筑跨越的行数
-   * @param {THREE.Object3D} mesh - 建筑使用的网格实体
+   * @param {Object3D} mesh - 建筑使用的网格实体
    *
    * @property {number} colSpan - 建筑跨越的列数
    * @property {number} rowSpan - 建筑跨越的行数
-   * @property {THREE.Object3D} mesh - 建筑网格实体
-   * @property {THREE.Vector3} position - 建筑所在的绝对坐标
+   * @property {Object3D} mesh - 建筑网格实体
+   * @property {Vector3} position - 建筑所在的绝对坐标
    */
   constructor(rowSpan, colSpan, mesh) {
     this.rowSpan = rowSpan;
@@ -33,7 +33,8 @@ class Construction {
     this.mesh.geometry.center(); // 重置原点为几何中心
     this.mesh.geometry.computeBoundingBox();
     this.mesh.geometry.boundingBox.getCenter(this.mesh.position);
-    const wrapper = new THREE.Object3D().add(this.mesh); // 使用外部对象包裹
+    const wrapper = new THREE.Object3D(); // 使用外部对象包裹
+    wrapper.add(this.mesh);
     const originBox = new THREE.Box3().setFromObject(wrapper);
     const originSize = originBox.getSize(new THREE.Vector3());
     const mag = (blockUnit * this.colSpan) / originSize.x;
@@ -60,7 +61,7 @@ class Construction {
 class IOPoint extends Construction {
   /**
    * 预设进入/目标点建筑，内部构建
-   * @param {THREE.Object3D} mesh - 当前建筑的网格模型
+   * @param {Object3D} mesh - 当前建筑的网格模型
    */
   constructor(mesh) {
     super(1, 1, mesh);
@@ -73,7 +74,7 @@ class BuiltinCons extends Construction {
    * 外部导入的建筑/装饰建筑，含内置建筑及自定义建筑
    * @param {number} rowSpan - 建筑跨越的列数
    * @param {number} colSpan - 建筑跨越的行数
-   * @param {THREE.Object3D} mesh - 导入的建筑模型mesh
+   * @param {Object3D} mesh - 导入的建筑模型mesh
    */
   constructor(rowSpan, colSpan, mesh) {
     super(rowSpan, colSpan, mesh);
