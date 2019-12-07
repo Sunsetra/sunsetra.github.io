@@ -234,6 +234,10 @@ canvas {
   background-color: red;
 }
 
+.mark-icon > .dead { /* 灰度节点表示死亡 */
+  filter: grayscale(1);
+}
+
 .icon {
   position: relative;
   height: 1.5rem;
@@ -242,6 +246,10 @@ canvas {
   transform: translateX(-50%); /* 匹配标记刻线居中 */
   background-size: contain;
   background-repeat: no-repeat;
+}
+
+.mark-icon > .dead + .icon { /* 灰度节点表示死亡 */
+  filter: grayscale(1);
 }
 
 .detail {

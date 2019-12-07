@@ -88,31 +88,37 @@ class UIController {
 }
 
 class TimeAxisUI {
+  /** 时间轴UI控制 */
   constructor() {
     this.timeAxis = document.querySelector('#axis');
+    this.timer = document.querySelector('#timer'); // 计时器
   }
 
   /**
    * 创建显示在时间轴上的单位节点
-   * @param type - 单位节点视觉行为，由单位类型与单位行为组成：
+   * @param {string} type - 单位节点视觉行为，由单位类型与单位行为组成：
    *  类型：（标记）橙色表示敌方单位(enemy)，蓝色表示己方单位(ally)；
-   *  行为：（图标）正常色表示创建(create)，红色遮罩表示死亡(dead)，漏怪(drop)以红色标记表示
-   * @param name - 单位名称：用于节点类名
-   * @param iconUrl - 单位图标资源url
-   * @param createTime - 单位创建时间（浮点数）
-   * @param nodeTime - 节点时间（字符串）
+   *  行为：（图标）正常色表示创建(create)，灰度表示死亡(dead)，漏怪(drop)以红色标记表示
+   * @param {string} name - 单位名称：用于节点类名
+   * @param {url} iconUrl - 单位图标资源url
+   * @param {number} createTime - 单位创建时间（浮点数）
+   * @param {string} nodeTime - 节点时间（字符串）
    * @returns {HTMLDivElement} - 返回时间轴节点
    */
   createAxisNode(type, name, iconUrl, createTime, nodeTime) {
     const node = document.createElement('div'); // 创建容器节点
-    node.dataset.createTime = createTime;
+    node.dataset.createTime = String(createTime); // 在节点的数据属性中记录出现时间
     node.setAttribute('class', `mark-icon ${name}`);
 
     node.addEventListener('mouseover', () => {
       const nodes = this.timeAxis.querySelectorAll(`.${name}`);
       nodes.forEach((item) => {
         const icon = item.querySelector('.icon');
-        icon.style.filter = 'brightness(2)'; // 选中图标亮度变化
+        if (window.getComputedStyle(icon).filter === 'none') { // 在原样式基础上增加光标高亮行为
+          icon.style.filter = 'brightness(2)';
+        } else {
+          icon.style.filter = `${window.getComputedStyle(icon).filter} brightness(2)`;
+        }
         icon.style.zIndex = '999';
         const detail = item.querySelector('.detail');
         detail.style.display = 'block';
@@ -125,8 +131,8 @@ class TimeAxisUI {
       const nodes = this.timeAxis.querySelectorAll(`.${name}`);
       nodes.forEach((item) => {
         const icon = item.querySelector('.icon');
-        icon.style.filter = 'none';
-        icon.style.zIndex = 'auto';
+        icon.style.filter = '';
+        icon.style.zIndex = '';
         const detail = item.querySelector('.detail');
         detail.style.display = 'none';
         const arrow = item.querySelector('.detail-arrow');
@@ -155,6 +161,7 @@ class TimeAxisUI {
     return node;
   }
 
+  /** 清除时间轴上的所有节点 */
   clearNodes() {
     while (this.timeAxis.firstChild) { // 清除时间轴的子节点
       this.timeAxis.removeChild(this.timeAxis.firstChild);
@@ -163,7 +170,7 @@ class TimeAxisUI {
 
   /**
    * 更新子节点在时间轴上的位置
-   * @param axisTime - 当前时刻
+   * @param {number} axisTime - 当前时刻
    */
   updateAxisNodes(axisTime) {
     this.timeAxis.childNodes.forEach((child) => {
@@ -172,6 +179,20 @@ class TimeAxisUI {
       const { style } = child;
       style.left = `${pos}%`;
     });
+  }
+
+
+  /**
+   * 设置计时器时间
+   * @param {string} time - 新的计时器时间
+   */
+  setTimer(time) {
+    this.timer.textContent = time;
+  }
+
+  /** 重置计时器 */
+  resetTimer() {
+    this.timer.textContent = '00:00.000';
   }
 }
 

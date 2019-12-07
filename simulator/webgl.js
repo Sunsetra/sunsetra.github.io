@@ -391,14 +391,13 @@ function main(data) {
 
   /** 启动游戏流程 */
   function gameStart() {
-    const timer = document.querySelector('#timer'); // 全局计时器显示
     const starter = document.querySelector('#starter');
     const reset = document.querySelector('#reset');
 
     const timeAxis = new TimeAxis(); // 计时用时间轴对象
     const axisUI = new TimeAxisUI(); // 时间轴UI
     const activeEnemy = new Set(); // 场上存活敌人集合
-    let enemyLeft = map.enemyNum;
+    let enemyLeft = map.enemyNum; // 剩余敌人数量
     let enemyCount = 0; // 已出场敌人唯一ID计数
 
     let rAF = null; // 动态渲染取消标志
@@ -517,7 +516,7 @@ function main(data) {
       // console.log(`时间轴时间 ${timeAxis.getElapsedTimeN()}，rAF时间 ${rAFTime}，上次时间 ${lastTime}，帧时间差值${rAFTime - lastTime}`);
       updateMap(timeAxis.getElapsedTimeN().toFixed(4), rAFTime); // 更新敌人位置
       lastTime = rAFTime;
-      timer.textContent = timeAxis.getElapsedTimeS(); // 更新计时器
+      axisUI.setTimer(timeAxis.getElapsedTimeS()); // 更新计时器
 
       checkResize();
       controls.update(); // 开启阻尼惯性时需调用
@@ -589,7 +588,7 @@ function main(data) {
       starter.addEventListener('click', requestDynamicRender);
       controls.addEventListener('change', requestStaticRender);
       window.addEventListener('resize', requestStaticRender);
-      timer.textContent = '00:00.000';
+      axisUI.resetTimer();
       requestStaticRender();
     }
 
@@ -609,8 +608,8 @@ function main(data) {
 
 /**
  * 递归释放参数对象中包含的资源
- * @param resource - 包含资源的对象
- * @returns - 返回被释放的对象
+ * @param {*} resource - 包含资源的对象
+ * @returns {*} - 返回被释放的对象
  */
 function destroyMap(resource) {
   if (!resource) { return resource; } // 传入空对象时直接返回
