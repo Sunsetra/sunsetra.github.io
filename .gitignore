@@ -120,3 +120,8 @@ dmypy.json
 
 # database
 *.db
+
+# config files
+.eslintrc.json
+.stylelintrc.json
+package*.json
