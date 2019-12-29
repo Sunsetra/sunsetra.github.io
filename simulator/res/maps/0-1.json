@@ -4,12 +4,8 @@
   "mapHeight": 4,
   "enemyNum": 11,
   "resources": {
-    "block": {
-      "top": ["whiteTile", "greyTile", "default"],
-      "side": ["default"],
-      "bottom": ["default"]
-    },
-    "model": ["ring", "tomb"],
+    "block": ["whiteTile", "greyTile", "topDefault", "sideDefault", "bottomDefault"],
+    "model": ["circle_2", "circle_3", "circle_4", "tomb"],
     "enemy": ["slime", "saber"]
   },
   "blockInfo": [
@@ -23,10 +19,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
+      "buildingInfo": {
         "desc": "tomb",
-        "type": "0",
-        "rotation": 0
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -38,10 +34,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -53,10 +49,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "2",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_2",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -68,10 +64,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -83,10 +79,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -98,10 +94,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -113,10 +109,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -128,10 +124,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 0,
@@ -143,10 +139,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
+      "buildingInfo": {
         "desc": "tomb",
-        "type": "0",
-        "rotation": 0
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 1,
@@ -158,10 +154,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
+      "buildingInfo": {
         "desc": "destination",
-        "type": "",
-        "rotation": 0
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 1,
@@ -253,10 +249,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
+      "buildingInfo": {
         "desc": "tomb",
-        "type": "0",
-        "rotation": 0
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 2,
@@ -338,10 +334,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
+      "buildingInfo": {
         "desc": "entry",
-        "type": "",
-        "rotation": 0
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -363,10 +359,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -378,10 +374,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "2",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_2",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -393,10 +389,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -408,10 +404,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -423,10 +419,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -438,10 +434,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 180
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 180,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,
@@ -453,10 +449,10 @@
         "side": "",
         "bottom": ""
       },
-      "consInfo": {
-        "desc": "ring",
-        "type": "3",
-        "rotation": 0
+      "buildingInfo": {
+        "desc": "circle_3",
+        "rotation": 0,
+        "sizeAlpha": 1
       }
     }, {
       "row": 3,

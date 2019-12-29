@@ -1,0 +1,30 @@
+{
+  "block": {
+    "whiteTile": { "url": "res/texture/block/white_tile.png" },
+    "greyTile": { "url": "res/texture/block/grey_tile.png" },
+    "topDefault": { "url": "res/texture/block/default_top.png" },
+    "sideDefault": { "url": "res/texture/block/default_side.png" },
+    "bottomDefault": { "url": "res/texture/block/default_bottom.png" }
+  },
+  "EDPoint": {
+    "destTop": { "url": "res/texture/EDPoint/destinationTop.png" },
+    "destSide": { "url": "res/texture/EDPoint/destinationSide.png" },
+    "entryTop": { "url": "res/texture/EDPoint/entryTop.png" },
+    "entrySide": { "url": "res/texture/EDPoint/entrySide.png" }
+  },
+  "enemy": {
+    "slime": { "url": "res/texture/enemy/slime.png" },
+    "saber": { "url": "res/texture/enemy/saber.png" }
+  },
+  "operator": {
+    "haze": { "url": "res/texture/operator/haze.png" }
+  },
+  "model": {
+    "circle_2": { "url": "res/model/decoration/circle_2.glb" },
+    "circle_3": { "url": "res/model/decoration/circle_3.glb" },
+    "circle_4": { "url": "res/model/decoration/circle_4.glb" },
+    "tomb": { "url": "res/model/construction/tomb.glb" },
+    "destination": { "url":  "" },
+    "entry": { "url":  "" }
+  }
+}
