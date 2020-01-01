@@ -1,11 +1,24 @@
-class UIController {
+class LoadingUI {
   /** 折叠地图选择侧边栏 */
-  static _collapseMapSelect() {
+  static collapseMapSelect() {
     const expandMapItem = document.querySelector('.map-item.map-item-clicked');
     if (expandMapItem) {
       expandMapItem.classList.remove('map-item-clicked');
     }
   }
+
+  /**
+   * 更新加载提示
+   * @param text - 要拼接在原文本后的加载提示信息
+   * @param append - 提示更新模式（可选），为true时表示新增信息，默认或false为替换原信息
+   */
+  static updateTip(text, append = false) {
+    const tip = document.querySelector('#progress-tip');
+    if (tip) {
+      tip.innerText = append ? tip.innerText + text : text;
+    }
+  }
+
   static initUI() {
     /** 初始化地图选择窗口 */
     function mapSelector() {
@@ -39,8 +52,10 @@ class UIController {
         });
       });
     }
+
     mapSelector();
   }
+
   /**
    * 从选择地图界面切换到游戏框架
    * @param loader - 地图加载器
@@ -66,8 +81,14 @@ class UIController {
       });
     });
   }
-  /** 更新加载进度条 */
-  static updateLoadingBar(itemsLoaded, itemsTotal) {
+
+  /**
+   * 更新加载进度条
+   * @param itemsLoaded: 已加载资源数
+   * @param itemsTotal: 总资源数
+   * @param callback: 加载完成回调函数
+   */
+  static updateLoadingBar(itemsLoaded, itemsTotal, callback) {
     const bar = document.querySelector('#bar');
     const left = document.querySelector('#left');
     const right = document.querySelector('#right');
@@ -78,49 +99,47 @@ class UIController {
       right.style.transform = 'translateX(50%)';
       const percent = (itemsLoaded / itemsTotal) * 100;
       bar.style.width = `${100 - percent}%`; // 设置中部挡块宽度
-      left.textContent = `${Math.round(percent)}%`; // 更新加载百分比
-      right.textContent = `${Math.round(percent)}%`;
-      if (percent >= 100) {
-        right.style.display = 'none';
+      left.textContent = `${Math.round(percent)}%`;
+      right.textContent = `${Math.round(percent)}%`; // 更新加载百分比
+      if (percent >= 100 && callback !== undefined) { // 运行加载完成回调函数
+        bar.addEventListener('transitionend', () => {
+          right.style.display = 'none';
+          this.updateTip('加载完成');
+          setTimeout(() => { this.loadingToGameFrame(callback); }, 200);
+        });
       }
     }
   }
-  /**
-   * 更新加载提示
-   * @param text - 要拼接在原文本后的加载提示信息
-   */
-  static updateTip(text) {
-    const tip = document.querySelector('#progress_tip');
-    if (tip) {
-      tip.innerText += text;
-    }
-  }
+
   /** 隐藏加载进度条并显示画布 */
-  static loadingToGameFrame() {
-    const loadingBar = document.querySelector('#loading');
+  static loadingToGameFrame(func) {
+    const loading = document.querySelector('#loading');
     const gameFrame = document.querySelector('.game-frame');
     const mapSelect = document.querySelector('.map-select');
-    if (loadingBar && gameFrame && mapSelect) {
-      loadingBar.style.opacity = '0'; // 渐隐加载进度条
-      setTimeout(() => {
-        loadingBar.style.display = 'none';
-      }, 1000);
-      gameFrame.style.display = 'block'; // 渐显画布
-      mapSelect.style.display = '';
-      setTimeout(() => {
-        gameFrame.style.opacity = '1';
-        mapSelect.style.opacity = ''; // 显示地图选择左侧边栏
-      }, 1000);
+    if (loading && gameFrame && mapSelect) {
+      loading.style.opacity = '0'; // 渐隐加载进度条
+      loading.addEventListener('transitionend', () => {
+        loading.style.display = 'none';
+        gameFrame.style.display = 'block'; // 渐显画布
+        func(); // 主回调在画布显示后运行
+        mapSelect.style.display = '';
+        setTimeout(() => {
+          gameFrame.style.opacity = '1';
+          mapSelect.style.opacity = ''; // 显示地图选择左侧边栏
+        }, 200);
+      }, { once: true });
     }
-    this._collapseMapSelect();
+    LoadingUI.collapseMapSelect();
   }
 }
+
 class TimeAxisUI {
   /** 时间轴UI控制 */
   constructor() {
     this.timeAxis = document.querySelector('#axis');
     this.timer = document.querySelector('#timer'); // 计时器
   }
+
   /**
    * 创建显示在时间轴上的单位节点
    * @param type - 单位节点视觉行为，由单位类型与单位行为组成：
@@ -145,8 +164,7 @@ class TimeAxisUI {
         if (icon && detail && arrow) {
           if (window.getComputedStyle(icon).filter === 'none') { // 在原样式基础上增加光标高亮行为
             icon.style.filter = 'brightness(2)';
-          }
-          else {
+          } else {
             icon.style.filter = `${window.getComputedStyle(icon).filter} brightness(2)`;
           }
           icon.style.zIndex = '999';
@@ -188,12 +206,14 @@ class TimeAxisUI {
     }
     return node;
   }
+
   /** 清除时间轴上的所有节点 */
   clearNodes() {
     while (this.timeAxis && this.timeAxis.firstChild) { // 清除时间轴的子节点
       this.timeAxis.removeChild(this.timeAxis.firstChild);
     }
   }
+
   /**
    * 更新子节点在时间轴上的位置
    * @param axisTime - 当前时刻
@@ -208,6 +228,7 @@ class TimeAxisUI {
       });
     }
   }
+
   /**
    * 设置计时器时间
    * @param time - 新的计时器时间
@@ -217,6 +238,7 @@ class TimeAxisUI {
       this.timer.textContent = time;
     }
   }
+
   /** 重置计时器 */
   resetTimer() {
     if (this.timer) {
@@ -224,4 +246,5 @@ class TimeAxisUI {
     }
   }
 }
-export { UIController, TimeAxisUI };
+
+export { LoadingUI, TimeAxisUI };

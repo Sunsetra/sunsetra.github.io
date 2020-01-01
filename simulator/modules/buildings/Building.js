@@ -14,9 +14,10 @@ class Building {
    * @param info: 建筑信息对象
    */
   constructor(mesh, info) {
-    const { rotation, sizeAlpha } = info;
     this.colSpan = info.colSpan ? info.colSpan : 1;
     this.rowSpan = info.rowSpan ? info.rowSpan : 1;
+    const rotation = info.rotation ? info.rotation : 0;
+    const sizeAlpha = info.sizeAlpha ? info.sizeAlpha : 1;
     mesh.rotation.y = THREE.Math.degToRad(rotation);
     mesh.geometry.center(); // 重置原点为几何中心
     mesh.geometry.computeBoundingBox();
@@ -25,8 +26,10 @@ class Building {
     wrapper.add(mesh);
     const originBox = new THREE.Box3().setFromObject(wrapper);
     const originSize = originBox.getSize(new THREE.Vector3());
-    const mag = (BlockUnit * this.colSpan * sizeAlpha - 0.01) / originSize.x;
-    wrapper.scale.set(mag, mag, mag); // 按X方向的比例缩放
+    const magX = (BlockUnit * this.colSpan * sizeAlpha - 0.02) / originSize.x;
+    const magZ = (BlockUnit * this.rowSpan * sizeAlpha - 0.02) / originSize.z;
+    const magY = Math.min(magX, magZ);
+    wrapper.scale.set(magX, magY, magZ);
     this.mesh = wrapper;
     const box = new THREE.Box3().setFromObject(this.mesh);
     this.size = new THREE.Vector3(); // 缩放后的尺寸
