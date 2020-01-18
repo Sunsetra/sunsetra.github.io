@@ -1,30 +1,26 @@
-class StaticRenderer {
-    constructor(frame) {
-        this.frame = frame;
+import Render from './Render.js';
+
+class StaticRenderer extends Render {
+    constructor(frame, callback) {
+        super(frame, callback);
         this.needRender = false;
     }
-    /** 静态动画循环 */
-    render() {
-        const container = this.frame.renderer.domElement;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        const needResize = container.width !== width || container.height !== height;
-        if (needResize) {
-            this.frame.renderer.setSize(width, height, false);
-            this.frame.camera.aspect = width / height; // 每帧更新相机宽高比
-            this.frame.camera.updateProjectionMatrix();
-        }
-        this.needRender = false;
-        this.frame.controls.update(); // 开启阻尼惯性时需调用
-        this.frame.renderer.render(this.frame.scene, this.frame.camera);
-    }
-    ;
-    /** 静态渲染入口点函数 */
+
     requestRender() {
         if (!this.needRender) {
             this.needRender = true;
-            requestAnimationFrame(() => this.render());
+            requestAnimationFrame((time) => this.render(time));
         }
+    }
+
+    render(rAFTime) {
+        if (this.callback) {
+            this.callback(rAFTime);
+        }
+        this.checkResize();
+        this.needRender = false;
+        this.frame.controls.update();
+        this.frame.renderer.render(this.frame.scene, this.frame.camera);
     }
 }
 export default StaticRenderer;

@@ -5,7 +5,7 @@
   "enemyNum": 11,
   "resources": {
     "block": ["whiteTile", "greyTile", "topDefault", "sideDefault", "bottomDefault"],
-    "model": ["circle_2", "circle_3", "circle_4", "tomb"],
+    "model": ["circle_2", "circle_3", "tomb"],
     "enemy": ["slime", "saber"]
   },
   "blockInfo": [
@@ -20,9 +20,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "tomb",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "tomb"
       }
     }, {
       "row": 0,
@@ -36,8 +34,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 0,
@@ -50,9 +47,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_2",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_2"
       }
     }, {
       "row": 0,
@@ -65,9 +60,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 0,
@@ -81,8 +74,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 0,
@@ -95,9 +87,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 0,
@@ -111,8 +101,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 0,
@@ -125,9 +114,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 0,
@@ -140,9 +127,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "tomb",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "tomb"
       }
     }, {
       "row": 1,
@@ -155,9 +140,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "destination",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "destination"
       }
     }, {
       "row": 1,
@@ -250,9 +233,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "tomb",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "tomb"
       }
     }, {
       "row": 2,
@@ -335,9 +316,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "entry",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "entry"
       }
     }, {
       "row": 3,
@@ -361,8 +340,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 3,
@@ -375,9 +353,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_2",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_2"
       }
     }, {
       "row": 3,
@@ -390,9 +366,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 3,
@@ -406,8 +380,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 3,
@@ -420,9 +393,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 3,
@@ -436,8 +407,7 @@
       },
       "buildingInfo": {
         "desc": "circle_3",
-        "rotation": 180,
-        "sizeAlpha": 1
+        "rotation": 180
       }
     }, {
       "row": 3,
@@ -450,9 +420,7 @@
         "bottom": ""
       },
       "buildingInfo": {
-        "desc": "circle_3",
-        "rotation": 0,
-        "sizeAlpha": 1
+        "desc": "circle_3"
       }
     }, {
       "row": 3,

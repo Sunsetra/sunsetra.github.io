@@ -161,6 +161,14 @@ section {
   border-color: rgb(104, 89, 84);
 }
 
+#gensei20 header {
+  color: rgb(242, 236, 216);
+}
+
+#gensei20 img {
+  border-color: rgb(242, 236, 216);
+}
+
 #shinkai header {
   color: rgb(40, 127, 172);
 }

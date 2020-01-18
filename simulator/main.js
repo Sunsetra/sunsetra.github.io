@@ -1,82 +1,110 @@
-import { WebGLUnavailable } from './modules/constant.js';
+import GameController from './modules/Controllers/GameCtl.js';
+import LoadingUICtl from './modules/Controllers/LoadingUICtl.js';
+import RenderController from './modules/Controllers/RenderCtl.js';
+import TimeAxisUICtl from './modules/Controllers/TimeAxisUICtl.js';
 import GameFrame from './modules/core/GameFrame.js';
-import Map from './modules/core/Map.js';
+import GameMap from './modules/core/GameMap.js';
+import TimeAxis from './modules/core/TimeAxis.js';
 import MapLoader from './modules/loaders/MapLoader.js';
 import { ResourceLoader } from './modules/loaders/ResourceLoader.js';
+import { WebGLUnavailable } from './modules/others/constants.js';
+import { LoadingError } from './modules/others/exceptions.js';
+import { checkWebGLVersion, disposeResources } from './modules/others/utils.js';
+import DynamicRenderer from './modules/renderers/DynamicRender.js';
 import StaticRenderer from './modules/renderers/StaticRenderer.js';
-import { checkWebGLVersion, disposeResources } from './modules/utils.js';
-import { LoadingUI } from './UIController.js';
 
 const canvas = document.querySelector('canvas');
 const frame = new GameFrame(canvas);
-/**
- * 游戏主函数，在资源加载完成后执行
- * @param mapInfo - 地图数据对象
- * @param resList - 总资源列表
- */
+const timeAxis = new TimeAxis();
+const timeAxisUI = new TimeAxisUICtl();
+const staticRenderer = new StaticRenderer(frame);
+const dynamicRenderer = new DynamicRenderer(frame);
+const renderCtl = new RenderController(frame, staticRenderer, dynamicRenderer);
+
 function main(mapInfo, resList) {
-  let map; // 全局当前地图对象
-  const staticRenderer = new StaticRenderer(frame);
-  const staticRender = staticRenderer.requestRender.bind(staticRenderer);
-  /**
-   * 根据地图数据创建地图及建筑
-   * @param mapData - json格式的地图数据
-   */
-  function createMap(mapData) {
-    map = new Map(mapData, resList); // 初始化地图
+    const map = new GameMap(JSON.parse(JSON.stringify(mapInfo)), resList);
     map.createMap(frame);
-  }
-  createMap(JSON.parse(JSON.stringify(mapInfo))); // 创建地图
-  staticRenderer.requestRender(); // 发出渲染请求
-  frame.controls.addEventListener('change', staticRender);
-  window.addEventListener('resize', staticRender);
+    const gameCtl = new GameController(map, frame.scene, resList, timeAxisUI);
+    renderCtl.callbacks = {
+        start: () => timeAxis.start(),
+        pause: () => timeAxis.stop(),
+        continue: () => timeAxis.continue(),
+        stop: () => timeAxis.stop(),
+        reset: () => {
+            timeAxis.stop();
+            timeAxisUI.clearNodes();
+            timeAxisUI.resetTimer();
+            gameCtl.resetGame();
+        },
+    };
+    renderCtl.reset();
+
+    function frameCallback(rAFTime) {
+        const currentTime = timeAxis.getCurrentTime();
+        if (gameCtl.enemyCount) {
+            gameCtl.updateEnemyStatus(currentTime);
+            const interval = (rAFTime - dynamicRenderer.lastTime) / 1000;
+            gameCtl.updateEnemyPosition(interval, currentTime);
+            timeAxisUI.setTimer(currentTime[0]);
+            timeAxisUI.updateAxisNodes(currentTime[1]);
+        } else {
+            dynamicRenderer.stopRender();
+            renderCtl.stop();
+        }
+    }
+
+    dynamicRenderer.callback = frameCallback;
+    frame.addEventListener(document, 'visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            renderCtl.pause();
+        }
+    });
+}
+
+function resetGameFrame() {
+    renderCtl.reset();
+    disposeResources(frame.scene);
+    frame.clearEventListener();
 }
 
 if (checkWebGLVersion() === WebGLUnavailable) {
-  console.error('不支持WebGL，请更新浏览器。');
-} else { // 检测webgl可用性，返回WebGLUnavailable时不支持webgl
-  /* 加载总资源列表 */
-  fetch('res/list.json')
-    .then((resResp) => resResp.json())
-    .then((resList) => {
-      /**
-       * 加载地图需求的各类资源到总资源列表
-       * @param mapData: 地图信息文件数据
-       */
-      function loadResources(mapData) {
-        disposeResources(frame.scene); // 加载新资源前废弃原地图中的资源
-        let errorCounter = 0;
-        /** 加载进度监控及加载完成回调函数 */
-        const loadingProgress = (_, itemsLoaded, itemsTotal) => {
-          if (!errorCounter) { // 仅在没有加载错误的加载过程中更新进度
-            if (itemsLoaded !== itemsTotal) {
-              LoadingUI.updateLoadingBar(itemsLoaded, itemsTotal);
-            }
+    throw new Error('不支持WebGL，请更新浏览器。');
+} else {
+    fetch('res/list.json')
+      .then((resResp) => resResp.json())
+      .then((resList) => {
+          function loadResources(mapData) {
+              let errorCounter = 0;
+              const loadingProgress = (_, itemsLoaded, itemsTotal) => {
+                  if (!errorCounter) {
+                      if (itemsLoaded !== itemsTotal) {
+                          LoadingUICtl.updateLoadingBar(itemsLoaded, itemsTotal);
+                      }
+                  }
+              };
+              const loadingError = (url) => {
+                  if (!errorCounter) {
+                      LoadingUICtl.updateTip('');
+                  }
+                  errorCounter += 1;
+                  LoadingUICtl.updateTip(`加载${ url }时发生错误`, true);
+                  throw new LoadingError(`加载${ url }时发生错误`);
+              };
+              const loadingFinished = (list) => {
+                  if (!errorCounter) {
+                      LoadingUICtl.updateLoadingBar(1, 1, () => main(mapData, list));
+                  }
+              };
+              resetGameFrame();
+              const resLoader = new ResourceLoader(resList, loadingFinished, loadingProgress, loadingError);
+              resLoader.load(mapData.resources);
           }
-        };
-        /** 加载错误处理函数 */
-        const loadingError = (url) => {
-          if (!errorCounter) {
-            LoadingUI.updateTip('');
-          } // 出现第一个错误时清除原信息，后面追加信息
-          errorCounter += 1;
-          LoadingUI.updateTip(`加载${url}时发生错误`, true);
-        };
-        /** 加载完成回调函数 */
-        const loadingFinished = (list) => {
-          if (!errorCounter) {
-            LoadingUI.updateLoadingBar(1, 1, () => main(mapData, list));
-          }
-        };
-        const resLoader = new ResourceLoader(resList, loadingFinished, loadingProgress, loadingError);
-        resLoader.load(mapData.resources);
-      }
 
-      const mapLoader = new MapLoader(loadResources, (reason) => {
-        console.error('加载地图文件失败\n', reason);
-      }); // 地图信息加载器
-      LoadingUI.initUI();
-      LoadingUI.mapSelectToLoading(mapLoader);
-    })
-    .catch((reason) => console.error('加载总资源列表失败\n', reason));
+          const mapLoader = new MapLoader(loadResources, (reason) => {
+              console.error('加载地图文件失败\n', reason);
+          });
+          LoadingUICtl.initUI();
+          LoadingUICtl.mapSelectToLoading(mapLoader);
+      })
+      .catch((reason) => console.error('加载总资源列表失败\n', reason));
 }
