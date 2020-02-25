@@ -6,19 +6,16 @@ class DynamicRenderer extends Render {
         this.lastTime = 0;
         this.rAF = null;
     }
-
     requestRender() {
         this.lastTime = window.performance.now();
         this.rAF = requestAnimationFrame((time) => this.render(time));
     }
-
     stopRender() {
         if (this.rAF) {
             cancelAnimationFrame(this.rAF);
         }
         this.rAF = null;
     }
-
     render(rAFTime) {
         if (this.callback !== undefined) {
             this.callback(rAFTime);
@@ -32,5 +29,4 @@ class DynamicRenderer extends Render {
         }
     }
 }
-
 export default DynamicRenderer;

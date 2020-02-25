@@ -4,15 +4,20 @@ class ResourcesUnavailableError extends Error {
         console.error(msg, res);
     }
 }
-
 class BuildingInfoError extends Error {
     constructor(msg, buildingInfo) {
         super(msg);
         console.error(msg, buildingInfo);
     }
 }
-
 class BlockInfoError extends Error {
+    constructor(msg, blockInfo) {
+        super(msg);
+        console.error(msg, blockInfo);
+    }
+}
+
+class DataError extends Error {
     constructor(msg, blockInfo) {
         super(msg);
         console.error(msg, blockInfo);
@@ -26,4 +31,4 @@ class LoadingError extends Error {
     }
 }
 
-export { BlockInfoError, BuildingInfoError, LoadingError, ResourcesUnavailableError };
+export { BlockInfoError, BuildingInfoError, DataError, LoadingError, ResourcesUnavailableError };

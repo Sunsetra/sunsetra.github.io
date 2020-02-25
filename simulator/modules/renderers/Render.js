@@ -3,11 +3,9 @@ class Render {
         this.frame = frame;
         this.callback = callback;
     }
-
     requestRender() {
         requestAnimationFrame((time) => this.render(time));
     }
-
     render(rAFTime) {
         if (this.callback) {
             this.callback(rAFTime);
@@ -15,12 +13,10 @@ class Render {
         this.checkResize();
         this.frame.renderer.render(this.frame.scene, this.frame.camera);
     }
-
     checkResize() {
-        const container = this.frame.renderer.domElement;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        const needResize = container.width !== width || container.height !== height;
+        const width = this.frame.canvas.clientWidth;
+        const height = this.frame.canvas.clientHeight;
+        const needResize = this.frame.canvas.width !== width * 2 || this.frame.canvas.height !== height * 2;
         if (needResize) {
             this.frame.renderer.setSize(width, height, false);
             this.frame.camera.aspect = width / height;
@@ -28,5 +24,4 @@ class Render {
         }
     }
 }
-
 export default Render;

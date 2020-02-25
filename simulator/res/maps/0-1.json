@@ -2,7 +2,15 @@
   "name": "0-1",
   "mapWidth": 9,
   "mapHeight": 4,
-  "enemyNum": 11,
+  "ctlData": {
+    "enemyNum": 11,
+    "oprLimit": 8,
+    "maxLP": 20,
+    "initCost": 10,
+    "maxCost": 99,
+    "costInc": 1.0,
+    "moveSpdMulti": 0.5
+  },
   "resources": {
     "block": ["whiteTile", "greyTile", "topDefault", "sideDefault", "bottomDefault"],
     "model": ["circle_2", "circle_3", "tomb"],
@@ -10,10 +18,12 @@
   },
   "blockInfo": [
     {
-      "row": 0,
-      "column": 0,
-      "blockType": "highBlock",
+      "x": 0,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
@@ -23,10 +33,12 @@
         "desc": "tomb"
       }
     }, {
-      "row": 0,
-      "column": 1,
-      "blockType": "highBlock",
+      "x": 1,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -37,10 +49,12 @@
         "rotation": 180
       }
     }, {
-      "row": 0,
-      "column": 2,
-      "blockType": "highBlock",
+      "x": 2,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -50,10 +64,12 @@
         "desc": "circle_2"
       }
     }, {
-      "row": 0,
-      "column": 3,
-      "blockType": "highBlock",
+      "x": 3,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -63,10 +79,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 0,
-      "column": 4,
-      "blockType": "highBlock",
+      "x": 4,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -77,10 +95,12 @@
         "rotation": 180
       }
     }, {
-      "row": 0,
-      "column": 5,
-      "blockType": "highBlock",
+      "x": 5,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -90,10 +110,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 0,
-      "column": 6,
-      "blockType": "highBlock",
+      "x": 6,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -104,10 +126,12 @@
         "rotation": 180
       }
     }, {
-      "row": 0,
-      "column": 7,
-      "blockType": "highBlock",
+      "x": 7,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -117,10 +141,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 0,
-      "column": 8,
-      "blockType": "highBlock",
+      "x": 8,
+      "z": 0,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
@@ -130,10 +156,12 @@
         "desc": "tomb"
       }
     }, {
-      "row": 1,
-      "column": 0,
-      "blockType": "basicBlock",
+      "x": 0,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": false,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
@@ -143,90 +171,108 @@
         "desc": "destination"
       }
     }, {
-      "row": 1,
-      "column": 1,
-      "blockType": "basicBlock",
+      "x": 1,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 2,
-      "blockType": "highBlock",
+      "x": 2,
+      "z": 1,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 3,
-      "blockType": "basicBlock",
+      "x": 3,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 4,
-      "blockType": "basicBlock",
+      "x": 4,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 5,
-      "blockType": "basicBlock",
+      "x": 5,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 6,
-      "blockType": "basicBlock",
+      "x": 6,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 7,
-      "blockType": "basicBlock",
+      "x": 7,
+      "z": 1,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 1,
-      "column": 8,
-      "blockType": "highBlock",
+      "x": 8,
+      "z": 1,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 0,
-      "blockType": "highBlock",
+      "x": 0,
+      "z": 2,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
@@ -236,80 +282,96 @@
         "desc": "tomb"
       }
     }, {
-      "row": 2,
-      "column": 1,
-      "blockType": "basicBlock",
+      "x": 1,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 2,
-      "blockType": "basicBlock",
+      "x": 2,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 3,
-      "blockType": "basicBlock",
+      "x": 3,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 4,
-      "blockType": "highBlock",
+      "x": 4,
+      "z": 2,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 5,
-      "blockType": "basicBlock",
+      "x": 5,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 6,
-      "blockType": "basicBlock",
+      "x": 6,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 7,
-      "blockType": "basicBlock",
+      "x": 7,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": true,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 2,
-      "column": 8,
-      "blockType": "basicBlock",
+      "x": 8,
+      "z": 2,
+      "blockType": "MELEE",
       "heightAlpha": 0.5,
+      "placeable": false,
+      "passable": true,
       "texture": {
         "top": "greyTile",
         "side": "",
@@ -319,20 +381,24 @@
         "desc": "entry"
       }
     }, {
-      "row": 3,
-      "column": 0,
-      "blockType": "highBlock",
+      "x": 0,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
         "bottom": ""
       }
     }, {
-      "row": 3,
-      "column": 1,
-      "blockType": "highBlock",
+      "x": 1,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -343,10 +409,12 @@
         "rotation": 180
       }
     }, {
-      "row": 3,
-      "column": 2,
-      "blockType": "highBlock",
+      "x": 2,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -356,10 +424,12 @@
         "desc": "circle_2"
       }
     }, {
-      "row": 3,
-      "column": 3,
-      "blockType": "highBlock",
+      "x": 3,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -369,10 +439,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 3,
-      "column": 4,
-      "blockType": "highBlock",
+      "x": 4,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -383,10 +455,12 @@
         "rotation": 180
       }
     }, {
-      "row": 3,
-      "column": 5,
-      "blockType": "highBlock",
+      "x": 5,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -396,10 +470,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 3,
-      "column": 6,
-      "blockType": "highBlock",
+      "x": 6,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -410,10 +486,12 @@
         "rotation": 180
       }
     }, {
-      "row": 3,
-      "column": 7,
-      "blockType": "highBlock",
+      "x": 7,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": true,
+      "passable": false,
       "texture": {
         "top": "whiteTile",
         "side": "",
@@ -423,10 +501,12 @@
         "desc": "circle_3"
       }
     }, {
-      "row": 3,
-      "column": 8,
-      "blockType": "highBlock",
+      "x": 8,
+      "z": 3,
+      "blockType": "RANGED",
       "heightAlpha": 0.8,
+      "placeable": false,
+      "passable": false,
       "texture": {
         "top": "",
         "side": "",
@@ -449,7 +529,7 @@
         {
           "time": 5,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -461,7 +541,7 @@
         {
           "time": 16,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -473,7 +553,7 @@
         {
           "time": 18,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -485,7 +565,7 @@
         {
           "time": 29,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -497,7 +577,7 @@
         {
           "time": 29.7,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -509,7 +589,7 @@
         {
           "time": 34,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -521,7 +601,7 @@
         {
           "time": 45,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -533,7 +613,7 @@
         {
           "time": 45.7,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -545,7 +625,7 @@
         {
           "time": 52,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -557,7 +637,7 @@
         {
           "time": 52.7,
           "name": "slime",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 3, "z": 1 },
             { "x": 3, "z": 2 },
@@ -569,7 +649,7 @@
         {
           "time": 63.7,
           "name": "saber",
-          "path": [
+          "route": [
             { "x": 8, "z": 2 },
             { "x": 7, "z": 2 },
             { "pause": 3 },

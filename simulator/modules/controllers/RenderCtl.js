@@ -67,5 +67,4 @@ class RenderController {
         this.resetBtn = document.querySelector('#reset');
     }
 }
-
 export default RenderController;

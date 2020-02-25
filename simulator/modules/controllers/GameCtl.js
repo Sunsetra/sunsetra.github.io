@@ -1,123 +1,197 @@
 import { Vector2 } from '../../lib/three/build/three.module.js';
-import Enemies from '../../modules/enemies/EnemyClassList.js';
-import { disposeResources } from '../../modules/others/utils.js';
+import { GameStatus } from '../../modules/others/constants.js';
+import { DataError, ResourcesUnavailableError } from '../../modules/others/exceptions.js';
+import Enemy from '../../modules/units/Enemy.js';
+import Operator from '../../modules/units/Operator.js';
 
 class GameController {
-    constructor(map, scene, resList, timeAxisUI) {
+    constructor(map, data, timeAxisUI) {
         this.map = map;
-        this.scene = scene;
-        this.resList = resList;
-        this.timeAxisUI = timeAxisUI;
-        this.enemyCount = map.data.enemyNum;
+        this.ctlData = map.data.ctlData;
+        this.matData = data.materials;
+        this.unitData = data.units;
         this.waves = JSON.parse(JSON.stringify(map.data.waves));
+        this.timeAxisUI = timeAxisUI;
+        this.lifePoint = this.ctlData.maxLP;
+        this.enemyCount = this.ctlData.enemyNum;
+        this.cost = this.ctlData.initCost;
         this.activeEnemy = new Set();
+        this.activeOperator = new Map();
+        this.allOperator = new Map();
         this.enemyId = 0;
+        this.stat = GameStatus.Standby;
+    }
+
+    setStatus(newStatus) {
+        this.stat = newStatus;
+    }
+
+    getStatus() {
+        if (this.lifePoint === 0) {
+            return GameStatus.Defeat;
+        }
+        if (this.enemyCount === 0) {
+            return GameStatus.Victory;
+        }
+        return this.stat;
+    }
+
+    updateProperty(interval) {
+        const newCost = this.cost + this.ctlData.costInc * interval;
+        this.cost = newCost > this.ctlData.maxCost ? this.ctlData.maxCost : newCost;
+        this.allOperator.forEach((opr) => {
+            if (opr.rspTime > 0) {
+                opr.rspTime -= interval;
+            }
+        });
     }
 
     updateEnemyStatus(axisTime) {
         if (this.waves.length) {
             const { fragments } = this.waves[0];
             const thisFrag = fragments[0];
-            const { time, name, path } = thisFrag;
+            const { time, name, route } = thisFrag;
             if (Math.abs(axisTime[1] - time) <= 0.01 || axisTime[1] > time) {
-                const enemy = this.createEnemy(name, thisFrag);
-                if (enemy !== null) {
-                    const { x, z } = path[0];
-                    const thisBlock = this.map.getBlock(z, x);
-                    if (thisBlock !== null && thisBlock.size !== undefined) {
-                        const y = thisBlock.size.y + enemy.height / 2;
-                        enemy.setY(y);
-                        enemy.position = new Vector2(x, z);
-                    }
-                    const nodeType = 'enemy create';
-                    const nodeId = `${ name }-${ thisFrag.id }`;
-                    const resUrl = this.resList.enemy[name].url;
-                    this.timeAxisUI.createAxisNode(nodeType, nodeId, resUrl, axisTime);
-                    path.shift();
-                    fragments.shift();
-                    if (!fragments.length) {
-                        this.waves.shift();
-                    }
+                const enemyData = this.unitData.enemy[name];
+                const enemy = this.createEnemy(name, thisFrag, enemyData);
+                const { x, z } = route[0];
+                this.map.addUnit(x, z, enemy);
+                const nodeId = `${ name }-${ thisFrag.id }`;
+                this.timeAxisUI.createAxisNode('enemy create', nodeId, name);
+                route.shift();
+                fragments.shift();
+                if (!fragments.length) {
+                    this.waves.shift();
                 }
             }
         }
     }
 
-    updateEnemyPosition(interval, currentTime) {
+    updateEnemyPosition(interval) {
         this.activeEnemy.forEach((frag) => {
-            const { path, name, inst } = frag;
-            if (inst !== undefined) {
-                if (path.length) {
-                    if ('pause' in path[0]) {
-                        if (typeof frag.pause === 'undefined') {
-                            frag.pause = path[0].pause - interval;
-                        } else {
-                            frag.pause -= interval;
-                            if (frag.pause <= 0) {
-                                path.shift();
-                                delete frag.pause;
-                            }
-                        }
+            const { route, name, inst } = frag;
+            if (inst === undefined) {
+                throw new DataError(`未找到${ name }单位实例:`, frag);
+            } else if (route.length) {
+                if ('pause' in route[0]) {
+                    if (frag.pause === undefined) {
+                        frag.pause = route[0].pause - interval;
                     } else {
-                        const oldX = inst.position.x;
-                        const oldZ = inst.position.y;
-                        const newX = path[0].x;
-                        const newZ = path[0].z;
-                        let velocityX = inst.speed / Math.sqrt(((newZ - oldZ) / (newX - oldX)) ** 2 + 1);
-                        velocityX = newX >= oldX ? velocityX : -velocityX;
-                        let velocityZ = Math.abs(((newZ - oldZ) / (newX - oldX)) * velocityX);
-                        velocityZ = newZ >= oldZ ? velocityZ : -velocityZ;
-                        const stepX = interval * velocityX + oldX;
-                        const stepZ = interval * velocityZ + oldZ;
-                        inst.position = new Vector2(stepX, stepZ);
-                        const rotateDeg = Math.atan((newZ - oldZ) / (newX - oldX));
-                        inst.mesh.rotation.y = Math.PI - rotateDeg;
-                        const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
-                        const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
-                        if (ifDeltaX && ifDeltaZ) {
-                            path.shift();
+                        frag.pause -= interval;
+                        if (frag.pause <= 0) {
+                            route.shift();
+                            delete frag.pause;
                         }
                     }
                 } else {
-                    this.scene.remove(inst.mesh);
-                    disposeResources(inst.mesh);
-                    const nodeType = 'enemy drop';
-                    const nodeId = `${ name }-${ frag.id }`;
-                    const resUrl = this.resList.enemy[name].url;
-                    this.timeAxisUI.createAxisNode(nodeType, nodeId, resUrl, currentTime);
-                    this.activeEnemy.delete(frag);
-                    this.enemyCount -= 1;
+                    const oldX = inst.position.x;
+                    const oldZ = inst.position.y;
+                    const newX = route[0].x + 0.5;
+                    const newZ = route[0].z + 0.5;
+                    const moveSpd = inst.moveSpd * this.ctlData.moveSpdMulti;
+                    let velocityX = moveSpd / Math.sqrt(((newZ - oldZ) / (newX - oldX)) ** 2 + 1);
+                    velocityX = newX >= oldX ? velocityX : -velocityX;
+                    let velocityZ = Math.abs(((newZ - oldZ) / (newX - oldX)) * velocityX);
+                    velocityZ = newZ >= oldZ ? velocityZ : -velocityZ;
+                    const stepX = interval * velocityX + oldX;
+                    const stepZ = interval * velocityZ + oldZ;
+                    inst.position = new Vector2(stepX, stepZ);
+                    const rotateDeg = Math.atan((newZ - oldZ) / (newX - oldX));
+                    inst.mesh.rotation.y = Math.PI - rotateDeg;
+                    const ifDeltaX = Math.abs(newX - stepX) <= Math.abs(interval * velocityX);
+                    const ifDeltaZ = Math.abs(newZ - stepZ) <= Math.abs(interval * velocityZ);
+                    if (ifDeltaX && ifDeltaZ) {
+                        route.shift();
+                    }
                 }
+            } else {
+                this.lifePoint -= 1;
+                this.map.removeUnit(inst);
+                this.activeEnemy.delete(frag);
+                this.enemyCount -= 1;
+                const nodeType = 'enemy drop';
+                const nodeId = `${ name }-${ frag.id }`;
+                this.timeAxisUI.createAxisNode(nodeType, nodeId, name);
             }
         });
     }
 
-    resetGame() {
+    reset() {
         this.activeEnemy.forEach((enemy) => {
-            if (enemy.inst !== undefined) {
-                this.scene.remove(enemy.inst.mesh);
-                this.activeEnemy.delete(enemy);
-            }
+            this.map.removeUnit(enemy.inst);
         });
-        this.enemyCount = this.map.data.enemyNum;
+        this.activeEnemy.clear();
+        this.activeOperator.forEach((opr) => {
+            this.map.removeUnit(opr);
+            this.allOperator.set(opr.name, opr);
+        });
+        this.activeOperator.clear();
+        this.allOperator.forEach((opr) => {
+            opr.cost = this.unitData.operator[opr.name].cost;
+            opr.rspTime = 0;
+            opr.trackData.withdrawCnt = 0;
+            this.map.removeUnit(opr);
+        });
+        this.enemyCount = this.ctlData.enemyNum;
+        this.lifePoint = this.ctlData.maxLP;
+        this.cost = this.ctlData.initCost;
         this.waves = JSON.parse(JSON.stringify(this.map.data.waves));
     }
 
-    createEnemy(name, enemyFrag) {
-        const mesh = this.resList.enemy[name].entity;
-        if (mesh === undefined) {
-            return null;
+    createEnemy(name, frag, data) {
+        const { sizeAlpha, entity } = this.matData.resources.enemy[name];
+        if (entity === undefined) {
+            throw new ResourcesUnavailableError(`未找到${ name }单位实体:`, this.matData.resources.enemy[name]);
         }
-        const enemy = new Enemies[name](mesh.clone());
-        Object.defineProperties(enemyFrag, {
+        const enemy = new Enemy(entity.clone(), sizeAlpha, data);
+        const wrapper = Object.defineProperties(frag, {
             id: { value: this.enemyId, enumerable: true },
             inst: { value: enemy, enumerable: true },
         });
+        this.activeEnemy.add(wrapper);
         this.enemyId += 1;
-        this.activeEnemy.add(enemyFrag);
-        this.scene.add(enemy.mesh);
         return enemy;
     }
-}
 
+    createOperator(name, data) {
+        const { sizeAlpha, entity } = this.matData.resources.operator[name];
+        if (entity === undefined) {
+            throw new ResourcesUnavailableError(`未找到${ name }单位实体:`, this.matData.resources.operator[name]);
+        }
+        const opr = new Operator(entity.clone(), sizeAlpha, data);
+        this.allOperator.set(name, opr);
+        return opr;
+    }
+
+    addOperator(opr) {
+        this.cost -= opr.cost;
+        const inst = this.allOperator.get(opr.name);
+        if (inst !== undefined) {
+            this.activeOperator.set(inst.name, inst);
+            this.allOperator.delete(opr.name);
+            this.timeAxisUI.createAxisNode('operator create', opr.name, opr.name);
+        }
+        return this.ctlData.oprLimit - this.activeOperator.size;
+    }
+
+    removeOperator(opr) {
+        const oprInst = this.activeOperator.get(opr);
+        if (oprInst !== undefined) {
+            oprInst.rspTime = this.unitData.operator[opr].rspTime;
+            const { cost } = this.unitData.operator[opr];
+            const newCost = this.cost + Math.floor(oprInst.cost / 2);
+            this.cost = newCost > this.ctlData.maxCost ? this.ctlData.maxCost : newCost;
+            if (oprInst.trackData.withdrawCnt === 0) {
+                oprInst.cost = Math.floor(cost * 1.5);
+            } else if (oprInst.trackData.withdrawCnt === 1) {
+                oprInst.cost = cost * 2;
+            }
+            oprInst.trackData.withdrawCnt += 1;
+            this.activeOperator.delete(opr);
+            this.allOperator.set(opr, oprInst);
+            this.timeAxisUI.createAxisNode('operator leave', opr, opr);
+        }
+        return this.ctlData.oprLimit - this.activeOperator.size;
+    }
+}
 export default GameController;

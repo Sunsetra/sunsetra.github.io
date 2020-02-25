@@ -12,7 +12,7 @@
 
 <main>
   <div class="map-select">
-    <div id="hide-title">
+    <div>
       <div>区域选择</div>
     </div>
     <header>区域选择</header>
@@ -20,7 +20,7 @@
       <header>第零章 黑暗时代(上)</header>
       <div class="map-item">
         <figure data-url="res/maps/0-1.json">
-          <img alt="0-1地图" src="res/img/0-1.png">
+          <img alt="0-1地图" src="res/img/map/0-1.png">
           <figcaption>0-1 坍塌</figcaption>
         </figure>
       </div>
@@ -28,18 +28,36 @@
   </div>
 
   <div class="game-frame">
+    <!-- UI元素 -->
     <div class="ui-top">
       <div class="time-axis">
-        <div id="axis"></div>
-        <div id="timer">00:00.000</div>
+        <div></div>
+        <div>00:00.000</div>
         <button class="time-axis-controller" id="starter">▶</button>
         <button class="time-axis-controller" id="reset">↺</button>
       </div>
     </div>
+    <div class="ui-bottom">
+      <div class="cost">
+        <span></span>
+        <div class="cost-bar">
+          <div></div>
+        </div>
+      </div>
+      <div></div>
+      <div class="operator-card"></div>
+    </div>
+    <img alt="撤离干员" class="ui-overlay" draggable="false" id="withdraw" src="res/img/misc/withdraw_icon.svg">
+
+    <!-- 主画布 -->
     <canvas>
       完蛋，浏览器不支持canvas元素呢！换最新的<a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank">Chrome</a>
       或者<a href="https://www.mozilla.org/zh-CN/firefox/new/" target="_blank">Firefox</a>试试呢？
     </canvas>
+
+    <!-- 叠加层元素 -->
+    <div class="mouse-overlay"><img alt="干员贴图" src=""></div>
+    <canvas class="select-overlay"></canvas>
   </div>
 
   <div id="loading">

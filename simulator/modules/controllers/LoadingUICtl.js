@@ -3,7 +3,6 @@ class LoadingUICtl {
         const tip = document.querySelector('#progress-tip');
         tip.innerText = append ? tip.innerText + text : text;
     }
-
     static resetLoadingBar() {
         const bar = document.querySelector('#bar');
         const left = document.querySelector('#left');
@@ -17,7 +16,6 @@ class LoadingUICtl {
         right.style.margin = '';
         right.style.transform = '';
     }
-
     static initUI() {
         function mapSelector() {
             const chapterNodes = document.querySelectorAll('.chapter');
@@ -50,10 +48,8 @@ class LoadingUICtl {
                 });
             });
         }
-
         mapSelector();
     }
-
     static mapSelectToLoading(loader) {
         const currentMapNode = document.querySelectorAll('.map-item figure');
         const gameFrame = document.querySelector('.game-frame');
@@ -83,7 +79,6 @@ class LoadingUICtl {
             });
         });
     }
-
     static updateLoadingBar(itemsLoaded, itemsTotal, callback) {
         const bar = document.querySelector('#bar');
         const left = document.querySelector('#left');
@@ -104,7 +99,6 @@ class LoadingUICtl {
             }, { once: true });
         }
     }
-
     static loadingToGameFrame(func) {
         const loading = document.querySelector('#loading');
         const gameFrame = document.querySelector('.game-frame');
@@ -122,7 +116,6 @@ class LoadingUICtl {
         }, { once: true });
         LoadingUICtl.collapseMapSelect();
     }
-
     static collapseMapSelect() {
         const expandMapItem = document.querySelector('.map-item.map-item-clicked');
         if (expandMapItem) {
@@ -130,5 +123,4 @@ class LoadingUICtl {
         }
     }
 }
-
 export default LoadingUICtl;

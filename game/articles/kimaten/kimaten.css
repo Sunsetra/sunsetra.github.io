@@ -6,6 +6,26 @@ aside {
   border-bottom-color: #F288A4;
 }
 
+#cg {
+  width: 70%;
+}
+
+#music {
+  width: 60%;
+}
+
+#sys {
+  width: 40%;
+}
+
+#story {
+  width: 85%;
+}
+
+#total {
+  width: 80%;
+}
+
 .bar {
   background-color: #EEBACB;
 }

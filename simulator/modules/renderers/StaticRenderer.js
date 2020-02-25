@@ -5,14 +5,12 @@ class StaticRenderer extends Render {
         super(frame, callback);
         this.needRender = false;
     }
-
     requestRender() {
         if (!this.needRender) {
             this.needRender = true;
             requestAnimationFrame((time) => this.render(time));
         }
     }
-
     render(rAFTime) {
         if (this.callback) {
             this.callback(rAFTime);

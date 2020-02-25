@@ -15,8 +15,8 @@ import { BlockUnit } from '../others/constants.js';
 import { LoadingError } from '../others/exceptions.js';
 
 class ResourceLoader {
-    constructor(resListAll, onLoad, onProgress, onError) {
-        this.resListAll = resListAll;
+    constructor(data, onLoad, onProgress, onError) {
+        this.resList = data.materials.resources;
         this.onLoad = onLoad;
         this.onProgress = onProgress;
         this.onError = onError;
@@ -27,36 +27,57 @@ class ResourceLoader {
                 this.createGeometry(this.mapResList);
             }
             if (this.onLoad !== undefined) {
-                this.onLoad(this.resListAll);
+                this.onLoad(data);
             }
         }, onProgress, onError);
         this.texLoader = new TextureLoader(this.loadManager);
         this.gltfLoader = new GLTFLoader(this.loadManager);
         this.loadingFlag = false;
     }
-
     load(mapRes) {
         this.mapResList = mapRes;
-        Object.values(this.resListAll.EDPoint).forEach((texRes) => {
-            this.loadTexture(texRes);
+        ['EDPoint', 'operator'].forEach((type) => {
+            Object.values(this.resList[type]).forEach((texRes) => {
+                this.loadTexture(texRes);
+            });
         });
         ['block', 'enemy'].forEach((category) => {
             mapRes[category].forEach((texType) => {
-                const thisRes = this.resListAll[category][texType];
+                const thisRes = this.resList[category][texType];
                 this.loadTexture(thisRes);
             });
         });
         mapRes.model.forEach((modelType) => {
-            const thisRes = this.resListAll.model[modelType];
+            const thisRes = this.resList.model[modelType];
             this.loadModel(thisRes);
         });
         if (!this.loadingFlag) {
             this.loadManager.onLoad();
         }
     }
-
     createGeometry(res) {
-        Object.values(this.resListAll.EDPoint).forEach((edRes) => {
+        const createUnitRes = (unitRes) => {
+            if (!Object.prototype.hasOwnProperty.call(unitRes, 'mat') && unitRes.tex) {
+                const material = new MeshBasicMaterial({
+                    alphaTest: 0.6,
+                    map: unitRes.tex,
+                    side: DoubleSide,
+                    transparent: true,
+                });
+                Object.defineProperty(unitRes, 'mat', { value: material });
+                const { width, height } = unitRes.tex.image;
+                const geometry = new PlaneBufferGeometry(width, height);
+                Object.defineProperty(unitRes, 'geo', { value: geometry });
+                const mesh = new Mesh(geometry, material);
+                Object.defineProperty(unitRes, 'entity', { value: mesh });
+            }
+        };
+        res.enemy.forEach((name) => {
+            const texRes = this.resList.enemy[name];
+            createUnitRes(texRes);
+        });
+        Object.values(this.resList.operator).forEach((opRes) => { createUnitRes(opRes); });
+        Object.values(this.resList.EDPoint).forEach((edRes) => {
             if (!Object.prototype.hasOwnProperty.call(edRes, 'mat')) {
                 const material = new MeshBasicMaterial({
                     depthWrite: false,
@@ -70,13 +91,13 @@ class ResourceLoader {
         if (!(() => {
             let integrity = true;
             ['destination', 'entry'].forEach((type) => {
-                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resListAll.model[type], 'geo');
-                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resListAll.model[type], 'mat');
-                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resListAll.model[type], 'entity');
+                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resList.model[type], 'geo');
+                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resList.model[type], 'mat');
+                integrity = integrity && Object.prototype.hasOwnProperty.call(this.resList.model[type], 'entity');
             });
             return integrity;
         })()) {
-            const { destTop, destSide, entryTop, entrySide } = this.resListAll.EDPoint;
+            const { destTop, destSide, entryTop, entrySide } = this.resList.EDPoint;
             const destTopMat = (destTop.mat ? destTop.mat : new Material());
             const destSideMat = (destSide.mat ? destSide.mat : new Material());
             const entryTopMat = (entryTop.mat ? entryTop.mat : new Material());
@@ -86,19 +107,19 @@ class ResourceLoader {
             const geometry = new BoxBufferGeometry(BlockUnit, BlockUnit, BlockUnit);
             const destMesh = new Mesh(geometry, destMat);
             const entryMesh = new Mesh(geometry, entryMat);
-            Object.defineProperties(this.resListAll.model.destination, {
+            Object.defineProperties(this.resList.model.destination, {
                 geo: { value: geometry },
                 mat: { value: destMat },
                 entity: { value: destMesh },
             });
-            Object.defineProperties(this.resListAll.model.entry, {
+            Object.defineProperties(this.resList.model.entry, {
                 geo: { value: geometry },
                 mat: { value: entryMat },
                 entity: { value: entryMesh },
             });
         }
         res.block.forEach((texType) => {
-            const texRes = this.resListAll.block[texType];
+            const texRes = this.resList.block[texType];
             if (!Object.prototype.hasOwnProperty.call(texRes, 'mat')) {
                 const material = new MeshPhysicalMaterial({
                     metalness: 0.1,
@@ -106,23 +127,6 @@ class ResourceLoader {
                     map: texRes.tex,
                 });
                 Object.defineProperty(texRes, 'mat', { value: material });
-            }
-        });
-        res.enemy.forEach((name) => {
-            const texRes = this.resListAll.enemy[name];
-            if (!Object.prototype.hasOwnProperty.call(texRes, 'mat') && texRes.tex) {
-                const material = new MeshBasicMaterial({
-                    alphaTest: 0.6,
-                    map: texRes.tex,
-                    side: DoubleSide,
-                    transparent: true,
-                });
-                Object.defineProperty(texRes, 'mat', { value: material });
-                const { width, height } = texRes.tex.image;
-                const enemyGeo = new PlaneBufferGeometry(width, height);
-                Object.defineProperty(texRes, 'geo', { value: enemyGeo });
-                const mesh = new Mesh(enemyGeo, material);
-                Object.defineProperty(texRes, 'entity', { value: mesh });
             }
         });
     }
@@ -135,7 +139,6 @@ class ResourceLoader {
             this.loadingFlag = true;
         }
     }
-
     loadModel(res) {
         if (!Object.prototype.hasOwnProperty.call(res, 'entity')) {
             this.gltfLoader.load(res.url, (gltf) => {
@@ -147,4 +150,4 @@ class ResourceLoader {
     }
 }
 
-export { ResourceLoader };
+export default ResourceLoader;

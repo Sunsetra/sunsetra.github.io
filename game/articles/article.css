@@ -6,6 +6,10 @@ body {
   background: #F0F1F2;
 }
 
+a {
+  text-decoration: none;
+}
+
 /* 侧边栏样式 */
 aside {
   top: 12%;
@@ -54,7 +58,6 @@ aside > div {
   left: 50%;
   transform: translateX(-50%);
   cursor: pointer;
-  text-decoration: none;
   transition: color 1s;
 }
 
@@ -81,26 +84,6 @@ aside > div {
     1px 0 2px rgba(0, 0, 0, 0.5);
 }
 
-#cg {
-  width: 70%;
-}
-
-#music {
-  width: 60%;
-}
-
-#sys {
-  width: 40%;
-}
-
-#story {
-  width: 80%;
-}
-
-#total {
-  width: 76%;
-}
-
 /* 正文样式 */
 main {
   position: relative;
@@ -118,11 +101,11 @@ h1 {
   margin: 0;
 }
 
-.game_type {
+.game-type {
   margin: 2rem 0;
 }
 
-.game_type span {
+.game-type span {
   font-size: large;
   font-weight: bold;
 }
@@ -168,7 +151,15 @@ p {
   color: white;
 }
 
-.cg_middle {
+.hide a:link, .hide a:visited {
+  color: black;
+}
+
+.hide:hover a {
+  color: dodgerblue;
+}
+
+.cg-middle {
   display: block;
   margin: 0 auto;
   width: 80%;
@@ -176,6 +167,10 @@ p {
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
   transform-origin: center;
   transform: rotate(-3deg);
+}
+
+.update {
+  margin-top: 5rem;
 }
 
 /* 响应式布局 */
@@ -196,7 +191,7 @@ p {
     min-width: 25rem;
   }
 
-  .cg_middle {
+  .cg-middle {
     width: 90%;
   }
 }

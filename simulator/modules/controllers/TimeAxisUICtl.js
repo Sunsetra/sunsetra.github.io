@@ -1,38 +1,47 @@
 class TimeAxisUICtl {
-    constructor() {
-        this.timeAxis = document.querySelector('#axis');
-        this.timer = document.querySelector('#timer');
+    constructor(timeAxis, resList) {
+        this.timeAxis = timeAxis;
+        this.resList = resList;
+        const axisNode = document.querySelector('.time-axis');
+        this.timeAxisNode = axisNode.children[0];
+        this.timer = axisNode.children[1];
     }
 
-    createAxisNode(type, id, iconUrl, currentTime) {
-        const [nodeTime, createTime] = currentTime;
+    createAxisNode(prop, id, name) {
+        const type = prop.split(' ')[0];
+        const { url } = this.resList[type][name];
+        const [nodeTime, createTime] = this.timeAxis.getCurrentTime();
         const node = document.createElement('div');
-        node.dataset.createTime = createTime.toFixed(4);
+        node.dataset.createTime = createTime.toFixed(3);
         node.setAttribute('class', `mark-icon ${ id }`);
+        if (createTime) {
+            node.style.left = '100%';
+        }
         node.addEventListener('mouseover', () => {
-            const nodes = this.timeAxis.querySelectorAll(`.${ id }`);
+            const nodes = this.timeAxisNode.querySelectorAll(`.${ id }`);
             nodes.forEach((item) => {
-                const icon = item.querySelector('.icon');
-                const detail = item.querySelector('.detail');
-                const arrow = item.querySelector('.detail-arrow');
+                const icon = item.children[1];
+                const detail = item.children[2];
+                const arrow = item.children[3];
                 if (icon && detail && arrow) {
                     if (window.getComputedStyle(icon).filter === 'none') {
-                        icon.style.filter = 'brightness(2)';
+                        icon.style.filter = 'brightness(200%)';
                     } else {
                         icon.style.filter = `${ window.getComputedStyle(icon).filter } brightness(2)`;
                     }
-                    icon.style.zIndex = '999';
+                    icon.style.zIndex = '2';
                     detail.style.display = 'block';
                     arrow.style.display = 'block';
                 }
             });
+            node.style.zIndex = '3';
         });
         node.addEventListener('mouseout', () => {
-            const nodes = this.timeAxis.querySelectorAll(`.${ id }`);
+            const nodes = this.timeAxisNode.querySelectorAll(`.${ id }`);
             nodes.forEach((item) => {
-                const icon = item.querySelector('.icon');
-                const detail = item.querySelector('.detail');
-                const arrow = item.querySelector('.detail-arrow');
+                const icon = item.children[1];
+                const detail = item.children[2];
+                const arrow = item.children[3];
                 if (icon && detail && arrow) {
                     icon.style.filter = '';
                     icon.style.zIndex = '';
@@ -40,12 +49,13 @@ class TimeAxisUICtl {
                     arrow.style.display = 'none';
                 }
             });
+            node.style.zIndex = '';
         });
         const markNode = document.createElement('div');
-        markNode.setAttribute('class', `mark ${ type }`);
+        markNode.setAttribute('class', `mark ${ prop }`);
         const iconNode = document.createElement('div');
         iconNode.setAttribute('class', 'icon');
-        iconNode.style.backgroundImage = `url("${ iconUrl }")`;
+        iconNode.style.backgroundImage = `url("${ url }")`;
         const detailNode = document.createElement('div');
         detailNode.setAttribute('class', 'detail');
         detailNode.textContent = nodeTime;
@@ -55,36 +65,31 @@ class TimeAxisUICtl {
         node.appendChild(iconNode);
         node.appendChild(detailNode);
         node.appendChild(detailArrow);
-        this.timeAxis.appendChild(node);
+        this.timeAxisNode.appendChild(node);
         return node;
     }
 
     clearNodes() {
-        while (this.timeAxis.firstChild) {
-            this.timeAxis.removeChild(this.timeAxis.firstChild);
+        while (this.timeAxisNode.firstChild) {
+            this.timeAxisNode.removeChild(this.timeAxisNode.firstChild);
         }
     }
 
-    updateAxisNodes(axisTime) {
-        this.timeAxis.childNodes.forEach((child) => {
+    updateAxisNodes() {
+        this.timeAxisNode.childNodes.forEach((child) => {
             const { style, dataset } = child;
             const createTime = Number(dataset.createTime);
-            const pos = ((createTime / axisTime) * 100).toFixed(2);
+            const pos = ((createTime / this.timeAxis.getCurrentTime()[1]) * 100).toFixed(2);
             style.left = `${ pos }%`;
         });
     }
 
-    setTimer(time) {
-        if (this.timer) {
-            this.timer.textContent = time;
-        }
+    setTimer() {
+        [this.timer.textContent] = this.timeAxis.getCurrentTime();
     }
 
     resetTimer() {
-        if (this.timer) {
-            this.timer.textContent = '00:00.000';
-        }
+        this.timer.textContent = '00:00.000';
     }
 }
-
 export default TimeAxisUICtl;

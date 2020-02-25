@@ -4,7 +4,6 @@ class TimeAxis extends Clock {
     constructor() {
         super(false);
     }
-
     getCurrentTime() {
         const elapsed = super.getElapsedTime();
         const msecs = (Math.floor((elapsed * 1000) % 1000)).toString().padStart(3, '0');
@@ -20,6 +19,10 @@ class TimeAxis extends Clock {
             this.elapsedTime = elapsedTime;
         }
     }
-}
 
+    reset() {
+        this.stop();
+        this.elapsedTime = 0;
+    }
+}
 export default TimeAxis;

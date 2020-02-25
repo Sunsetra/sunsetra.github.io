@@ -8,15 +8,14 @@ import {
     Vector2,
 } from '../../lib/three/build/three.module.js';
 import { WEBGL } from '../../lib/three/examples/jsm/WebGL.js';
-import { BlockUnit, WebGL2Available, WebGLAvailable, WebGLUnavailable } from './constants.js';
+import { BlockUnit, WebGLAvailability } from './constants.js';
 
 function checkWebGLVersion() {
     if (WEBGL.isWebGLAvailable()) {
-        return WEBGL.isWebGL2Available() ? WebGL2Available : WebGLAvailable;
+        return WEBGL.isWebGL2Available() ? WebGLAvailability.WebGL2Available : WebGLAvailability.Available;
     }
-    return WebGLUnavailable;
+    return WebGLAvailability.Unavailable;
 }
-
 function disposeResources(resource) {
     if (!resource) {
         return resource;
@@ -52,16 +51,33 @@ function disposeResources(resource) {
     return resource;
 }
 
-function absPosToRealPos(absPos) {
-    const realPosX = (absPos.x + 0.5) * BlockUnit;
-    const realPoxZ = (absPos.y + 0.5) * BlockUnit;
-    return new Vector2(realPosX, realPoxZ);
+function absPosToRealPos(x, z) {
+    if (x instanceof Vector2) {
+        return new Vector2(x.x * BlockUnit, x.y * BlockUnit);
+    }
+    if (typeof z === 'number') {
+        return new Vector2(x * BlockUnit, z * BlockUnit);
+    }
+    return new Vector2(x * BlockUnit, 0);
 }
 
-function realPosToAbsPos(realPos) {
-    const absPosX = realPos.x / BlockUnit - 0.5;
-    const absPosZ = realPos.y / BlockUnit - 0.5;
-    return new Vector2(absPosX, absPosZ);
+function realPosToAbsPos(a, b, isRound) {
+    if (a instanceof Vector2) {
+        if (b) {
+            return new Vector2(a.x / BlockUnit, a.y / BlockUnit).floor();
+        }
+        return new Vector2(a.x / BlockUnit, a.y / BlockUnit);
+    }
+    if (typeof b === 'number') {
+        if (isRound) {
+            return new Vector2(a / BlockUnit, b / BlockUnit).floor();
+        }
+        return new Vector2(a / BlockUnit, b / BlockUnit);
+    }
+    if (isRound) {
+        return new Vector2(a, 0).floor();
+    }
+    return new Vector2(a, 0);
 }
 
 export { absPosToRealPos, realPosToAbsPos, checkWebGLVersion, disposeResources };

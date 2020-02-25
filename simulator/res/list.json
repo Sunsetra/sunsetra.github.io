@@ -1,30 +1,72 @@
 {
-  "block": {
-    "whiteTile": { "url": "res/texture/block/white_tile.png" },
-    "greyTile": { "url": "res/texture/block/grey_tile.png" },
-    "topDefault": { "url": "res/texture/block/default_top.png" },
-    "sideDefault": { "url": "res/texture/block/default_side.png" },
-    "bottomDefault": { "url": "res/texture/block/default_bottom.png" }
+  "resources": {
+    "block": {
+      "whiteTile": { "url": "res/texture/block/white_tile.png" },
+      "greyTile": { "url": "res/texture/block/grey_tile.png" },
+      "topDefault": { "url": "res/texture/block/default_top.png" },
+      "sideDefault": { "url": "res/texture/block/default_side.png" },
+      "bottomDefault": { "url": "res/texture/block/default_bottom.png" }
+    },
+    "EDPoint": {
+      "destTop": { "url": "res/texture/EDPoint/destinationTop.png" },
+      "destSide": { "url": "res/texture/EDPoint/destinationSide.png" },
+      "entryTop": { "url": "res/texture/EDPoint/entryTop.png" },
+      "entrySide": { "url": "res/texture/EDPoint/entrySide.png" }
+    },
+    "enemy": {
+      "slime": { "url": "res/texture/enemy/slime.png", "sizeAlpha": 0.8 },
+      "saber": { "url": "res/texture/enemy/saber.png", "sizeAlpha": 0.8 }
+    },
+    "operator": {
+      "blaze": { "url": "res/texture/operator/blaze.png", "sizeAlpha": 1.1 },
+      "cardigan": { "url": "res/texture/operator/cardigan.png", "sizeAlpha": 0.65 },
+      "ceylon": { "url": "res/texture/operator/ceylon.png", "sizeAlpha": 0.9 },
+      "durin": { "url": "res/texture/operator/durin.png", "sizeAlpha": 0.6 },
+      "haze": { "url": "res/texture/operator/haze.png", "sizeAlpha": 0.8 },
+      "kroos": { "url": "res/texture/operator/kroos.png", "sizeAlpha": 0.7 },
+      "lancet2": { "url": "res/texture/operator/lancet2.png", "sizeAlpha": 0.7 },
+      "reed": { "url": "res/texture/operator/reed.png", "sizeAlpha": 1.2 },
+      "rope": { "url": "res/texture/operator/rope.png", "sizeAlpha": 0.6 },
+      "silverash": { "url": "res/texture/operator/silverash.png", "sizeAlpha": 1.1 },
+      "sora": { "url": "res/texture/operator/sora.png", "sizeAlpha": 0.6 },
+      "vermeil": { "url": "res/texture/operator/vermeil.png", "sizeAlpha": 0.7 }
+    },
+    "model": {
+      "circle_2": { "url": "res/model/decoration/circle_2.glb" },
+      "circle_3": { "url": "res/model/decoration/circle_3.glb" },
+      "circle_4": { "url": "res/model/decoration/circle_4.glb" },
+      "tomb": { "url": "res/model/construction/tomb.glb" },
+      "destination": { "url": "" },
+      "entry": { "url": "" }
+    }
   },
-  "EDPoint": {
-    "destTop": { "url": "res/texture/EDPoint/destinationTop.png" },
-    "destSide": { "url": "res/texture/EDPoint/destinationSide.png" },
-    "entryTop": { "url": "res/texture/EDPoint/entryTop.png" },
-    "entrySide": { "url": "res/texture/EDPoint/entrySide.png" }
-  },
-  "enemy": {
-    "slime": { "url": "res/texture/enemy/slime.png" },
-    "saber": { "url": "res/texture/enemy/saber.png" }
-  },
-  "operator": {
-    "haze": { "url": "res/texture/operator/haze.png" }
-  },
-  "model": {
-    "circle_2": { "url": "res/model/decoration/circle_2.glb" },
-    "circle_3": { "url": "res/model/decoration/circle_3.glb" },
-    "circle_4": { "url": "res/model/decoration/circle_4.glb" },
-    "tomb": { "url": "res/model/construction/tomb.glb" },
-    "destination": { "url":  "" },
-    "entry": { "url":  "" }
+  "icons": {
+    "prof": {
+      "caster": "res/img/misc/caster.svg",
+      "defender": "res/img/misc/defender.svg",
+      "guard": "res/img/misc/guard.svg",
+      "medic": "res/img/misc/medic.svg",
+      "sniper": "res/img/misc/sniper.svg",
+      "specialist": "res/img/misc/specialist.svg",
+      "supporter": "res/img/misc/supporter.svg",
+      "vanguard": "res/img/misc/vanguard.svg"
+    },
+    "operator": {
+      "blaze": "res/img/operator/blaze.png",
+      "cardigan": "res/img/operator/cardigan.png",
+      "ceylon": "res/img/operator/ceylon.png",
+      "durin": "res/img/operator/durin.png",
+      "haze": "res/img/operator/haze.png",
+      "kroos": "res/img/operator/kroos.png",
+      "lancet2": "res/img/operator/lancet2.png",
+      "reed": "res/img/operator/reed.png",
+      "rope": "res/img/operator/rope.png",
+      "silverash": "res/img/operator/silverash.png",
+      "sora": "res/img/operator/sora.png",
+      "vermeil": "res/img/operator/vermeil.png"
+    },
+    "misc": {
+      "leave": "res/img/misc/leave_icon.svg"
+    }
   }
 }
