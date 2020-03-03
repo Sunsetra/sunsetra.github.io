@@ -9,6 +9,7 @@ import {
 } from '../../lib/three/build/three.module.js';
 import { OrbitControls } from '../../lib/three/examples/jsm/controls/OrbitControls.js';
 import { WEBGL } from '../../lib/three/examples/jsm/WebGL.js';
+import { RenderType } from '../others/constants.js';
 
 class GameFrame {
     constructor(canvas) {
@@ -42,8 +43,10 @@ class GameFrame {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.outputEncoding = GammaEncoding;
         this.renderer.physicallyCorrectLights = true;
+        this.status = {
+            renderType: RenderType.StaticRender,
+        };
     }
-
     setColor(r, g, b) {
         const color = (typeof r === 'number' && g !== undefined && b !== undefined) ? new Color(r, g, b) : new Color(r);
         this.scene.background = color;
@@ -51,11 +54,9 @@ class GameFrame {
             this.scene.fog.color = color;
         }
     }
-
     enableShadow(flag) {
         this.renderer.shadowMap.enabled = flag;
     }
-
     addEventListener(obj, type, handler, once = false) {
         const target = this.listeners.get(obj);
         if (target === undefined) {
@@ -83,7 +84,6 @@ class GameFrame {
             obj.addEventListener(type, handler);
         }
     }
-
     removeEventListener(obj, type, handler) {
         const target = this.listeners.get(obj);
         if (target === undefined || !Object.prototype.hasOwnProperty.call(target, type) || !target[type].size) {
@@ -100,7 +100,6 @@ class GameFrame {
             target[type].delete(handler);
         }
     }
-
     clearEventListener() {
         this.listeners.forEach((value, target) => {
             Object.keys(value).forEach((type) => {

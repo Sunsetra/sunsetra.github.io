@@ -135,18 +135,18 @@ class GameMap {
                     }
                 }
             }
-            const mapGeometry = new BufferGeometry();
-            mapGeometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-            mapGeometry.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
-            mapGeometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
-            mapGeometry.setIndex(indices);
-            const materialList = [];
-            const materialMap = {};
+            const mapGeo = new BufferGeometry();
+            mapGeo.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+            mapGeo.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
+            mapGeo.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
+            mapGeo.setIndex(indices);
+            const matList = [];
+            const matMap = {};
             data.resources.block.forEach((type) => {
                 const res = resList.block[type];
                 if (res.mat && res.mat instanceof Material) {
-                    materialList.push(res.mat);
-                    materialMap[type] = materialList.length - 1;
+                    matList.push(res.mat);
+                    matMap[type] = matList.length - 1;
                 } else {
                     throw new ResourcesUnavailableError('材质资源不存在', res);
                 }
@@ -158,14 +158,14 @@ class GameMap {
                     const side = texture.side ? texture.side : 'sideDefault';
                     const bottom = texture.bottom ? texture.bottom : 'bottomDefault';
                     const [s, c] = sideGroup[ndx];
-                    mapGeometry.addGroup(s + c + 6, 6, materialMap[top]);
-                    mapGeometry.addGroup(s + c, 6, materialMap[bottom]);
+                    mapGeo.addGroup(s + c + 6, 6, matMap[top]);
+                    mapGeo.addGroup(s + c, 6, matMap[bottom]);
                     if (count) {
-                        mapGeometry.addGroup(s, c, materialMap[side]);
+                        mapGeo.addGroup(s, c, matMap[side]);
                     }
                 }
             });
-            this.mesh = new Mesh(mapGeometry, materialList);
+            this.mesh = new Mesh(mapGeo, matList);
             this.mesh.castShadow = true;
             this.mesh.receiveShadow = true;
         }
@@ -239,7 +239,6 @@ class GameMap {
         attackLayer.setOverlayStyle('red');
         attackLayer.setEnableArea(this.getPlaceableArea());
     }
-
     getBlock(x, z) {
         if (x instanceof Vector2) {
             const verifyRow = Math.floor(x.x / this.width);
@@ -259,9 +258,7 @@ class GameMap {
         }
         return null;
     }
-
     getBlocks() { return this.blockData; }
-
     getPlaceableArea(type) {
         const area = [];
         this.blockData.forEach((block) => {
@@ -274,7 +271,6 @@ class GameMap {
         });
         return area;
     }
-
     addUnit(x, z, unit) {
         const thisBlock = this.getBlock(x, z);
         if (thisBlock !== null) {
@@ -287,7 +283,6 @@ class GameMap {
             }
         }
     }
-
     bindBuilding(x, z, info) {
         const block = this.getBlock(x, z);
         if (block === null) {
@@ -352,7 +347,6 @@ class GameMap {
         building.mesh.position.set(posX, posY, posZ);
         this.frame.scene.add(building.mesh);
     }
-
     removeBuilding(xPos, zPos) {
         const block = this.getBlock(xPos, zPos);
         if (block === null || block.buildingInfo === undefined) {
@@ -381,7 +375,6 @@ class GameMap {
             }
         }
     }
-
     addOverlay(depth, parent) {
         const overlay = new Overlay(this, depth, parent);
         this.getBlocks().forEach((block) => {
@@ -412,11 +405,9 @@ class GameMap {
         this.overlay.set(depth, overlay);
         return overlay;
     }
-
     getOverlay(depth) {
         return this.overlay.get(depth);
     }
-
     hideOverlay(depth) {
         if (depth === undefined) {
             this.overlay.forEach((layer) => { layer.hide(); });
@@ -427,7 +418,6 @@ class GameMap {
             }
         }
     }
-
     removeUnit(unit) {
         if (unit instanceof Operator) {
             const block = this.getBlock(unit.position.floor());
@@ -436,7 +426,6 @@ class GameMap {
         this.frame.scene.remove(unit.mesh);
         disposeResources(unit.mesh);
     }
-
     trackOverlay(layer, area) {
         if (this.tracker.pickPos === null) {
             if (layer.visibility !== false) {

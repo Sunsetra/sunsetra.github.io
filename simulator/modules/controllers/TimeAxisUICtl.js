@@ -4,9 +4,8 @@ class TimeAxisUICtl {
         this.resList = resList;
         const axisNode = document.querySelector('.time-axis');
         this.timeAxisNode = axisNode.children[0];
-        this.timer = axisNode.children[1];
+        this.timer = axisNode.children[1].childNodes[0];
     }
-
     createAxisNode(prop, id, name) {
         const type = prop.split(' ')[0];
         const { url } = this.resList[type][name];
@@ -24,11 +23,8 @@ class TimeAxisUICtl {
                 const detail = item.children[2];
                 const arrow = item.children[3];
                 if (icon && detail && arrow) {
-                    if (window.getComputedStyle(icon).filter === 'none') {
-                        icon.style.filter = 'brightness(200%)';
-                    } else {
-                        icon.style.filter = `${ window.getComputedStyle(icon).filter } brightness(2)`;
-                    }
+                    const { filter } = window.getComputedStyle(icon);
+                    icon.style.filter = filter === 'none' ? 'brightness(2)' : `${ filter } brightness(2)`;
                     icon.style.zIndex = '2';
                     detail.style.display = 'block';
                     arrow.style.display = 'block';
@@ -68,26 +64,22 @@ class TimeAxisUICtl {
         this.timeAxisNode.appendChild(node);
         return node;
     }
-
     clearNodes() {
         while (this.timeAxisNode.firstChild) {
             this.timeAxisNode.removeChild(this.timeAxisNode.firstChild);
         }
     }
-
     updateAxisNodes() {
         this.timeAxisNode.childNodes.forEach((child) => {
             const { style, dataset } = child;
-            const createTime = Number(dataset.createTime);
+            const createTime = parseFloat(dataset.createTime);
             const pos = ((createTime / this.timeAxis.getCurrentTime()[1]) * 100).toFixed(2);
             style.left = `${ pos }%`;
         });
     }
-
     setTimer() {
-        [this.timer.textContent] = this.timeAxis.getCurrentTime();
+        [this.timer.nodeValue] = this.timeAxis.getCurrentTime();
     }
-
     resetTimer() {
         this.timer.textContent = '00:00.000';
     }

@@ -7,8 +7,10 @@ class DynamicRenderer extends Render {
         this.rAF = null;
     }
     requestRender() {
-        this.lastTime = window.performance.now();
-        this.rAF = requestAnimationFrame((time) => this.render(time));
+        this.rAF = requestAnimationFrame((time) => {
+            this.lastTime = time;
+            this.render(time);
+        });
     }
     stopRender() {
         if (this.rAF) {
@@ -21,7 +23,6 @@ class DynamicRenderer extends Render {
             this.callback(rAFTime);
         }
         this.lastTime = rAFTime;
-        this.checkResize();
         this.frame.controls.update();
         this.frame.renderer.render(this.frame.scene, this.frame.camera);
         if (this.rAF) {

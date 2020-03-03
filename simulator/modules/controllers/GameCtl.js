@@ -21,11 +21,9 @@ class GameController {
         this.enemyId = 0;
         this.stat = GameStatus.Standby;
     }
-
     setStatus(newStatus) {
         this.stat = newStatus;
     }
-
     getStatus() {
         if (this.lifePoint === 0) {
             return GameStatus.Defeat;
@@ -35,7 +33,6 @@ class GameController {
         }
         return this.stat;
     }
-
     updateProperty(interval) {
         const newCost = this.cost + this.ctlData.costInc * interval;
         this.cost = newCost > this.ctlData.maxCost ? this.ctlData.maxCost : newCost;
@@ -45,7 +42,6 @@ class GameController {
             }
         });
     }
-
     updateEnemyStatus(axisTime) {
         if (this.waves.length) {
             const { fragments } = this.waves[0];
@@ -66,7 +62,6 @@ class GameController {
             }
         }
     }
-
     updateEnemyPosition(interval) {
         this.activeEnemy.forEach((frag) => {
             const { route, name, inst } = frag;
@@ -115,7 +110,6 @@ class GameController {
             }
         });
     }
-
     reset() {
         this.activeEnemy.forEach((enemy) => {
             this.map.removeUnit(enemy.inst);
@@ -137,7 +131,6 @@ class GameController {
         this.cost = this.ctlData.initCost;
         this.waves = JSON.parse(JSON.stringify(this.map.data.waves));
     }
-
     createEnemy(name, frag, data) {
         const { sizeAlpha, entity } = this.matData.resources.enemy[name];
         if (entity === undefined) {
@@ -152,7 +145,6 @@ class GameController {
         this.enemyId += 1;
         return enemy;
     }
-
     createOperator(name, data) {
         const { sizeAlpha, entity } = this.matData.resources.operator[name];
         if (entity === undefined) {
@@ -162,7 +154,6 @@ class GameController {
         this.allOperator.set(name, opr);
         return opr;
     }
-
     addOperator(opr) {
         this.cost -= opr.cost;
         const inst = this.allOperator.get(opr.name);
@@ -173,7 +164,6 @@ class GameController {
         }
         return this.ctlData.oprLimit - this.activeOperator.size;
     }
-
     removeOperator(opr) {
         const oprInst = this.activeOperator.get(opr);
         if (oprInst !== undefined) {

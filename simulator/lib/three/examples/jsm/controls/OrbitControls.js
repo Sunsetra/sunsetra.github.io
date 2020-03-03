@@ -936,21 +936,21 @@ var OrbitControls = function ( object, domElement ) {
 
 	function onTouchStart( event ) {
 
-		if ( scope.enabled === false ) return;
+		if (scope.enabled === false) return;
 
-		event.preventDefault();
+		event.preventDefault(); // prevent scrolling
 
-		switch ( event.touches.length ) {
+		switch (event.touches.length) {
 
 			case 1:
 
-				switch ( scope.touches.ONE ) {
+				switch (scope.touches.ONE) {
 
 					case TOUCH.ROTATE:
 
-						if ( scope.enableRotate === false ) return;
+						if (scope.enableRotate === false) return;
 
-						handleTouchStartRotate( event );
+						handleTouchStartRotate(event);
 
 						state = STATE.TOUCH_ROTATE;
 
@@ -1022,18 +1022,18 @@ var OrbitControls = function ( object, domElement ) {
 
 	function onTouchMove( event ) {
 
-		if ( scope.enabled === false ) return;
+		if (scope.enabled === false) return;
 
-		event.preventDefault();
+		event.preventDefault(); // prevent scrolling
 		event.stopPropagation();
 
-		switch ( state ) {
+		switch (state) {
 
 			case STATE.TOUCH_ROTATE:
 
-				if ( scope.enableRotate === false ) return;
+				if (scope.enableRotate === false) return;
 
-				handleTouchMoveRotate( event );
+				handleTouchMoveRotate(event);
 
 				scope.update();
 

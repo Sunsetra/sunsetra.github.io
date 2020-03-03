@@ -8,11 +8,9 @@ class Overlay {
         this.visible = false;
         this.enableArea = [];
     }
-
     get visibility() {
         return this.visible;
     }
-
     setOverlayStyle(style) {
         this.map.getBlocks().forEach((block) => {
             if (block !== null && block.overlay !== undefined) {
@@ -27,7 +25,6 @@ class Overlay {
             }
         });
     }
-
     has(x, y) {
         const pos = x instanceof Vector2 ? x : new Vector2(x, y);
         for (let i = 0; i < this.enableArea.length; i += 1) {
@@ -37,7 +34,6 @@ class Overlay {
         }
         return false;
     }
-
     show() {
         if (!this.visible) {
             for (let i = 0; i < this.enableArea.length; i += 1) {
@@ -52,14 +48,12 @@ class Overlay {
             this.visible = true;
         }
     }
-
     showArea(center, area) {
         area.forEach((point) => {
             const newPos = new Vector2().addVectors(center, point);
             this.setOverlayVisibility(newPos, true);
         });
     }
-
     hide() {
         if (this.visible !== false) {
             for (let i = 0; i < this.enableArea.length; i += 1) {
@@ -74,7 +68,6 @@ class Overlay {
             this.visible = false;
         }
     }
-
     setOverlayVisibility(a, b, c) {
         let pos;
         if (typeof a === 'number') {
@@ -100,12 +93,10 @@ class Overlay {
             }
         }
     }
-
     setEnableArea(area) {
         this.hide();
         this.enableArea = area;
     }
-
     updateVisibility(state) {
         for (let i = 0; i < this.enableArea.length; i += 1) {
             const block = this.map.getBlock(this.enableArea[i]);
@@ -120,5 +111,4 @@ class Overlay {
         this.visible = state;
     }
 }
-
 export default Overlay;

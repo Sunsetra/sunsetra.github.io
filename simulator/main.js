@@ -17,16 +17,18 @@ import StaticRenderer from './modules/renderers/StaticRenderer.js';
 const canvas = document.querySelector('canvas');
 const frame = new GameFrame(canvas);
 const timeAxis = new TimeAxis();
-const staticRenderer = new StaticRenderer(frame);
-const dynamicRenderer = new DynamicRenderer(frame);
-const renderCtl = new RenderController(frame, staticRenderer, dynamicRenderer);
+const render = {
+    static: new StaticRenderer(frame),
+    dynamic: new DynamicRenderer(frame),
+};
+const renderCtl = new RenderController(frame, render);
 
 function main(mapInfo, data) {
     const { materials } = data;
     const map = new GameMap(frame, JSON.parse(JSON.stringify(mapInfo)), materials.resources);
     const timeAxisUI = new TimeAxisUICtl(timeAxis, materials.resources);
     const gameCtl = new GameController(map, data, timeAxisUI);
-    const gameUICtl = new GameUIController(frame, map, gameCtl, staticRenderer, data);
+    const gameUICtl = new GameUIController(frame, map, gameCtl, render.static, data);
     gameUICtl.addOprCard([
         'blaze', 'cardigan', 'ceylon', 'durin', 'haze', 'kroos',
         'lancet2', 'reed', 'rope', 'silverash', 'sora', 'vermeil',
@@ -49,10 +51,9 @@ function main(mapInfo, data) {
             map.hideOverlay();
         },
     };
-    renderCtl.reset();
-    function frameCallback(rAFTime) {
+    render.dynamic.callback = (rAFTime) => {
         if (gameCtl.getStatus() === GameStatus.Running || gameCtl.getStatus() === GameStatus.Standby) {
-            const interval = (rAFTime - dynamicRenderer.lastTime) / 1000;
+            const interval = (rAFTime - render.dynamic.lastTime) / 1000;
             gameCtl.updateProperty(interval);
             gameUICtl.updateUIStatus();
             gameCtl.updateEnemyStatus(timeAxis.getCurrentTime());
@@ -60,25 +61,25 @@ function main(mapInfo, data) {
             timeAxisUI.setTimer();
             timeAxisUI.updateAxisNodes();
         } else {
-            dynamicRenderer.stopRender();
+            render.dynamic.stopRender();
             renderCtl.stop();
         }
-    }
-    dynamicRenderer.callback = frameCallback;
+    };
     frame.addEventListener(document, 'visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             renderCtl.pause();
         }
     });
+    frame.addEventListener(window, 'resize', () => render.static.checkResize());
+    renderCtl.reset();
+    render.static.checkResize();
 }
-
 function resetGameFrame() {
     renderCtl.reset();
     disposeResources(frame.scene);
     frame.scene.dispose();
     frame.clearEventListener();
 }
-
 async function fetchData() {
     const fetchResInfo = fetch('res/list.json');
     const fetchUnitInfo = fetch('res/unit_data.json');

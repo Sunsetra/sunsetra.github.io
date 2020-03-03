@@ -16,19 +16,16 @@ class BlockInfoError extends Error {
         console.error(msg, blockInfo);
     }
 }
-
 class DataError extends Error {
     constructor(msg, blockInfo) {
         super(msg);
         console.error(msg, blockInfo);
     }
 }
-
 class LoadingError extends Error {
     constructor(msg) {
         super(msg);
         console.error(msg);
     }
 }
-
 export { BlockInfoError, BuildingInfoError, DataError, LoadingError, ResourcesUnavailableError };

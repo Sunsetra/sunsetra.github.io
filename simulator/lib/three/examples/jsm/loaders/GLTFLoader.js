@@ -55,7 +55,6 @@ import {
 	RepeatWrapping,
 	RGBAFormat,
 	RGBFormat,
-	Scene,
 	Skeleton,
 	SkinnedMesh,
 	Sphere,
@@ -68,7 +67,6 @@ import {
 	Vector2,
 	Vector3,
 	VectorKeyframeTrack,
-	VertexColors,
 } from "../../../build/three.module.js";
 
 var GLTFLoader = ( function () {
@@ -788,8 +786,8 @@ var GLTFLoader = ( function () {
 						}
 
 					},
-				},
-			},
+				}
+			}
 		);
 
 		/*eslint-enable*/
@@ -872,28 +870,28 @@ var GLTFLoader = ( function () {
 
 					var array = pbrSpecularGlossiness.diffuseFactor;
 
-					materialParams.color.fromArray( array );
-					materialParams.opacity = array[ 3 ];
+					materialParams.color.fromArray(array);
+					materialParams.opacity = array[3];
 
 				}
 
-				if ( pbrSpecularGlossiness.diffuseTexture !== undefined ) {
+				if (pbrSpecularGlossiness.diffuseTexture !== undefined) {
 
-					pending.push( parser.assignTexture( materialParams, 'map', pbrSpecularGlossiness.diffuseTexture ) );
+					pending.push(parser.assignTexture(materialParams, 'map', pbrSpecularGlossiness.diffuseTexture));
 
 				}
 
-				materialParams.emissive = new Color( 0.0, 0.0, 0.0 );
+				materialParams.emissive = new Color(0.0, 0.0, 0.0);
 				materialParams.glossiness = pbrSpecularGlossiness.glossinessFactor !== undefined ? pbrSpecularGlossiness.glossinessFactor : 1.0;
-				materialParams.specular = new Color( 1.0, 1.0, 1.0 );
+				materialParams.specular = new Color(1.0, 1.0, 1.0);
 
-				if ( Array.isArray( pbrSpecularGlossiness.specularFactor ) ) {
+				if (Array.isArray(pbrSpecularGlossiness.specularFactor)) {
 
-					materialParams.specular.fromArray( pbrSpecularGlossiness.specularFactor );
+					materialParams.specular.fromArray(pbrSpecularGlossiness.specularFactor);
 
 				}
 
-				if ( pbrSpecularGlossiness.specularGlossinessTexture !== undefined ) {
+				if (pbrSpecularGlossiness.specularGlossinessTexture !== undefined) {
 
 					var specGlossMapDef = pbrSpecularGlossiness.specularGlossinessTexture;
 					pending.push(parser.assignTexture(materialParams, 'glossinessMap', specGlossMapDef));
@@ -1883,30 +1881,30 @@ var GLTFLoader = ( function () {
 
 			// Clean up resources and configure Texture.
 
-			if ( isObjectURL === true ) {
+			if (isObjectURL === true) {
 
-				URL.revokeObjectURL( sourceURI );
+				URL.revokeObjectURL(sourceURI);
 
 			}
 
 			texture.flipY = false;
 
-			if ( textureDef.name !== undefined ) texture.name = textureDef.name;
+			if (textureDef.name) texture.name = textureDef.name;
 
 			// Ignore unknown mime types, like DDS files.
-			if ( source.mimeType in MIME_TYPE_FORMATS ) {
+			if (source.mimeType in MIME_TYPE_FORMATS) {
 
-				texture.format = MIME_TYPE_FORMATS[ source.mimeType ];
+				texture.format = MIME_TYPE_FORMATS[source.mimeType];
 
 			}
 
 			var samplers = json.samplers || {};
-			var sampler = samplers[ textureDef.sampler ] || {};
+			var sampler = samplers[textureDef.sampler] || {};
 
-			texture.magFilter = WEBGL_FILTERS[ sampler.magFilter ] || LinearFilter;
-			texture.minFilter = WEBGL_FILTERS[ sampler.minFilter ] || LinearMipmapLinearFilter;
-			texture.wrapS = WEBGL_WRAPPINGS[ sampler.wrapS ] || RepeatWrapping;
-			texture.wrapT = WEBGL_WRAPPINGS[ sampler.wrapT ] || RepeatWrapping;
+			texture.magFilter = WEBGL_FILTERS[sampler.magFilter] || LinearFilter;
+			texture.minFilter = WEBGL_FILTERS[sampler.minFilter] || LinearMipmapLinearFilter;
+			texture.wrapS = WEBGL_WRAPPINGS[sampler.wrapS] || RepeatWrapping;
+			texture.wrapT = WEBGL_WRAPPINGS[sampler.wrapT] || RepeatWrapping;
 
 			return texture;
 
@@ -1981,7 +1979,6 @@ var GLTFLoader = ( function () {
 
 		var geometry = mesh.geometry;
 		var material = mesh.material;
-		var extensions = this.extensions;
 
 		var useVertexTangents = geometry.attributes.tangent !== undefined;
 		var useVertexColors = geometry.attributes.color !== undefined;
@@ -2051,7 +2048,7 @@ var GLTFLoader = ( function () {
 
 				if (useSkinning) cachedMaterial.skinning = true;
 				if (useVertexTangents) cachedMaterial.vertexTangents = true;
-				if (useVertexColors) cachedMaterial.vertexColors = VertexColors;
+				if (useVertexColors) cachedMaterial.vertexColors = true;
 				if (useFlatShading) cachedMaterial.flatShading = true;
 				if (useMorphTargets) cachedMaterial.morphTargets = true;
 				if (useMorphNormals) cachedMaterial.morphNormals = true;
@@ -2164,6 +2161,9 @@ var GLTFLoader = ( function () {
 
 			materialParams.transparent = true;
 
+			// See: https://github.com/mrdoob/three.js/issues/17706
+			materialParams.depthWrite = false;
+
 		} else {
 
 			materialParams.transparent = false;
@@ -2228,15 +2228,15 @@ var GLTFLoader = ( function () {
 
 			}
 
-			if (materialDef.name !== undefined) material.name = materialDef.name;
+			if (materialDef.name) material.name = materialDef.name;
 
 			// baseColorTexture, emissiveTexture, and specularGlossinessTexture use sRGB encoding.
-			if ( material.map ) material.map.encoding = sRGBEncoding;
-			if ( material.emissiveMap ) material.emissiveMap.encoding = sRGBEncoding;
+			if (material.map) material.map.encoding = sRGBEncoding;
+			if (material.emissiveMap) material.emissiveMap.encoding = sRGBEncoding;
 
-			assignExtrasToUserData( material, materialDef );
+			assignExtrasToUserData(material, materialDef);
 
-			if ( materialDef.extensions ) addUnknownExtensionsToUserData( extensions, material, materialDef );
+			if (materialDef.extensions) addUnknownExtensionsToUserData(extensions, material, materialDef);
 
 			return material;
 
@@ -2699,31 +2699,31 @@ var GLTFLoader = ( function () {
 	GLTFParser.prototype.loadCamera = function ( cameraIndex ) {
 
 		var camera;
-		var cameraDef = this.json.cameras[ cameraIndex ];
-		var params = cameraDef[ cameraDef.type ];
+		var cameraDef = this.json.cameras[cameraIndex];
+		var params = cameraDef[cameraDef.type];
 
-		if ( ! params ) {
+		if (!params) {
 
-			console.warn( 'THREE.GLTFLoader: Missing camera parameters.' );
+			console.warn('THREE.GLTFLoader: Missing camera parameters.');
 			return;
 
 		}
 
-		if ( cameraDef.type === 'perspective' ) {
+		if (cameraDef.type === 'perspective') {
 
 			camera = new PerspectiveCamera(MathUtils.radToDeg(params.yfov), params.aspectRatio || 1, params.znear || 1, params.zfar || 2e6);
 
-		} else if ( cameraDef.type === 'orthographic' ) {
+		} else if (cameraDef.type === 'orthographic') {
 
-			camera = new OrthographicCamera( params.xmag / - 2, params.xmag / 2, params.ymag / 2, params.ymag / - 2, params.znear, params.zfar );
+			camera = new OrthographicCamera(params.xmag / -2, params.xmag / 2, params.ymag / 2, params.ymag / -2, params.znear, params.zfar);
 
 		}
 
-		if ( cameraDef.name !== undefined ) camera.name = cameraDef.name;
+		if (cameraDef.name) camera.name = cameraDef.name;
 
-		assignExtrasToUserData( camera, cameraDef );
+		assignExtrasToUserData(camera, cameraDef);
 
-		return Promise.resolve( camera );
+		return Promise.resolve(camera);
 
 	};
 
@@ -2925,7 +2925,7 @@ var GLTFLoader = ( function () {
 							// representing inTangent, splineVertex, and outTangent. As a result, track.getValueSize()
 							// must be divided by three to get the interpolant's sampleSize argument.
 
-							return new GLTFCubicSplineInterpolant( this.times, this.values, this.getValueSize() / 3, result );
+							return new GLTFCubicSplineInterpolant(this.times, this.values, this.getValueSize() / 3, result);
 
 						};
 
@@ -2934,15 +2934,15 @@ var GLTFLoader = ( function () {
 
 					}
 
-					tracks.push( track );
+					tracks.push(track);
 
 				}
 
 			}
 
-			var name = animationDef.name !== undefined ? animationDef.name : 'animation_' + animationIndex;
+			var name = animationDef.name ? animationDef.name : 'animation_' + animationIndex;
 
-			return new AnimationClip( name, undefined, tracks );
+			return new AnimationClip(name, undefined, tracks);
 
 		} );
 
@@ -3039,9 +3039,9 @@ var GLTFLoader = ( function () {
 
 				node = new Group();
 
-			} else if ( objects.length === 1 ) {
+			} else if (objects.length === 1) {
 
-				node = objects[ 0 ];
+				node = objects[0];
 
 			} else {
 
@@ -3049,28 +3049,28 @@ var GLTFLoader = ( function () {
 
 			}
 
-			if ( node !== objects[ 0 ] ) {
+			if (node !== objects[0]) {
 
-				for ( var i = 0, il = objects.length; i < il; i ++ ) {
+				for (var i = 0, il = objects.length; i < il; i++) {
 
-					node.add( objects[ i ] );
+					node.add(objects[i]);
 
 				}
 
 			}
 
-			if ( nodeDef.name !== undefined ) {
+			if (nodeDef.name) {
 
 				node.userData.name = nodeDef.name;
-				node.name = PropertyBinding.sanitizeNodeName( nodeDef.name );
+				node.name = PropertyBinding.sanitizeNodeName(nodeDef.name);
 
 			}
 
-			assignExtrasToUserData( node, nodeDef );
+			assignExtrasToUserData(node, nodeDef);
 
-			if ( nodeDef.extensions ) addUnknownExtensionsToUserData( extensions, node, nodeDef );
+			if (nodeDef.extensions) addUnknownExtensionsToUserData(extensions, node, nodeDef);
 
-			if ( nodeDef.matrix !== undefined ) {
+			if (nodeDef.matrix !== undefined) {
 
 				var matrix = new Matrix4();
 				matrix.fromArray(nodeDef.matrix);
@@ -3078,7 +3078,7 @@ var GLTFLoader = ( function () {
 
 			} else {
 
-				if ( nodeDef.translation !== undefined ) {
+				if (nodeDef.translation !== undefined) {
 
 					node.position.fromArray( nodeDef.translation );
 
@@ -3107,7 +3107,7 @@ var GLTFLoader = ( function () {
 	/**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#scenes
 	 * @param {number} sceneIndex
-	 * @return {Promise<Scene>}
+	 * @return {Promise<Group>}
 	 */
 	GLTFParser.prototype.loadScene = function () {
 
@@ -3213,31 +3213,33 @@ var GLTFLoader = ( function () {
 
 			var json = this.json;
 			var extensions = this.extensions;
-			var sceneDef = this.json.scenes[ sceneIndex ];
+			var sceneDef = this.json.scenes[sceneIndex];
 			var parser = this;
 
-			var scene = new Scene();
-			if ( sceneDef.name !== undefined ) scene.name = sceneDef.name;
+			// Loader returns Group, not Scene.
+			// See: https://github.com/mrdoob/three.js/issues/18342#issuecomment-578981172
+			var scene = new Group();
+			if (sceneDef.name) scene.name = sceneDef.name;
 
-			assignExtrasToUserData( scene, sceneDef );
+			assignExtrasToUserData(scene, sceneDef);
 
-			if ( sceneDef.extensions ) addUnknownExtensionsToUserData( extensions, scene, sceneDef );
+			if (sceneDef.extensions) addUnknownExtensionsToUserData(extensions, scene, sceneDef);
 
 			var nodeIds = sceneDef.nodes || [];
 
 			var pending = [];
 
-			for ( var i = 0, il = nodeIds.length; i < il; i ++ ) {
+			for (var i = 0, il = nodeIds.length; i < il; i++) {
 
-				pending.push( buildNodeHierachy( nodeIds[ i ], scene, json, parser ) );
+				pending.push(buildNodeHierachy(nodeIds[i], scene, json, parser));
 
 			}
 
-			return Promise.all( pending ).then( function () {
+			return Promise.all(pending).then(function () {
 
 				return scene;
 
-			} );
+			});
 
 		};
 

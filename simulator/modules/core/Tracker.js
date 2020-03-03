@@ -29,5 +29,4 @@ class Tracker {
         this.frame.addEventListener(this.frame.canvas, 'mouseout', this.clearPickedPosition);
     }
 }
-
 export default Tracker;

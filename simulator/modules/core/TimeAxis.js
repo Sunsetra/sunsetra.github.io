@@ -11,7 +11,6 @@ class TimeAxis extends Clock {
         const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
         return [`${ min }:${ secs }.${ msecs }`, elapsed];
     }
-
     continue() {
         if (!this.running) {
             const { elapsedTime } = this;
@@ -19,7 +18,6 @@ class TimeAxis extends Clock {
             this.elapsedTime = elapsedTime;
         }
     }
-
     reset() {
         this.stop();
         this.elapsedTime = 0;

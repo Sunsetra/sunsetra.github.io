@@ -4,6 +4,11 @@ export var WebGLAvailability;
     WebGLAvailability[WebGLAvailability["Available"] = 1] = "Available";
     WebGLAvailability[WebGLAvailability["WebGL2Available"] = 2] = "WebGL2Available";
 })(WebGLAvailability || (WebGLAvailability = {}));
+export var RenderType;
+(function (RenderType) {
+    RenderType["StaticRender"] = "STATIC";
+    RenderType["DynamicRender"] = "DYNAMIC";
+})(RenderType || (RenderType = {}));
 export var BlockType;
 (function (BlockType) {
     BlockType["PlaceableBlock"] = "ALL";

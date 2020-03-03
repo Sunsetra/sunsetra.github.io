@@ -50,7 +50,6 @@ function disposeResources(resource) {
     }
     return resource;
 }
-
 function absPosToRealPos(x, z) {
     if (x instanceof Vector2) {
         return new Vector2(x.x * BlockUnit, x.y * BlockUnit);
@@ -60,7 +59,6 @@ function absPosToRealPos(x, z) {
     }
     return new Vector2(x * BlockUnit, 0);
 }
-
 function realPosToAbsPos(a, b, isRound) {
     if (a instanceof Vector2) {
         if (b) {

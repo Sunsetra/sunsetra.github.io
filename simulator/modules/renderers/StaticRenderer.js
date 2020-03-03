@@ -15,7 +15,6 @@ class StaticRenderer extends Render {
         if (this.callback) {
             this.callback(rAFTime);
         }
-        this.checkResize();
         this.needRender = false;
         this.frame.controls.update();
         this.frame.renderer.render(this.frame.scene, this.frame.camera);

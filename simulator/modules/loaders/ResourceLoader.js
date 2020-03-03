@@ -149,5 +149,4 @@ class ResourceLoader {
         }
     }
 }
-
 export default ResourceLoader;

@@ -3,7 +3,6 @@ class MapLoader {
         this.onLoad = onLoad;
         this.onError = onError;
     }
-
     load(data) {
         if (typeof data === 'string') {
             fetch(data)

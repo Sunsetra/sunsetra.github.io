@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from '../../lib/three/build/three.module.js';
-import { OverlayType, RarityColor } from '../../modules/others/constants.js';
+import { OverlayType, RarityColor, RenderType } from '../../modules/others/constants.js';
 import { absPosToRealPos, realPosToAbsPos } from '../../modules/others/utils.js';
 
 class GameUIController {
@@ -18,6 +18,7 @@ class GameUIController {
         this.costInnerBar = document.querySelector('.cost-bar div');
         this.ctx = this.selectLayer.getContext('2d');
         this.center = new Vector2(0, 0);
+        this.devicePixelRatio = this.frame.renderer.getPixelRatio();
         let selectedOpr;
         let clickPos;
         const withdrawNode = document.querySelector('.ui-overlay#withdraw');
@@ -27,7 +28,7 @@ class GameUIController {
         });
         this.frame.addEventListener(this.frame.canvas, 'mousedown', () => {
             const { pickPos } = this.map.tracker;
-            clickPos = pickPos === null ? null : pickPos;
+            clickPos = pickPos;
         });
         this.frame.addEventListener(this.frame.canvas, 'mouseup', () => {
             const { pickPos } = this.map.tracker;
@@ -40,8 +41,8 @@ class GameUIController {
                             const calcIconsPos = () => {
                                 const rad = this.selectLayer.width * 0.1;
                                 const delta = rad / Math.sqrt(2) / 2;
-                                withdrawNode.style.left = `${ this.center.x / 2 - delta }px`;
-                                withdrawNode.style.top = `${ this.center.y / 2 - delta }px`;
+                                withdrawNode.style.left = `${ this.center.x / this.devicePixelRatio - delta }px`;
+                                withdrawNode.style.top = `${ this.center.y / this.devicePixelRatio - delta }px`;
                             };
                             const resizeSelectLayer = () => {
                                 this.selectLayer.width = this.frame.canvas.width;
@@ -54,7 +55,9 @@ class GameUIController {
                             resizeSelectLayer();
                             const atkLayer = this.map.getOverlay(OverlayType.AttackLayer);
                             atkLayer.showArea(absPos, opr.atkArea);
-                            this.renderer.requestRender();
+                            if (this.frame.status.renderType !== RenderType.DynamicRender) {
+                                this.renderer.requestRender();
+                            }
                             this.frame.addEventListener(this.selectLayer, 'click', () => {
                                 this.frame.removeEventListener(window, 'resize', resizeSelectLayer);
                                 this.hideSelectLayer();
@@ -66,10 +69,9 @@ class GameUIController {
             }
         });
     }
-
     reset() {
         this.updateCost();
-        this.costInnerBar.style.width = '';
+        this.costInnerBar.style.transform = '';
         this.bottomUI.children[1].textContent = this.gameCtl.ctlData.oprLimit.toString();
         this.oprCards.childNodes.forEach((child) => {
             const cdNode = child.children[1];
@@ -82,10 +84,11 @@ class GameUIController {
         this.showOprCard();
         this.updateCardStatus();
     }
-
     updateUIStatus() {
         const intCost = Math.floor(this.gameCtl.cost);
-        this.costInnerBar.style.width = `${ (this.gameCtl.cost - intCost) * 100 }%`;
+        const scale = this.gameCtl.cost - intCost;
+        const moveX = ((1 - scale) * 50) / scale;
+        this.costInnerBar.style.transform = `scaleX(${ scale }) translateX(-${ moveX }%)`;
         if (intCost !== this.cost) {
             this.updateCost();
             this.updateCardStatus();
@@ -107,7 +110,6 @@ class GameUIController {
             }
         });
     }
-
     addOprCard(oprList) {
         const drawStars = (n) => {
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -197,7 +199,9 @@ class GameUIController {
                 }
                 this.mouseLayer.style.display = '';
                 this.map.hideOverlay();
-                this.renderer.requestRender();
+                if (this.frame.status.renderType !== RenderType.DynamicRender) {
+                    this.renderer.requestRender();
+                }
             };
             const onMousemove = () => {
                 if (this.map.tracker.pointerPos !== null) {
@@ -207,7 +211,9 @@ class GameUIController {
                     this.mouseLayer.style.top = `${ this.map.tracker.pointerPos.y - imgRect.height / 2 }px`;
                 }
                 this.map.trackOverlay(atkLayer, atkArea);
-                this.renderer.requestRender();
+                if (this.frame.status.renderType !== RenderType.DynamicRender) {
+                    this.renderer.requestRender();
+                }
             };
             const onMouseup = () => {
                 if (this.map.tracker.pickPos !== null) {
@@ -227,7 +233,9 @@ class GameUIController {
                 oprNode.classList.add('chosen');
                 placeLayer.setEnableArea(this.map.getPlaceableArea(oprData.posType));
                 placeLayer.show();
-                this.renderer.requestRender();
+                if (this.frame.status.renderType !== RenderType.DynamicRender) {
+                    this.renderer.requestRender();
+                }
                 if (oprNode.dataset.status === 'enable') {
                     const oprRes = this.matData.resources.operator[opr];
                     this.mouseLayer.children[0].setAttribute('src', oprRes.url);
@@ -244,13 +252,11 @@ class GameUIController {
             });
         });
     }
-
     updateCost() {
         this.cost = Math.floor(this.gameCtl.cost);
         const costTextNode = document.querySelector('.cost span');
         costTextNode.textContent = this.cost.toString();
     }
-
     withdrawOperator(opr) {
         this.map.removeUnit(opr);
         const remain = this.gameCtl.removeOperator(opr.name);
@@ -266,7 +272,6 @@ class GameUIController {
         oprNode.dataset.status = 'cd';
         this.updateCardStatus();
     }
-
     updateCardStatus() {
         if (this.gameCtl.ctlData.oprLimit - this.gameCtl.activeOperator.size > 0) {
             this.oprCards.childNodes.forEach((child) => {
@@ -281,15 +286,15 @@ class GameUIController {
             });
         }
     }
-
     hideSelectLayer() {
         this.map.hideOverlay();
         this.selectLayer.style.display = 'none';
         const overlayUI = document.querySelectorAll('.ui-overlay');
         overlayUI.forEach((child) => { child.style.display = 'none'; });
-        this.renderer.requestRender();
+        if (this.frame.status.renderType !== RenderType.DynamicRender) {
+            this.renderer.requestRender();
+        }
     }
-
     drawSelectLayer(pos) {
         if (pos !== undefined) {
             const height = this.map.getBlock(pos).size.y;
@@ -312,7 +317,6 @@ class GameUIController {
         this.ctx.fill();
         this.ctx.globalCompositeOperation = 'source-over';
     }
-
     enableOprCard(card) {
         if (card === undefined) {
             this.oprCards.childNodes.forEach((child) => {
@@ -326,7 +330,6 @@ class GameUIController {
             card.dataset.status = 'enable';
         }
     }
-
     disableOprCard(card) {
         if (card === undefined) {
             this.oprCards.childNodes.forEach((child) => {
@@ -347,7 +350,6 @@ class GameUIController {
             card.dataset.status = 'disable';
         }
     }
-
     hideOprCard(card) {
         if (this.oprCards.children.length === 1) {
             card.style.visibility = 'hidden';
@@ -355,7 +357,6 @@ class GameUIController {
             card.style.display = 'none';
         }
     }
-
     showOprCard(oprName) {
         if (oprName === undefined) {
             this.oprCards.childNodes.forEach((card) => {
@@ -370,7 +371,6 @@ class GameUIController {
             }
         }
     }
-
     setDirection(opr) {
         const absPos = realPosToAbsPos(this.map.tracker.pickPos, true);
         const atkLayer = this.map.getOverlay(OverlayType.AttackLayer);
@@ -389,21 +389,21 @@ class GameUIController {
         const drawSelector = (e) => {
             atkLayer.hide();
             this.drawSelectLayer();
-            const distX = e.clientX - this.center.x / 2;
-            const distY = e.clientY - this.center.y / 2;
+            const distX = e.clientX - this.center.x / this.devicePixelRatio;
+            const distY = e.clientY - this.center.y / this.devicePixelRatio;
             const dist = Math.sqrt(distX ** 2 + distY ** 2);
-            const rad = this.selectLayer.width * 0.1;
-            if (dist < rad / 4) {
+            const diam = this.selectLayer.width * 0.1;
+            if (dist < diam / 4) {
                 this.ctx.strokeStyle = 'white';
                 this.ctx.beginPath();
-                this.ctx.arc(this.center.x, this.center.y, rad / 2, 0, 2 * Math.PI);
+                this.ctx.arc(this.center.x, this.center.y, diam / 2, 0, 2 * Math.PI);
                 this.ctx.stroke();
                 atkLayer.hide();
             } else {
                 const theta = Math.atan2(distY, distX);
                 this.ctx.strokeStyle = 'gold';
                 this.ctx.beginPath();
-                this.ctx.arc(this.center.x, this.center.y, rad + 20, theta - Math.PI / 4, theta + Math.PI / 4);
+                this.ctx.arc(this.center.x, this.center.y, diam + 20, theta - Math.PI / 4, theta + Math.PI / 4);
                 this.ctx.stroke();
                 const tempAzi = aziAngle - 0.25 * Math.PI;
                 const sinAzi = Math.sin(tempAzi) > 0;
@@ -450,17 +450,19 @@ class GameUIController {
                 }
                 atkLayer.showArea(absPos, newArea);
             }
-            this.renderer.requestRender();
+            if (this.frame.status.renderType !== RenderType.DynamicRender) {
+                this.renderer.requestRender();
+            }
         };
         this.frame.addEventListener(this.selectLayer, 'click', (e) => {
-            const distX = e.clientX - this.center.x / 2;
-            const distY = e.clientY - this.center.y / 2;
+            const distX = e.clientX - this.center.x / this.devicePixelRatio;
+            const distY = e.clientY - this.center.y / this.devicePixelRatio;
             const dist = Math.sqrt(distX ** 2 + distY ** 2);
-            const rad = this.selectLayer.width * 0.1;
+            const diam = this.selectLayer.width * 0.1;
             const chosenCard = document.querySelector('.chosen');
             if (chosenCard !== null) {
                 chosenCard.classList.remove('chosen');
-                if (dist > rad / 4) {
+                if (dist > diam / 4) {
                     opr.atkArea = newArea;
                     this.hideOprCard(chosenCard);
                     const remain = this.gameCtl.addOperator(opr);
@@ -485,5 +487,4 @@ class GameUIController {
         this.selectLayer.style.display = 'block';
     }
 }
-
 export default GameUIController;
