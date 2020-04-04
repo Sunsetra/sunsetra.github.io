@@ -1,4 +1,5 @@
 import { Raycaster, Vector2 } from '../../lib/three/build/three.module.js';
+import { addEvListener } from '../others/utils.js';
 
 class Tracker {
     constructor(frame, map) {
@@ -14,19 +15,14 @@ class Tracker {
                 this.pickPos = new Vector2(intersectObj[0].point.x, intersectObj[0].point.z);
             }
         };
-        this.clearPickedPosition = () => {
-            this.pointerPos = null;
-            this.pickPos = null;
-            this.lastPos = null;
-        };
         this.frame = frame;
         this.mesh = map;
         this.rayCaster = new Raycaster();
         this.pointerPos = null;
         this.pickPos = null;
         this.lastPos = null;
-        this.frame.addEventListener(this.frame.canvas, 'mousemove', this.getNormalizedPosition);
-        this.frame.addEventListener(this.frame.canvas, 'mouseout', this.clearPickedPosition);
+        addEvListener(this.frame.canvas, 'mousemove', this.getNormalizedPosition);
+        addEvListener(this.frame.canvas, 'mousedown', this.getNormalizedPosition);
     }
 }
 export default Tracker;

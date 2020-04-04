@@ -1,5 +1,5 @@
 body {
-  background-color: #CCCCFF;
+  background-color: #ECECFF;
   display: flex;
   flex-direction: column;
 }
@@ -24,7 +24,7 @@ header {
 hr {
   width: 60%;
   min-width: 700px;
-  margin: 0.5rem auto; /* Edge适配 */
+  margin: 0.5rem auto;
 }
 
 main {
@@ -47,9 +47,15 @@ th {
   padding: 0.5rem;
 }
 
+th img {
+  height: 0.8rem;
+  margin: 0.1rem;
+}
+
+/* 列宽定义 */
 thead th:nth-child(1) {
   border-radius: 3px 0 0 3px;
-  width: 60%;
+  width: 50%;
 }
 
 thead th:nth-child(2) {
@@ -57,14 +63,19 @@ thead th:nth-child(2) {
 }
 
 thead th:nth-child(3) {
-  width: 15%;
+  width: 10%;
 }
 
 thead th:nth-child(4) {
+  width: 15%;
+}
+
+thead th:nth-child(5) {
   border-radius: 0 3px 3px 0;
   width: 15%;
 }
 
+/* 行样式 */
 tr {
   border-radius: 3px; /* 边框样式只影响阴影效果 */
   box-shadow: 0 0 3px grey;
@@ -74,42 +85,49 @@ tbody tr {
   transition: box-shadow 0.5s;
 }
 
+/* 单元格样式 */
 td {
   padding: 1rem;
-  vertical-align: top;
+  vertical-align: middle;
+  text-align: center;
 }
 
-tbody td:nth-child(4n+1) {
+/* 各列样式 */
+tbody td:nth-child(5n+1) {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
-tbody td:nth-child(4n+2) {
-  text-align: center;
+tbody td:nth-child(5n+2),
+tbody td:nth-child(5n+4),
+tbody td:nth-child(5n+5) {
+  padding: 0 0.5rem;
 }
 
-tbody td:nth-child(4n+3) {
-  text-align: center;
+tbody td:nth-child(5n+2) img {
+  display: block;
+  width: 100%;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
-tbody td:nth-child(4n+4) {
-  text-align: center;
+tbody td:nth-child(5n+4) img,
+tbody td:nth-child(5n+5) img {
+  height: 1.5rem;
 }
 
+tbody td img:hover {
+  cursor: pointer;
+}
+
+/* 奇偶行样式 */
 tbody tr:nth-child(even) td {
   background-color: #CCFFFF;
 }
 
 tbody tr:nth-child(odd) td {
   background-color: #CCFFCC;
-}
-
-tbody tr td:first-child {
-  border-radius: 3px 0 0 3px;
-}
-
-tbody tr td:last-child {
-  border-radius: 0 3px 3px 0;
 }
 
 tbody tr:nth-child(even):hover {
@@ -124,6 +142,14 @@ tbody tr:nth-child(odd):hover {
     0 0 0.5rem 0.1rem #CCFFCC;
 }
 
+tbody tr td:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+tbody tr td:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
 .detail {
   height: 0;
   display: none;
@@ -135,14 +161,6 @@ tbody tr:nth-child(odd):hover {
   margin: 0.5rem;
 }
 
-td img {
-  width: 0.65rem;
-}
-
-td img:hover {
-  cursor: pointer;
-}
-
 /* 文章视窗样式 */
 #viewer {
   width: 100%;
@@ -151,7 +169,7 @@ td img:hover {
   opacity: 0;
   display: none;
   background-color: rgba(128, 128, 128, 0);
-  transition: all 0.5s;
+  transition: opacity 0.5s, background-color 0.5s;
 }
 
 #viewer iframe {

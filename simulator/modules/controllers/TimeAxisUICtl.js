@@ -1,87 +1,75 @@
+import { addEvListener } from '../../modules/others/utils.js';
+
 class TimeAxisUICtl {
     constructor(timeAxis, resList) {
         this.timeAxis = timeAxis;
-        this.resList = resList;
-        const axisNode = document.querySelector('.time-axis');
-        this.timeAxisNode = axisNode.children[0];
-        this.timer = axisNode.children[1].childNodes[0];
-    }
-    createAxisNode(prop, id, name) {
-        const type = prop.split(' ')[0];
-        const { url } = this.resList[type][name];
-        const [nodeTime, createTime] = this.timeAxis.getCurrentTime();
-        const node = document.createElement('div');
-        node.dataset.createTime = createTime.toFixed(3);
-        node.setAttribute('class', `mark-icon ${ id }`);
-        if (createTime) {
-            node.style.left = '100%';
-        }
-        node.addEventListener('mouseover', () => {
-            const nodes = this.timeAxisNode.querySelectorAll(`.${ id }`);
-            nodes.forEach((item) => {
-                const icon = item.children[1];
-                const detail = item.children[2];
-                const arrow = item.children[3];
-                if (icon && detail && arrow) {
-                    const { filter } = window.getComputedStyle(icon);
-                    icon.style.filter = filter === 'none' ? 'brightness(2)' : `${ filter } brightness(2)`;
-                    icon.style.zIndex = '2';
-                    detail.style.display = 'block';
-                    arrow.style.display = 'block';
-                }
-            });
-            node.style.zIndex = '3';
-        });
-        node.addEventListener('mouseout', () => {
-            const nodes = this.timeAxisNode.querySelectorAll(`.${ id }`);
-            nodes.forEach((item) => {
-                const icon = item.children[1];
-                const detail = item.children[2];
-                const arrow = item.children[3];
-                if (icon && detail && arrow) {
-                    icon.style.filter = '';
-                    icon.style.zIndex = '';
-                    detail.style.display = 'none';
-                    arrow.style.display = 'none';
-                }
-            });
-            node.style.zIndex = '';
-        });
-        const markNode = document.createElement('div');
-        markNode.setAttribute('class', `mark ${ prop }`);
-        const iconNode = document.createElement('div');
-        iconNode.setAttribute('class', 'icon');
-        iconNode.style.backgroundImage = `url("${ url }")`;
-        const detailNode = document.createElement('div');
-        detailNode.setAttribute('class', 'detail');
-        detailNode.textContent = nodeTime;
-        const detailArrow = document.createElement('div');
-        detailArrow.setAttribute('class', 'detail-arrow');
-        node.appendChild(markNode);
-        node.appendChild(iconNode);
-        node.appendChild(detailNode);
-        node.appendChild(detailArrow);
-        this.timeAxisNode.appendChild(node);
-        return node;
-    }
-    clearNodes() {
-        while (this.timeAxisNode.firstChild) {
-            this.timeAxisNode.removeChild(this.timeAxisNode.firstChild);
-        }
-    }
-    updateAxisNodes() {
-        this.timeAxisNode.childNodes.forEach((child) => {
-            const { style, dataset } = child;
-            const createTime = parseFloat(dataset.createTime);
-            const pos = ((createTime / this.timeAxis.getCurrentTime()[1]) * 100).toFixed(2);
-            style.left = `${ pos }%`;
+        this.icons = resList;
+        this.unitColor = {
+            operator: {
+                create: 'LimeGreen',
+                leave: 'dodgerblue',
+                dead: 'gray',
+            },
+            enemy: {
+                create: 'orange',
+                leave: 'red',
+                dead: 'gray',
+            },
+        };
+        this.nodes = new Set();
+        this.cvsNode = document.querySelector('.time-axis canvas');
+        this.ctx = this.cvsNode.getContext('2d');
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        addEvListener(window, 'resize', () => {
+            const { width, height } = this.cvsNode.getBoundingClientRect();
+            this.cvsNode.width = width * window.devicePixelRatio;
+            this.cvsNode.height = height * window.devicePixelRatio;
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = `${ this.cvsNode.height / 3 }px sans-serif`;
+            this.update();
         });
     }
-    setTimer() {
-        [this.timer.nodeValue] = this.timeAxis.getCurrentTime();
+
+    addNode(name, type, action) {
+        const img = new Image();
+        img.addEventListener('load', () => {
+            const imgHeight = this.cvsNode.height / 1.5 - 3;
+            const alpha = imgHeight / img.naturalHeight;
+            img.width = img.naturalWidth * alpha;
+            img.height = imgHeight;
+        });
+        img.src = this.icons[type][name];
+        this.nodes.add({
+            name,
+            color: this.unitColor[type][action],
+            ctTime: this.timeAxis.getCurrentTime()[1],
+            img,
+        });
     }
-    resetTimer() {
-        this.timer.textContent = '00:00.000';
+
+    reset() {
+        this.nodes.clear();
+        this.timeAxis.reset();
+        this.update();
+    }
+
+    update() {
+        const { width, height } = this.cvsNode;
+        const [axisWidth, axisHeight] = [width * 0.85, height / 3];
+        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, axisWidth, axisHeight);
+        this.ctx.fill();
+        const now = this.timeAxis.getCurrentTime()[1];
+        this.nodes.forEach((node) => {
+            const { color, ctTime, img } = node;
+            const left = (ctTime / now) * axisWidth;
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(left - 2, 0, 4, axisHeight);
+            this.ctx.drawImage(img, left - img.width / 2, height / 3 + 3, img.width, img.height);
+        });
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillText(this.timeAxis.getCurrentTime()[0], width * 0.87, height / 2, width * 0.12);
     }
 }
 export default TimeAxisUICtl;

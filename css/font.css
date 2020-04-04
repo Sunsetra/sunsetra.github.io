@@ -9,7 +9,7 @@
 @font-face {
   /* 用于哥特式中文 */
   font-family: "Gothic-zh-CN";
-  src: url("../font/Gothic-zh-CN.ttf") format("truetype");
+  src: url("../font/Gothic_zh.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -17,7 +17,7 @@
 @font-face {
   /* 用于哥特式英文 */
   font-family: "Medici Text";
-  src: url("../font/Medici-Text.ttf") format("truetype");
+  src: url("../font/Medici.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -26,6 +26,14 @@
   /* 用于恐怖类字体中文 */
   font-family: "onryou";
   src: url("../font/onryou.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  /* 用于衬线日文 */
+  font-family: "kokumr";
+  src: url("../font/kokumr.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }

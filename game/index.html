@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <link href="../css/normalize.css" rel="stylesheet" type="text/css">
-  <link href="../css/global.css" rel="stylesheet" type="text/css">
+  <link href="../css/font.css" rel="stylesheet" type="text/css">
   <link href="index.css" rel="stylesheet" type="text/css">
   <script defer src="index.js"></script>
   <title>Gal计分板</title>
 </head>
+
 <body>
 <header>
   <h1>落日的Gal计分板</h1>
@@ -16,35 +17,45 @@
 <article class="intro">
   <p>欢迎来到落日的Gal计分板！这里用于存放本人的Gal游玩记录以及个人游戏评价！</p>
   <p>由于本人是重度剧情党，所以总分和评级将采用以下加权系数计算：</p>
-  <p>总分 = 1 × 画面评分 + 0.5 × 音乐评分 + 0.5 × 系统评分 + 8 × 剧情评分</p>
+  <p>总分 = 10% × 画面评分 + 5% × 音乐评分 + 5% × 系统评分 + 80% × 剧情评分</p>
 </article>
+
 <hr>
+
 <main class="game_list">
   <table>
     <thead>
     <tr>
       <th>游戏名</th>
+      <th>出品<img alt="外部链接" src="../images/external.svg"></th>
       <th>评级</th>
       <th>无剧透评测</th>
-      <th>TE剧情</th>
+      <th>全线路剧情</th>
     </tr>
     </thead>
+
     <tbody>
     <tr>
       <td>
         Remember11
         <div class="detail">
-          <p>画面评分：6</p>
+          <p>画面评分：6.5</p>
           <p>音乐评分：7</p>
-          <p>系统评分：6</p>
+          <p>系统评分：6.5</p>
           <p>剧情评分：9</p>
           <p>总分：8.5</p>
         </div>
+      </td>
+      <td>
+        <a href="http://www.kid-game.co.jp/" rel="noopener noreferrer" target="_blank">
+          <img alt="KID社logo" src="logo/kid.png">
+        </a>
       </td>
       <td>佳作</td>
       <td></td>
       <td></td>
     </tr>
+
     <tr>
       <td>
         きまぐれテンプテーション
@@ -56,17 +67,48 @@
           <p>总分：8</p>
         </div>
       </td>
+      <td>
+        <a href="https://www.silkysplus.jp/" rel="noopener noreferrer" target="_blank">
+          <img alt="silkysplus社logo" src="logo/silkysplus.png">
+        </a>
+      </td>
       <td>佳作</td>
       <td>
-        <img data-url="articles/kimaten/kimaten_c.html" src="../texture/file.png" alt="文档">
+        <img alt="无剧透评测" data-url="articles/kimaten/kimaten_c.html" src="../texture/file.png">
       </td>
       <td>
-        <img data-url="articles/kimaten/kimaten_s.html" src="../texture/file.png" alt="文档">
+        <img alt="全线路剧情" data-url="articles/kimaten/kimaten_s.html" src="../texture/file.png">
       </td>
+    </tr>
+
+    <tr>
+      <td>
+        死神のテスタメント
+        <div class="detail">
+          <p>画面评分：8</p>
+          <p>音乐评分：7</p>
+          <p>系统评分：6</p>
+          <p>剧情评分：7</p>
+          <p>总分：7</p>
+        </div>
+      </td>
+      <td>
+        <a href="http://3rdeye.jp/" rel="noopener noreferrer" target="_blank">
+          <img alt="三眼社logo" src="logo/3rdeye.png">
+        </a>
+      </td>
+      <td>良作</td>
+      <td>
+        <img alt="无剧透评测" data-url="articles/testament/testament_c.html" src="../texture/file.png">
+      </td>
+      <td></td>
     </tr>
     </tbody>
   </table>
 </main>
-<div id="viewer"><iframe title="Article Viewer"></iframe></div>
+
+<div id="viewer">
+  <iframe title="Article Viewer"></iframe>
+</div>
 </body>
 </html>

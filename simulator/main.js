@@ -10,11 +10,11 @@ import MapLoader from './modules/loaders/MapLoader.js';
 import ResourceLoader from './modules/loaders/ResourceLoader.js';
 import { GameStatus, WebGLAvailability } from './modules/others/constants.js';
 import { LoadingError } from './modules/others/exceptions.js';
-import { checkWebGLVersion, disposeResources } from './modules/others/utils.js';
+import { addEvListener, checkWebGLVersion, clearEvListener, disposeResources } from './modules/others/utils.js';
 import DynamicRenderer from './modules/renderers/DynamicRender.js';
 import StaticRenderer from './modules/renderers/StaticRenderer.js';
 
-const canvas = document.querySelector('canvas');
+const canvas = document.querySelector('.main');
 const frame = new GameFrame(canvas);
 const timeAxis = new TimeAxis();
 const render = {
@@ -22,11 +22,10 @@ const render = {
     dynamic: new DynamicRenderer(frame),
 };
 const renderCtl = new RenderController(frame, render);
-
 function main(mapInfo, data) {
     const { materials } = data;
     const map = new GameMap(frame, JSON.parse(JSON.stringify(mapInfo)), materials.resources);
-    const timeAxisUI = new TimeAxisUICtl(timeAxis, materials.resources);
+    const timeAxisUI = new TimeAxisUICtl(timeAxis, materials.icons);
     const gameCtl = new GameController(map, data, timeAxisUI);
     const gameUICtl = new GameUIController(frame, map, gameCtl, render.static, data);
     gameUICtl.addOprCard([
@@ -43,11 +42,9 @@ function main(mapInfo, data) {
         stop: () => timeAxis.stop(),
         reset: () => {
             gameCtl.reset();
-            gameUICtl.reset();
             gameCtl.setStatus(GameStatus.Standby);
-            timeAxis.reset();
-            timeAxisUI.clearNodes();
-            timeAxisUI.resetTimer();
+            gameUICtl.reset();
+            timeAxisUI.reset();
             map.hideOverlay();
         },
     };
@@ -58,19 +55,19 @@ function main(mapInfo, data) {
             gameUICtl.updateUIStatus();
             gameCtl.updateEnemyStatus(timeAxis.getCurrentTime());
             gameCtl.updateEnemyPosition(interval);
-            timeAxisUI.setTimer();
-            timeAxisUI.updateAxisNodes();
+            timeAxisUI.update();
         } else {
             render.dynamic.stopRender();
             renderCtl.stop();
         }
     };
-    frame.addEventListener(document, 'visibilitychange', () => {
+    addEvListener(document, 'visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             renderCtl.pause();
         }
     });
-    frame.addEventListener(window, 'resize', () => render.static.checkResize());
+    addEvListener(window, 'resize', () => render.static.checkResize());
+    window.dispatchEvent(new Event('resize'));
     renderCtl.reset();
     render.static.checkResize();
 }
@@ -78,7 +75,7 @@ function resetGameFrame() {
     renderCtl.reset();
     disposeResources(frame.scene);
     frame.scene.dispose();
-    frame.clearEventListener();
+    clearEvListener();
 }
 async function fetchData() {
     const fetchResInfo = fetch('res/list.json');
@@ -108,7 +105,7 @@ if (checkWebGLVersion() === WebGLAvailability.Unavailable) {
                     LoadingUICtl.updateTip('');
                 }
                 errorCounter += 1;
-                LoadingUICtl.updateTip(`加载${ url }时发生错误`, true);
+                LoadingUICtl.updateTip(`加载${ url }时发生错误\n`, true);
                 throw new LoadingError(`加载${ url }时发生错误`);
             };
             const loadingFinished = (miscData) => {

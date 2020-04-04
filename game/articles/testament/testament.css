@@ -1,0 +1,102 @@
+body {
+  background-color: #B1B1B1;
+}
+
+canvas {
+  position: fixed;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 侧边栏样式 */
+aside {
+  background-color: rgba(224, 224, 224, 0.9);
+  border-width: 0.15rem;
+  border-radius: 0;
+  border-top-color: rgba(56, 50, 44, 0.9);
+  border-right-color: rgba(56, 50, 44, 0.9);
+  border-bottom-color: rgba(56, 50, 44, 0.9);
+  box-shadow:
+    1px 0 3px gray,
+    0 1px 3px gray,
+    0 -1px 3px gray,
+    inset 1px 0 3px gray,
+    inset 0 1px 3px gray,
+    inset 0 -1px 3px gray;
+}
+
+.rating {
+  border-width: 0.08rem;
+  border-radius: 0;
+}
+
+.rating:hover {
+  color: white;
+  box-shadow:
+    0 1px 2px #7D9DE3,
+    1px 0 2px #7D9DE3,
+    0 -1px 2px #7D9DE3,
+    -1px 0 2px #7D9DE3,
+    inset 0 1px 2px #7D9DE3,
+    inset 1px 0 2px #7D9DE3,
+    inset 0 -1px 2px #7D9DE3,
+    inset -1px 0 2px #7D9DE3;
+}
+
+#cg {
+  width: 80%;
+  background: linear-gradient(to right, rgb(193, 192, 189), rgba(113, 110, 105, 0.8));
+}
+
+#music {
+  width: 70%;
+  background: linear-gradient(to right, rgb(193, 192, 189), rgba(113, 110, 105, 0.7));
+}
+
+#sys {
+  width: 60%;
+  background: linear-gradient(to right, rgb(193, 192, 189), rgba(113, 110, 105, 0.6));
+}
+
+#story {
+  width: 70%;
+  background: linear-gradient(to right, rgb(193, 192, 189), rgba(113, 110, 105, 0.7));
+}
+
+#total {
+  width: 70%;
+  background: linear-gradient(to right, rgb(193, 192, 189), rgba(113, 110, 105, 0.7));
+}
+
+.rating a:focus, .rating a:active {
+  color: #7DEDEE;
+}
+
+/* 正文样式 */
+main {
+  background-color: rgba(57, 57, 57, 0.6);
+  color: white;
+}
+
+header {
+  font-family: "kokumr", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  color: black;
+  text-shadow:
+    1px 0 0 white,
+    1px 1px 0 white,
+    1px -1px 0 white,
+    -1px 0 0 white,
+    -1px 1px 0 white,
+    -1px -1px 0 white,
+    0 1px 0 white,
+    0 -1px 0 white;
+}
+
+figcaption {
+  color: Silver;
+}
+
+section h2 {
+  color: #7DEDEE;
+}

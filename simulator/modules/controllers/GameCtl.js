@@ -52,8 +52,7 @@ class GameController {
                 const enemy = this.createEnemy(name, thisFrag, enemyData);
                 const { x, z } = route[0];
                 this.map.addUnit(x, z, enemy);
-                const nodeId = `${ name }-${ thisFrag.id }`;
-                this.timeAxisUI.createAxisNode('enemy create', nodeId, name);
+                this.timeAxisUI.addNode(name, 'enemy', 'create');
                 route.shift();
                 fragments.shift();
                 if (!fragments.length) {
@@ -104,9 +103,7 @@ class GameController {
                 this.map.removeUnit(inst);
                 this.activeEnemy.delete(frag);
                 this.enemyCount -= 1;
-                const nodeType = 'enemy drop';
-                const nodeId = `${ name }-${ frag.id }`;
-                this.timeAxisUI.createAxisNode(nodeType, nodeId, name);
+                this.timeAxisUI.addNode(name, 'enemy', 'leave');
             }
         });
     }
@@ -160,7 +157,7 @@ class GameController {
         if (inst !== undefined) {
             this.activeOperator.set(inst.name, inst);
             this.allOperator.delete(opr.name);
-            this.timeAxisUI.createAxisNode('operator create', opr.name, opr.name);
+            this.timeAxisUI.addNode(opr.name, 'operator', 'create');
         }
         return this.ctlData.oprLimit - this.activeOperator.size;
     }
@@ -179,7 +176,7 @@ class GameController {
             oprInst.trackData.withdrawCnt += 1;
             this.activeOperator.delete(opr);
             this.allOperator.set(opr, oprInst);
-            this.timeAxisUI.createAxisNode('operator leave', opr, opr);
+            this.timeAxisUI.addNode(opr, 'operator', 'leave');
         }
         return this.ctlData.oprLimit - this.activeOperator.size;
     }

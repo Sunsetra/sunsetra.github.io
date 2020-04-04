@@ -65,6 +65,10 @@
       "sora": "res/img/operator/sora.png",
       "vermeil": "res/img/operator/vermeil.png"
     },
+    "enemy": {
+      "slime": "res/texture/enemy/slime.png",
+      "saber": "res/texture/enemy/saber.png"
+    },
     "misc": {
       "leave": "res/img/misc/leave_icon.svg"
     }

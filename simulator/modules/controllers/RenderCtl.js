@@ -1,12 +1,13 @@
 import { RenderType } from '../../modules/others/constants.js';
+import { addEvListener, removeEvListener } from '../../modules/others/utils.js';
 
 class RenderController {
     constructor(frame, renderer, callbacks) {
         this.start = () => {
             this.startBtn.textContent = '⏸';
-            this.frame.removeEventListener(this.startBtn, 'click', this.start);
-            this.frame.addEventListener(this.startBtn, 'click', this.pause);
-            this.frame.removeEventListener(this.frame.controls, 'change', this.staticRender);
+            removeEvListener(this.startBtn, 'click', this.start);
+            addEvListener(this.startBtn, 'click', this.pause);
+            removeEvListener(this.frame.controls, 'change', this.staticRender);
             if (this.callbacks !== undefined && this.callbacks.start !== undefined) {
                 this.callbacks.start();
             }
@@ -19,16 +20,16 @@ class RenderController {
                 this.callbacks.pause();
             }
             this.startBtn.textContent = '▶';
-            this.frame.addEventListener(this.startBtn, 'click', this.continue);
-            this.frame.removeEventListener(this.startBtn, 'click', this.pause);
-            this.frame.addEventListener(this.frame.controls, 'change', this.staticRender);
+            addEvListener(this.startBtn, 'click', this.continue);
+            removeEvListener(this.startBtn, 'click', this.pause);
+            addEvListener(this.frame.controls, 'change', this.staticRender);
             this.frame.status.renderType = RenderType.StaticRender;
         };
         this.continue = () => {
             this.startBtn.textContent = '⏸';
-            this.frame.removeEventListener(this.startBtn, 'click', this.continue);
-            this.frame.addEventListener(this.startBtn, 'click', this.pause);
-            this.frame.removeEventListener(this.frame.controls, 'change', this.staticRender);
+            removeEvListener(this.startBtn, 'click', this.continue);
+            addEvListener(this.startBtn, 'click', this.pause);
+            removeEvListener(this.frame.controls, 'change', this.staticRender);
             if (this.callbacks !== undefined && this.callbacks.continue !== undefined) {
                 this.callbacks.continue();
             }
@@ -42,8 +43,8 @@ class RenderController {
             }
             this.startBtn.textContent = '▶';
             this.startBtn.disabled = true;
-            this.frame.removeEventListener(this.startBtn, 'click', this.pause);
-            this.frame.addEventListener(this.frame.controls, 'change', this.staticRender);
+            removeEvListener(this.startBtn, 'click', this.pause);
+            addEvListener(this.frame.controls, 'change', this.staticRender);
             this.frame.status.renderType = RenderType.StaticRender;
         };
         this.reset = () => {
@@ -53,11 +54,11 @@ class RenderController {
             }
             this.startBtn.textContent = '▶';
             this.startBtn.disabled = false;
-            this.frame.removeEventListener(this.startBtn, 'click', this.pause);
-            this.frame.removeEventListener(this.startBtn, 'click', this.continue);
-            this.frame.addEventListener(this.startBtn, 'click', this.start);
-            this.frame.addEventListener(this.resetBtn, 'click', this.reset);
-            this.frame.addEventListener(this.frame.controls, 'change', this.staticRender);
+            removeEvListener(this.startBtn, 'click', this.pause);
+            removeEvListener(this.startBtn, 'click', this.continue);
+            addEvListener(this.startBtn, 'click', this.start);
+            addEvListener(this.resetBtn, 'click', this.reset);
+            addEvListener(this.frame.controls, 'change', this.staticRender);
             this.frame.status.renderType = RenderType.StaticRender;
             this.renderer.static.requestRender();
         };

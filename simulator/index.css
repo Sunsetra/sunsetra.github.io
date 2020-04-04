@@ -116,12 +116,11 @@ main {
 }
 
 .map-select::after {
-  content: "Ver.0.7.7";
+  content: "Ver.0.7.14";
   margin-top: auto;
   margin-bottom: 2%;
   font-size: small;
 }
-
 
 /* 地图选取窗口状态B：左侧边栏 */
 
@@ -188,88 +187,47 @@ main {
   transition: opacity 1s;
 }
 
-canvas {
+/* 画布规格 */
+.main, .select-overlay {
   width: 100%;
   height: 100%;
 }
 
-/* 上方的时间轴UI */
+/* 顶部UI */
 .ui-top {
   position: absolute;
   top: 6%;
   left: 50%;
-  width: 60%;
+  width: 100%;
   transform: translateX(-50%);
+  pointer-events: none;
 }
 
+/* 时间轴UI相关 */
 .time-axis {
+  width: 60%;
+  min-width: 30rem;
+  margin: 0 auto;
   display: flex;
   align-items: center;
+  pointer-events: auto;
 }
 
-.time-axis > :first-child {
+.time-axis canvas {
   position: relative;
-  height: 1rem;
-  width: 75%;
-  background-color: white;
-  border-radius: 0.2rem;
+  height: 3rem;
+  width: 85%;
 }
 
-.time-axis > :nth-child(2) {
-  overflow: hidden;
-  margin: 0 auto;
-  color: white;
-}
-
-.mark-icon {
+/*.mark-icon {
   position: absolute;
   height: 100%;
   width: 0.5%;
   max-width: 4px;
   min-width: 2px;
-}
+}*/
 
-/* 动态添加的时间轴标记，为axis轴的子元素 */
-.mark {
-  height: 100%;
-  transform: translateX(-50%); /* 匹配图标居中 */
-}
-
-.mark-icon > .enemy { /* 橙色节点表示敌人 */
-  background-color: orange;
-}
-
-.mark-icon > .operator { /* 绿色节点表示干员 */
-  background-color: LimeGreen;
-}
-
-.mark-icon > .operator.leave { /* 蓝色节点表示干员撤离 */
-  background-color: dodgerblue;
-}
-
-.mark-icon > .enemy.drop { /* 红色节点表示漏怪 */
-  background-color: red;
-}
-
-.mark-icon > .dead { /* 灰度节点表示死亡 */
-  filter: grayscale(1);
-}
-
-.icon {
-  position: relative;
-  height: 1.5rem;
-  width: 1.5rem;
-  top: 0.3rem;
-  transform: translateX(-50%); /* 匹配标记刻线居中 */
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-.mark-icon > .dead + .icon { /* 灰度节点表示死亡 */
-  filter: grayscale(1);
-}
-
-.detail {
+/*.detail {
   position: relative;
   top: -3.8rem;
   width: 4rem;
@@ -290,24 +248,39 @@ canvas {
   transform: translateX(-50%) rotate(45deg);
   top: -4.2rem;
   display: none;
-}
+}*/
 
+/* 时间轴按钮样式 */
 .time-axis-controller {
   padding: 0 0.3rem;
   margin: 0 auto;
   font-size: larger;
 }
 
+
+/* 底部UI */
+.ui-bottom {
+  position: absolute;
+  display: flex;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  height: 35%;
+  flex-direction: column;
+  justify-content: flex-end;
+  transform: translateX(-50%);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* cost计数器元素 */
 .cost {
+  width: 6.2%;
   margin-left: auto;
   color: white;
   font-size: 2vw;
   background: rgba(0, 0, 0, 0.8);
-}
-
-.cost span {
-  margin-right: 0.5vw;
 }
 
 .cost::before {
@@ -320,54 +293,39 @@ canvas {
   background-size: contain;
 }
 
-/* cost进度条 */
+.cost-counter {
+  width: 60%;
+  height: 2vw;
+}
+
+/* cost进度条画布 */
 .cost-bar {
+  display: block;
+  width: 100%;
   height: 0.3vw;
   background-color: dimgrey;
   box-shadow: inset 0 0 2px black;
 }
 
-/* 内层进度条 */
-.cost-bar > :nth-child(1) {
-  width: 100%;
-  height: 100%;
-  background: white;
-  box-shadow: inset 0 0 1px black;
-  transform: scaleX(0) translateX(-100%);
-  will-change: transform;
-}
-
 /* 剩余可部署单位数量 */
-.ui-bottom > :nth-child(2) {
+.operator-counter {
+  width: 10%;
   margin-left: auto;
   color: white;
-  padding: 0.3vw 1vw;
+  padding: 0.3vw;
   margin-bottom: 1vw;
   font-size: 1vw;
   background-color: rgba(0, 0, 0, 0.5);
+  text-align: center;
 }
 
-.ui-bottom > :nth-child(2)::before {
-  content: "剩余可部署单位：";
-}
-
-/* 下方的干员图标UI */
-.ui-bottom {
-  position: absolute;
-  display: flex;
-  bottom: 0;
-  left: 50%;
-  width: 100%;
-  flex-direction: column;
-  justify-content: flex-end;
-  transform: translateX(-50%);
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-select: none;
+.operator-counter canvas {
+  height: 1vw;
+  width: 6%;
 }
 
 /* 干员卡栏 */
-.operator-card {
+.operator-cards {
   width: 90%;
   margin-left: auto;
   display: flex;
@@ -375,21 +333,21 @@ canvas {
 }
 
 /* 每张干员卡 */
-.operator-card > div {
+.operator-cards > div {
   position: relative;
   /* 等比调整宽度和padding-bottom以调整图标尺寸 */
   width: 8%;
   /* padding-bottom是相对ui-bottom的宽度确定的 */
   padding-bottom: 8%;
   box-sizing: border-box;
-  box-shadow: inset 0 0 10px white;
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.5);
   border-bottom: 0.3vw solid;
   pointer-events: auto;
   cursor: pointer;
   transition: transform 0.2s;
 }
 
-.operator-card > div.chosen {
+.operator-cards > div.chosen {
   border-left: 1px solid white;
   border-top: 1px solid white;
   border-right: 1px solid white;
@@ -398,26 +356,22 @@ canvas {
 }
 
 /* 干员卡的背景图元素 */
-.operator-card > div :first-child {
+.operator-cards > div :first-child {
   width: 100%;
   height: 100%;
   position: absolute;
 }
 
 /* 再部署冷却倒计时元素 */
-.operator-card > div :nth-child(2) {
+.operator-cards > div canvas {
   position: absolute;
-  display: none;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 2vw;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
 /* 干员cost元素 */
-.operator-card > div :last-child {
+.operator-cards > div :last-child {
   position: absolute;
   top: 0;
   right: 30%;
@@ -435,19 +389,8 @@ canvas {
   transform: translate(-50%, -50%);
   width: 3vw;
   z-index: 1;
-}
-
-
-/* 光标叠加层 */
-.mouse-overlay {
-  display: none;
-  position: absolute;
-  width: 5%;
-  pointer-events: none;
-}
-
-.mouse-overlay img {
-  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 
