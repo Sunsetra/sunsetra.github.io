@@ -1,0 +1,96 @@
+﻿html, body {
+  width: 100%;
+  height: 100%;
+  background-color: #323232;
+}
+
+/* 启动器元素 */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  line-height: 0;
+}
+
+main .timer {
+  color: white;
+  font-family: 'digit', 'STXihei', 'Source Han Sans', 'Microsoft YaHei', 'SimHei', sans-serif;
+  font-size: 2.25rem;
+  display: flex;
+  align-items: flex-end;
+  flex-grow: 2;
+}
+
+@media screen and (max-width: 600px) {
+  main .timer {
+    font-size: 6vw;
+  }
+}
+
+
+/* 气泡浮动项目 */
+main .list {
+  width: 80%;
+  display: flex;
+  justify-content: space-around;
+  transition: flex-grow 1s;
+  /* 初始状态 */
+  flex-grow: 0;
+}
+
+.bubble {
+  margin: auto 0;
+  width: 0;
+  transition: opacity 0.5s, filter 0.5s;
+  /* 初始状态 */
+  opacity: 0;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.bubble div {
+  border-radius: 50%;
+  width: 15vw;
+  height: 15vw;
+  min-width: 100px;
+  min-height: 100px;
+  background-image: radial-gradient(60% 60% at 15% 10%, white 0px, rgba(255, 255, 255, 0.4) 40%, transparent 80%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 20px white;
+  filter: grayscale(0.8);
+  transition: 0.5s filter;
+}
+
+.bubble div:hover {
+  filter: grayscale(0);
+  z-index: 999;
+}
+
+
+/* 电源图标动画 */
+main #power-btn {
+  flex-grow: 2;
+  height: 0;
+  width: 0;
+}
+
+main #power-btn svg {
+  transition: filter 0.5s, opacity 0.5s;
+}
+
+main #power-btn.pending {
+  animation: 1.5s linear infinite alternate pending;
+}
+
+main #power-btn:hover {
+  animation: none;
+  filter: drop-shadow(0 0 10px white);
+  cursor: pointer;
+}
+
+@keyframes pending {
+  from { filter: drop-shadow(0 0 0 white); }
+  to { filter: drop-shadow(0 0 10px white); }
+}

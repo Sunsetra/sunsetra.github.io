@@ -21,7 +21,7 @@ ul {
 
 /* 导航栏标题样式 */
 .navi {
-  font-family: "Medici Text", serif;
+  font-family: "Medici", serif;
   font-size: 1.9em;
   color: rgb(0, 204, 255);
   padding: 0;
@@ -45,7 +45,7 @@ main {
 
 h1,
 .intro-head p { /* 用于介绍标题 */
-  font-family: "Gothic-zh-CN", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-family: "Gothic", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   margin-bottom: 30px;
   text-align: center;
   color: rgb(0, 204, 255);
