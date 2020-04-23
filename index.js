@@ -288,8 +288,18 @@ function main() {
       imgDiv.style.transform = `translateX(-${ Random.prototype.rand(0, 100) }%) translateY(${ Random.prototype.rand(10, 100) - 40 }%)`;
 
       anchor.addEventListener('mouseover', () => timer.setTimer(child.time));
+      anchor.addEventListener('touchstart', () => {
+        timer.setTimer(child.time);
+        imgDiv.style.filter = 'grayscale(0)';
+        imgDiv.style.zIndex = '999';
+      });
 
       anchor.addEventListener('mouseout', () => timer.switchStatus(TimerState.NORMAL));
+      anchor.addEventListener('touchend', () => {
+        timer.switchStatus(TimerState.NORMAL);
+        imgDiv.style.filter = 'grayscale(0.8)';
+        imgDiv.style.zIndex = '0';
+      });
 
       /* 气泡飘浮动画 */
       const keyframe = [
@@ -333,7 +343,7 @@ function main() {
   };
 
   powerBtn.addEventListener('click', () => {
-    powerBtn.style.filter = `blur(10px)`;
+    powerBtn.style.filter = `blur(20px)`;
     powerBtn.style.opacity = `0`;
     powerBtn.style.pointerEvents = 'none';
   }, { once: true });
