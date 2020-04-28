@@ -4,6 +4,7 @@
   src: url('../font/Lolita.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -12,6 +13,7 @@
   src: url('../font/Gothic_zh.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -20,6 +22,7 @@
   src: url('../font/Medici.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -28,6 +31,7 @@
   src: url('../font/onryou.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -36,12 +40,14 @@
   src: url('../font/kokumr.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-  /* 用于点状数字 */
+  /* 用于二极管数字样式 */
   font-family: 'digit';
   src: url('../font/digit.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
