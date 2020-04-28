@@ -25,7 +25,7 @@ const PageLink = [
   { page: 'gensei/index.html', pic: 'images/Gensei.png', time: '2014-01-28 XX:XX:XX' },
   { page: 'simulator/index.html', pic: 'images/WebGL.svg', time: '2019-09-18 23:27:XX' },
   { page: 'game/index.html', pic: 'images/GalBoard.png', time: '2019-10-16 20:08:XX' },
-]
+];
 
 /** 随机数类，提供多种随机化方式 */
 class Random {
@@ -186,7 +186,6 @@ class Timer {
       }
     });
 
-
     /** 更新时间的回调函数 */
     const callback = () => {
       const oldParts = this.timer.textContent.split(/[\s:-]/);
@@ -268,92 +267,64 @@ function main() {
   const timer = new Timer();
   timer.switchStatus(TimerState.NORMAL);
 
+  /** @type {NodeListOf<HTMLAnchorElement>} 卡片元素集合 */
+  const cards = document.querySelectorAll('.card');
+
   /* 构造子页面气泡 */
-  const randBubble = new Random(PageLink);
-  let seq = 0; // 子页面气泡处理序号
-  randBubble.forEach(
-    /** @type {LinkPack} */
-    (child) => {
-      /** @type HTMLAnchorElement */
-      const anchor = document.createElement('a');
-      /** @type HTMLDivElement */
-      const imgDiv = document.createElement('div');
-      anchor.appendChild(imgDiv);
-      document.querySelector('main .list').appendChild(anchor);
+  cards.forEach(
+    (card, index) => {
+      card.style.transform = index % 2 === 0 ? 'translateY(10%)' : 'translateY(-10%)';
 
-      anchor.setAttribute('class', 'bubble');
-      anchor.setAttribute('href', child.page);
-      anchor.setAttribute('target', '_blank');
-      imgDiv.style.backgroundImage = `${ getComputedStyle(imgDiv).getPropertyValue('background-image') }, url(${ child.pic })`;
-      imgDiv.style.transform = `translateX(-${ Random.prototype.rand(0, 100) }%) translateY(${ Random.prototype.rand(10, 100) - 40 }%)`;
+      card.addEventListener('mouseover', () => timer.setTimer(card.dataset.time));
+      card.addEventListener('touchstart', () => {
+        timer.setTimer(card.dataset.time);
+        if (window.screen.width > window.screen.height) {
+          card.style.transform = 'translateY(-10%)';
+        } else {
+          card.style.transform = 'translateX(-10%)';
+        }
+        card.style.boxShadow = '5px 5px 5px black, inset 0 0 20px white';
+        card.style.filter = 'grayscale(0)';
+      }, { passive: true });
 
-      anchor.addEventListener('mouseover', () => timer.setTimer(child.time));
-      anchor.addEventListener('touchstart', () => {
-        timer.setTimer(child.time);
-        imgDiv.style.filter = 'grayscale(0)';
-        imgDiv.style.zIndex = '999';
-      });
-
-      anchor.addEventListener('mouseout', () => timer.switchStatus(TimerState.NORMAL));
-      anchor.addEventListener('touchend', () => {
+      card.addEventListener('mouseout', () => timer.switchStatus(TimerState.NORMAL));
+      card.addEventListener('touchend', () => {
         timer.switchStatus(TimerState.NORMAL);
-        imgDiv.style.filter = 'grayscale(0.8)';
-        imgDiv.style.zIndex = '0';
-      });
+        card.style.transform = '';
+        card.style.boxShadow = '';
+        card.style.filter = '';
+      }, { passive: true });
 
-      /* 气泡飘浮动画 */
-      const keyframe = [
-        { transform: 'translateY(0)' },
-        { transform: `translateY(-${ Random.prototype.rand(5, 8) }%)` },
-      ];
-      const timing = {
-        duration: Random.prototype.rand(2000, 3000),
-        easing: 'ease-in-out',
-        direction: 'alternate',
-        iterations: Infinity,
-      };
-      anchor.animate(keyframe, timing);
-
-      seq += 1;
+      card.addEventListener('contextmenu',
+        /** @type {MouseEvent}*/
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
     });
-
 
   /* 关联电源按钮点击事件 */
   /** @type {SVGSVGElement} 电源按钮元素 */
   const powerBtn = document.querySelector('#power-btn svg');
-  /** @type {HTMLDivElement} 气泡列表元素 */
-  const bubbleList = document.querySelector('main .list');
-  /** @type {ArrayLike<HTMLElement>} 子气泡元素集 */
-  const bubbles = bubbleList.childNodes;
-
-  /**
-   * 递归关联bubbleList子元素transitionend事件
-   * @param {HTMLElement} child - 气泡子元素
-   * @param {number} idx - 当前气泡在bubbleList中的索引
-   */
-  const linkFn = (child, idx) => {
-    if (idx !== bubbles.length - 1) {
-      child.addEventListener('transitionend', () => {
-        linkFn(bubbles[idx + 1], idx + 1);
-      }, { once: true });
-    }
-    child.style.filter = 'blur(0)'
-    child.style.opacity = '1';
-    child.style.pointerEvents = 'auto';
-  };
+  /** @type {HTMLDivElement} 卡片包裹元素 */
+  const cardList = document.querySelector('main .list');
 
   powerBtn.addEventListener('click', () => {
-    powerBtn.style.filter = `blur(20px)`;
+    powerBtn.style.filter = `blur(10px)`;
     powerBtn.style.opacity = `0`;
     powerBtn.style.pointerEvents = 'none';
   }, { once: true });
 
   powerBtn.addEventListener('transitionend', () => {
-    bubbleList.style.flexGrow = '3';
-  }, { once: true });
-
-  bubbleList.addEventListener('transitionend', () => {
-    linkFn(bubbles[0], 0);
+    cardList.style.maxHeight = '60%';
+    cardList.addEventListener('transitionend', () => {
+      cardList.style.overflow = 'unset';
+      cards.forEach((card) => {
+        card.style.transform = '';
+        card.style.opacity = '1';
+        card.style.pointerEvents = 'auto';
+      });
+    }, { once: true });
   }, { once: true });
 
   /* resize事件中重新计算元素变换尺寸 */
