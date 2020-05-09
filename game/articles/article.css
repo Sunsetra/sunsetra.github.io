@@ -87,11 +87,12 @@ main {
   position: relative;
   margin: 1rem 0;
   left: 22%;
-  width: 70%;
+  width: 75%;
   min-width: 36rem;
   padding: 2rem 2rem;
   border-radius: 2rem;
   box-shadow: 0 1px 4px grey;
+  box-sizing: border-box;
   line-height: 2;
 }
 
@@ -227,9 +228,9 @@ figcaption {
 
   main {
     margin: 1rem auto;
-    width: 80%;
+    width: 85%;
     left: 0;
-    min-width: 25rem;
+    min-width: 20rem;
   }
 
   .cg-middle {

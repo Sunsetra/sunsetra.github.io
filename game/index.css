@@ -11,7 +11,7 @@ header {
 }
 
 .intro {
-  min-width: 600px;
+  min-width: 35rem;
   padding: 0.8rem;
   margin: 1.2rem auto;
   font-size: small;
@@ -23,14 +23,14 @@ header {
 
 hr {
   width: 60%;
-  min-width: 700px;
+  min-width: 40rem;
   margin: 0.5rem auto;
 }
 
 main {
   width: 50%;
   margin: 1.5rem auto;
-  min-width: 650px;
+  min-width: 40rem;
 }
 
 /* 表格样式 */
@@ -39,7 +39,7 @@ table {
   width: 100%;
   margin: 0 auto;
   border-spacing: 0 0.8rem;
-  min-width: 650px;
+  min-width: 40rem;
 }
 
 th {
@@ -59,20 +59,20 @@ thead th:nth-child(1) {
 }
 
 thead th:nth-child(2) {
-  width: 10%;
+  width: 3rem;
 }
 
 thead th:nth-child(3) {
-  width: 10%;
+  width: 3rem;
 }
 
 thead th:nth-child(4) {
-  width: 15%;
+  width: 5rem;
 }
 
 thead th:nth-child(5) {
   border-radius: 0 3px 3px 0;
-  width: 15%;
+  width: 5rem;
 }
 
 /* 行样式 */
@@ -180,4 +180,41 @@ tbody tr td:last-child {
   border: 1px solid #8246E8;
   border-radius: 5px;
   box-shadow: 0 0 10px #8246E8;
+}
+
+
+@media screen and (max-width: 40rem) {
+  .intro {
+    min-width: auto;
+  }
+
+  hr {
+    width: 100%;
+    min-width: auto;
+  }
+
+  main {
+    width: auto;
+    min-width: auto;
+  }
+
+  table {
+    min-width: auto;
+  }
+
+  thead th:nth-child(2) {
+    width: auto;
+  }
+
+  thead th:nth-child(4) {
+    width: auto;
+  }
+
+  thead th:nth-child(5) {
+    width: auto;
+  }
+
+  #viewer iframe {
+    width: 100%;
+  }
 }
