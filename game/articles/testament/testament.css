@@ -100,3 +100,42 @@ figcaption {
 section h2 {
   color: #7DEDEE;
 }
+
+/* 梗概中文章分节样式 */
+article {
+  display: none;
+  height: 0;
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+article[data-route='prologue'] {
+  display: block;
+  opacity: 1;
+  height: auto;
+}
+
+/* 梗概中选择肢样式 */
+.selector-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.selector {
+  width: 100%;
+  max-width: 25rem;
+  height: 4rem;
+  margin: 0.5rem auto;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid;
+  background-color: rgba(22,139,181,0.5);
+  cursor: pointer;
+  transition: all 0.5s;
+}
+
+.selector:hover {
+  color: yellow;
+}
