@@ -9,38 +9,33 @@ const TimerState = {
   CHAOS: 2,
 };
 
-/**
- * 子页面及图片地址数据对象
- * @typedef {Object} LinkPack
- * @property {string} page - 子页面相对路径
- * @property {string} pic - 图片相对路径
- * @property {string} time - 子页面时间戳
- */
-/**
- * 子页面地址及图片的常量定义
- * @readonly
- * @type {LinkPack[]} 子页面及展示图的相对地址
- */
-const PageLink = [
-  { page: 'gensei/index.html', pic: 'images/Gensei.png', time: '2014-01-28 XX:XX:XX' },
-  { page: 'simulator/index.html', pic: 'images/WebGL.svg', time: '2019-09-18 23:27:XX' },
-  { page: 'game/index.html', pic: 'images/GalBoard.png', time: '2019-10-16 20:08:XX' },
-];
 
-/** 随机数类，提供多种随机化方式 */
-class Random {
+/**
+ * 随机数类，提供多种随机化方式
+ */
+export class Random {
   /**
    * 以数组解析初始化随机源
    * @constructor
-   * @param {Iterable.<*>} iterator - 随机源对象，仅支持实现了迭代协议的对象
+   * @param {Iterable} iterator - 随机源对象，仅支持实现了迭代协议的对象
+   * @param {boolean} [copy] - 是否复制传入迭代器，默认为复制（共用内存时仅允许传入数组）
    */
-  constructor(iterator) {
-    /**
-     * 随机源对象，仅类内访问
-     * @private
-     * @type {*[]}
-     */
-    this.source = [...iterator];
+  constructor(iterator, copy=true) {
+    if (!copy && !(iterator instanceof Array)) {
+      throw new TypeError('共用内存模式仅支持初始化传入数组');
+    }
+    try {
+      /**
+       * 随机源对象，仅类内访问
+       * @private
+       * @type {Array}
+       */
+      this.source = copy ? [...iterator] : iterator;
+    } catch (e) {
+      if (e instanceof TypeError) {
+        throw new TypeError(`源对象${iterator}不可迭代`);
+      }
+    }
   }
 
   /**
@@ -49,7 +44,7 @@ class Random {
    * @yields {*} 返回随机数组中的随机元素
    */
   * [Symbol.iterator]() {
-    /** @type {number[]} */
+    /** @type {number[]} 生成元素序号数组 */
     const arr = new Array(this.source.length)
       .fill('')
       .map((_, index) => index);
@@ -64,9 +59,10 @@ class Random {
   /**
    * forEach方法接受的回调函数
    * @callback Random~forEachCallback
-   * @param {*} value - 每个随机元素的值
+   * @template U
+   * @param {U} value - 每个随机元素的值
    * @param {number} index - 每个随机元素在随机源数组中的索引
-   * @param {Iterable.<*>} source - 随机源数组本体
+   * @param {Iterable.<U>} source - 随机源数组本体
    */
   /**
    * 对每个随机元素执行参数回调函数
@@ -329,7 +325,7 @@ function main() {
 
   /* resize事件中重新计算元素变换尺寸 */
   window.addEventListener('resize', () => {
-    const maxSide = Math.max(document.documentElement.clientWidth, document.documentElement.clientHeight)
+    const maxSide = Math.max(document.documentElement.clientWidth, document.documentElement.clientHeight);
     let alpha = maxSide * 0.1 / powerBtn.width.baseVal.value;
     alpha = alpha > 2 ? 2 : alpha;
     powerBtn.style.transform = `translateX(-50%) scale(${ alpha })`

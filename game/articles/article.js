@@ -1,3 +1,6 @@
+/** 图片旋转角度上下限常量 */
+const DegScope = 3;
+
 /**
  * 返回[min, max]间的随机整数
  * @param min {number} - 随机数下限
@@ -12,7 +15,7 @@ function rand(min, max) {
 function randPicRotate() {
   const cgs = document.querySelectorAll('.cg-middle');
   cgs.forEach((cg) => {
-    const deg = rand(-4, 4);
+    const deg = rand(-DegScope, DegScope);
     cg.style.transform = `rotate(${deg}deg)`;
   });
 }
