@@ -33,7 +33,7 @@ export class Random {
       this.source = copy ? [...iterator] : iterator;
     } catch (e) {
       if (e instanceof TypeError) {
-        throw new TypeError(`源对象${iterator}不可迭代`);
+        throw new TypeError(`源对象 ${iterator} 不可迭代`);
       }
     }
   }

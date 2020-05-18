@@ -2,32 +2,19 @@ import { Random } from '../../../index.js';
 
 /**
  * 羽毛资源路径
- * @type {object} FeatherUrls
- * @property {string[]} FeatherUrls.white - 白羽路径
- * @property {string[]} FeatherUrls.dark - 黑羽路径
+ * @type {string[]} FeatherUrls
  */
-const FeatherUrls = {
-  white: [
-    'pics/bg/white_1.png',
-    'pics/bg/white_2.png',
-    'pics/bg/white_3.png',
-    'pics/bg/white_4.png',
-  ],
-  dark: [],
-};
+const FeatherUrls = [
+  'pics/bg/white_1.png',
+  'pics/bg/white_2.png',
+  'pics/bg/white_3.png',
+  'pics/bg/white_4.png',
+];
 
-/** 最大羽毛数量 */
-const MaxFeatherCnt = 25;
-/**
- * 随机生成两片羽毛之间的时间间隔
- * @function
- * @return {number} 返回随机生成的时间间隔
- */
-const FeatherTimeInterval = Random.prototype.rand.bind(null, 500, 2500);
 /**
  * 羽毛信息对象
  * @typedef {object} Feather
- * @property {HTMLCanvasElement} cvs - 羽毛对象画布
+ * @property {HTMLImageElement} img - 羽毛图片元素
  * @property {number} scale - 羽毛缩放比例
  * @property {number} cTime - 羽毛创建时刻
  * @property {number} x - 羽毛的X向位移变换(translateX)
@@ -37,19 +24,24 @@ const FeatherTimeInterval = Random.prototype.rand.bind(null, 500, 2500);
  * @property {number} rot - 羽毛的初始旋转量(rotate)
  * @property {number} vr - 羽毛的旋转速度/秒
  */
+/** 最大羽毛数量 */
+const MaxFtrCnt = 25;
 /**
  * 在场羽毛列表
  * @type {Feather[]}
  */
-const ActiveFeather = [];
-/** @type {Random} 随机白羽资源发生器 */
-const WhiteFeather = new Random(loadPicRes(FeatherUrls.white), false);
+const ActiveFtr = [];
+/** @type {Random} 随机羽毛资源发生器 */
+const Feather = new Random(loadImgRes(FeatherUrls), false);
+/** 羽毛转换色彩标志位 */
+let InvertFlag = false;
 
 function main() {
   setSelectorListener();
   drawBackground();
 }
 
+/** 设置选择肢监听器 */
 function setSelectorListener() {
   /** @type {NodeListOf<HTMLElement>} 所有小节的集合 */
   const articles = document.querySelectorAll('article');
@@ -110,37 +102,53 @@ function setSelectorListener() {
 }
 
 /**
- * 画布资源包元组，包含画布元素与图片资源
- * @typedef {Array.<HTMLCanvasElement|HTMLImageElement>} CanvasRes
- */
-/**
  * 加载图片资源对象并返回
  * @param res {string[]} - 数组型资源对象路径
- * @return {CanvasRes[]}
+ * @return {HTMLImageElement[]}
  */
-function loadPicRes(res) {
-  /** @type {CanvasRes[]} 画布及资源对象列表 */
-  const canvas = [];
+function loadImgRes(res) {
+  /** @type {HTMLImageElement[]} 图片资源元素列表 */
+  const images = [];
   res.forEach((path) => {
     const img = new Image();
     img.src = path;
     img.addEventListener('load', () => {
-      const cvs = document.createElement('canvas');
-      cvs.width = img.naturalWidth * window.devicePixelRatio;
-      cvs.height = img.naturalHeight * window.devicePixelRatio;
-      cvs.style.position = 'absolute';
-      cvs.style.top = '0';
-      cvs.style.left = '0';
-      canvas.push([cvs, img]);
+      img.style.position = 'absolute';
+      img.style.top = '0';
+      img.style.left = '0';
+      img.style.transition = `filter 1s`;
+      images.push(img);
     });
   });
-  return canvas;
+  return images;
 }
 
 function drawBackground() {
+  /** @type {HTMLElement} 第二章位置 */
+  const chapTwo = document.querySelector('article[data-route=chapter-2-p1]');
+  /** @type {HTMLElement} 第三章位置 */
+  const chapThree = document.querySelector('article[data-route=chapter-3-p1]');
+
+  window.addEventListener('scroll', () => {
+    /** @type {boolean} 判定是否滚动至第二章位置 */
+    const toChapTwo = chapTwo.offsetTop && window.scrollY > (chapTwo.offsetTop - 300);
+    /** @type {boolean} 判定是否滚动至第三章位置 */
+    const toChapThree = chapThree.offsetTop && window.scrollY > (chapThree.offsetTop - 300);
+
+    /* 滚动至第二章且未至第三章时，开启反色开关并将所有在场的羽毛反色 */
+    if (toChapTwo && !toChapThree) {
+      InvertFlag = true;
+      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = `invert(100%)`; });
+    } else {
+      InvertFlag = false;
+      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = ''; });
+    }
+  });
+
   window.addEventListener('resize', () => {
-    ActiveFeather.forEach((feather) => {
-      feather.cvs.style.height = `${window.innerHeight / 10}px`;
+    ActiveFtr.forEach((ftr) => {
+      /* 图片初始高度为视口高度的十分之一 */
+      ftr.img.style.height = `${window.innerHeight / 10}px`;
     });
   });
 
@@ -148,29 +156,30 @@ function drawBackground() {
 }
 
 /**
- * 绘制帧
+ * 每帧中的回调函数
  * @param time {number} - 帧时刻
  */
 function drawFrame(time) {
   /** @type {HTMLDivElement} 背景容器 */
   const bg = document.querySelector('.bg');
+  /**
+   * 随机生成两片羽毛之间的时间间隔
+   * @function
+   * @return {number} 返回随机生成的时间间隔
+   */
+  const getInterval = Random.prototype.rand.bind(null, 200, 2000);
 
   /* 若活跃羽毛数量小于最大羽毛数量则以指定的时间间隔随机增加羽毛 */
-  if ((ActiveFeather.length === 0 || time - ActiveFeather[ActiveFeather.length - 1].cTime > FeatherTimeInterval()) && ActiveFeather.length < MaxFeatherCnt) {
-    /** @type {CanvasRes|null} */
-    const res = WhiteFeather.getItem();
-    if (res) {
-      const [cvs, img] = [res[0].cloneNode(), res[1]];
-      const ctx = cvs.getContext('2d');
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-      ctx.drawImage(img, 0, 0);
-
+  if ((ActiveFtr.length === 0 || time - ActiveFtr[ActiveFtr.length - 1].cTime > getInterval()) && ActiveFtr.length < MaxFtrCnt) {
+    /** @type {HTMLImageElement|null} */
+    const item = Feather.getItem();
+    if (item) {
+      const img = item.cloneNode();
       const scale = Random.prototype.rand(5, 25) / 10;
       /** @type {Feather} */
-      const feather = {
-        /** @type {HTMLCanvasElement} */
-        cvs: cvs,
+      const ftr = {
+        /** @type {HTMLImageElement} */
+        img: img,
         cTime: time,
         scale: scale,
         x: 0,
@@ -180,23 +189,25 @@ function drawFrame(time) {
         rot: Random.prototype.rand(0, 359),
         vr: Random.prototype.rand(-5, 5) / 10,
       };
-      cvs.style.left = `${Random.prototype.rand(-10, 980) / 10}%`;
-      cvs.style.transform = `translateY(${feather.y}%) rotate(${feather.rot}deg) scale(${feather.scale})`;
-      bg.appendChild(cvs);
-      ActiveFeather.push(feather);
+      if (InvertFlag) { img.style.filter = `invert(100%)`; }
+      img.style.height = `${window.innerHeight / 10}px`;
+      img.style.left = `${Random.prototype.rand(-10, 980) / 10}%`;
+      img.style.transform = `translateY(${ftr.y}%) rotate(${ftr.rot}deg) scale(${ftr.scale})`;
 
-      window.dispatchEvent(new Event('resize'));
+      bg.appendChild(img);
+      ActiveFtr.push(ftr);
     }
   }
 
-  ActiveFeather.forEach((feather) => {
-    feather.x += feather.vx;
-    feather.y += feather.vy;
-    feather.rot += feather.vr;
-    feather.cvs.style.transform = `translateX(${feather.x}%) translateY(${feather.y}%) rotate(${feather.rot}deg) scale(${feather.scale})`;
-    if (feather.y > 1000) {
-      bg.removeChild(feather.cvs);
-      ActiveFeather.splice(ActiveFeather.indexOf(feather), 1);
+  ActiveFtr.forEach((ftr) => {
+    ftr.x += ftr.vx;
+    ftr.y += ftr.vy;
+    ftr.rot += ftr.vr;
+    if (ftr.y > 1000) {
+      bg.removeChild(ftr.img);
+      ActiveFtr.splice(ActiveFtr.indexOf(ftr), 1);
+    } else {
+      ftr.img.style.transform = `translateX(${ftr.x}%) translateY(${ftr.y}%) rotate(${ftr.rot}deg) scale(${ftr.scale})`;
     }
   });
 
