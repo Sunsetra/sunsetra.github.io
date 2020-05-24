@@ -36,11 +36,6 @@ const Feather = new Random(loadImgRes(FeatherUrls), false);
 /** 羽毛转换色彩标志位 */
 let InvertFlag = false;
 
-function main() {
-  setSelectorListener();
-  drawBackground();
-}
-
 /** 设置选择肢监听器 */
 function setSelectorListener() {
   /** @type {NodeListOf<HTMLElement>} 所有小节的集合 */
@@ -101,6 +96,128 @@ function setSelectorListener() {
   });
 }
 
+/** 设置滚动时背景及侧边立绘监听器 */
+function addScrollEventListener() {
+  const articles = document.querySelectorAll('article');
+  /** @type {HTMLDivElement} 双侧图片区域 */
+  const picArea = document.querySelector('.side-pic');
+  /** @type {HTMLPictureElement} 左边栏图片区域 */
+  const leftPic = picArea.children[0];
+  /** @type {string} 左边栏图片名 */
+  let lNameOld = '';
+  /** @type {HTMLPictureElement} 右边栏图片区域 */
+  const rightPic = picArea.children[2];
+  /** @type {string} 右边栏图片名 */
+  let rNameOld = '';
+
+  /** @type {HTMLElement} 第二章元素 */
+  const chapTwo = document.querySelector('article[data-route=chapter-2-p1]');
+  /** @type {HTMLElement} 第三章元素 */
+  const chapThree = document.querySelector('article[data-route=chapter-3-p1]');
+  /** @type {HTMLElement} 终章元素 */
+  const chapEpi = document.querySelector('article[data-route=epilogue]');
+
+
+  window.addEventListener('scroll', () => {
+    /* 背景羽毛变色控制 */
+
+    /** @type {boolean} 判定是否滚动至第二章位置 */
+    const toChapTwo = chapTwo.offsetTop && window.scrollY > (chapTwo.offsetTop - 300);
+    /** @type {boolean} 判定是否滚动至第三章位置 */
+    const toChapThree = chapThree.offsetTop && window.scrollY > (chapThree.offsetTop - 300);
+    /* 滚动至第二章且未至第三章时，开启反色开关并将所有在场的羽毛反色 */
+    if (toChapTwo && !toChapThree) {
+      InvertFlag = true;
+      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = `invert(100%)`; });
+    } else {
+      InvertFlag = false;
+      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = ''; });
+    }
+
+
+    /* 关联章节滚动时的侧边图片变化 */
+
+    articles.forEach((chap) => {
+      /** @type {boolean} 章节位置判定 */
+      const toChapter = chap.offsetTop && window.scrollY > (chap.offsetTop - 300) && window.scrollY < (chap.offsetTop + chap.offsetHeight - 300);
+      /** @type {boolean} 终章位置判定 */
+      const toEpilogue = Math.trunc(window.innerHeight + window.scrollY) === document.documentElement.scrollHeight && !!chapEpi.getBoundingClientRect().height;
+
+      if (toChapter || (toEpilogue && chap === chapEpi)) {
+        /** @type {string} 左右侧边角色名 */
+        const { bgimage, bgcolor, chara } = chap.dataset;
+
+        if (chara) {
+          const [lNameNew, rNameNew] = chara.split(' ');
+          /* 更新左图 */
+          if (lNameNew !== lNameOld) {
+            lNameOld = lNameNew;
+            picArea.style.opacity = '0';
+            picArea.addEventListener('transitionend', () => {
+              while (leftPic.firstChild) { leftPic.removeChild(leftPic.firstChild); }
+
+              const leftSource = document.createElement('source');
+              leftSource.srcset = `pics/side/${ lNameNew }_l.webp`;
+              leftSource.type = 'image/webp';
+
+              const leftImg = document.createElement('img');
+              leftImg.src = `pics/side/${ lNameNew }_l.png`;
+
+              leftPic.appendChild(leftSource);
+              leftPic.appendChild(leftImg);
+              picArea.style.opacity = '1';
+            }, { once: true });
+          }
+          /* 更新右图 */
+          if (rNameNew !== rNameOld) {
+            rNameOld = rNameNew;
+            picArea.style.opacity = '0';
+            picArea.addEventListener('transitionend', () => {
+              while (rightPic.firstChild) { rightPic.removeChild(rightPic.firstChild); }
+
+              const rightSource = document.createElement('source');
+              rightSource.srcset = `pics/side/${ rNameNew }_r.webp`;
+              rightSource.type = 'image/webp';
+
+              const rightImg = document.createElement('img');
+              rightImg.src = `pics/side/${ rNameNew }_r.png`;
+
+              rightPic.appendChild(rightSource);
+              rightPic.appendChild(rightImg);
+              picArea.style.opacity = '1';
+            }, { once: true });
+          }
+        } else if (lNameOld || rNameOld) {
+          /* 清除双侧图片 */
+          lNameOld = '';
+          rNameOld = '';
+          picArea.style.opacity = '0';
+          picArea.addEventListener('transitionend', () => {
+            [leftPic, rightPic].forEach((pic) => {
+              while (pic.firstChild) { pic.removeChild(pic.firstChild); }
+            });
+            picArea.style.opacity = '1';
+          }, { once: true });
+        }
+
+        /* 滚动时背景色的变化 */
+        if (bgcolor) {
+          document.body.style.backgroundColor = bgcolor;
+        } else {
+          document.body.style.backgroundColor = '';
+        }
+
+        /* 滚动时背景图片的变化 */
+        if (bgimage) {
+          document.body.style.backgroundImage = bgimage;
+        } else {
+          document.body.style.backgroundImage = '';
+        }
+      }
+    });
+  });
+}
+
 /**
  * 加载图片资源对象并返回
  * @param res {string[]} - 数组型资源对象路径
@@ -123,28 +240,8 @@ function loadImgRes(res) {
   return images;
 }
 
+/** 飞羽背景动画入口 */
 function drawBackground() {
-  /** @type {HTMLElement} 第二章位置 */
-  const chapTwo = document.querySelector('article[data-route=chapter-2-p1]');
-  /** @type {HTMLElement} 第三章位置 */
-  const chapThree = document.querySelector('article[data-route=chapter-3-p1]');
-
-  window.addEventListener('scroll', () => {
-    /** @type {boolean} 判定是否滚动至第二章位置 */
-    const toChapTwo = chapTwo.offsetTop && window.scrollY > (chapTwo.offsetTop - 300);
-    /** @type {boolean} 判定是否滚动至第三章位置 */
-    const toChapThree = chapThree.offsetTop && window.scrollY > (chapThree.offsetTop - 300);
-
-    /* 滚动至第二章且未至第三章时，开启反色开关并将所有在场的羽毛反色 */
-    if (toChapTwo && !toChapThree) {
-      InvertFlag = true;
-      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = `invert(100%)`; });
-    } else {
-      InvertFlag = false;
-      ActiveFtr.forEach((ftr) => { ftr.img.style.filter = ''; });
-    }
-  });
-
   window.addEventListener('resize', () => {
     ActiveFtr.forEach((ftr) => {
       /* 图片初始高度为视口高度的十分之一 */
@@ -184,7 +281,7 @@ function drawFrame(time) {
         scale: scale,
         x: 0,
         vx: Random.prototype.rand(-10, 10) / 10,
-        y: -100 * scale,
+        y: (scale + 1.5) * -50,
         vy: scale,
         rot: Random.prototype.rand(0, 359),
         vr: Random.prototype.rand(-5, 5) / 10,
@@ -203,7 +300,7 @@ function drawFrame(time) {
     ftr.x += ftr.vx;
     ftr.y += ftr.vy;
     ftr.rot += ftr.vr;
-    if (ftr.y > 1000) {
+    if (ftr.y > 1100) {
       bg.removeChild(ftr.img);
       ActiveFtr.splice(ActiveFtr.indexOf(ftr), 1);
     } else {
@@ -212,6 +309,12 @@ function drawFrame(time) {
   });
 
   window.requestAnimationFrame(drawFrame);
+}
+
+function main() {
+  setSelectorListener();
+  addScrollEventListener();
+  drawBackground();
 }
 
 window.onload = main;
