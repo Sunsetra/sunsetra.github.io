@@ -114,6 +114,14 @@ main a::after {
   background: no-repeat center/contain url("../../images/external.svg");
 }
 
+/* 引文样式 */
+blockquote {
+  line-height: 1.15;
+  font-style: italic;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .update {
   margin-top: 5rem;
 }
@@ -205,6 +213,10 @@ main a::after {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+figure {
+  margin: 0;
 }
 
 figcaption {

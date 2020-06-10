@@ -203,7 +203,7 @@ class Timer {
     if (mask.indexOf('XX') < 0) {
       interval = mask.indexOf('OO') < 0 ? 0 : 1000;
     } else {
-      interval = 50;
+      interval = 100;
     }
 
     clearInterval(this.timerFlag);

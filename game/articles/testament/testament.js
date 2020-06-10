@@ -312,8 +312,12 @@ function drawFrame(time) {
 }
 
 function main() {
-  setSelectorListener();
-  addScrollEventListener();
+  /** @type {HTMLDivElement} 双侧图片区域 */
+  const picArea = document.querySelector('.side-pic');
+  if (picArea) {
+    setSelectorListener();
+    addScrollEventListener();
+  }
   drawBackground();
 }
 

@@ -1,0 +1,148 @@
+/* 侧边栏样式 */
+aside {
+  background-image: linear-gradient(to bottom, #141726, #423A47);
+  border: none;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 1px 5px 1px grey;
+}
+
+.rating {
+  background-color: #F0F1F2;
+  box-shadow: inset 0 0 5px black;
+  border-radius: 1.5rem;
+  z-index: 1;
+}
+
+#first:hover {
+  color: white;
+  background-color: #260303;
+}
+
+#second:hover {
+  color: #5BAAD0;
+  background-color: #DCE8F2;
+}
+
+#third:hover {
+  color: #746E66;
+  background-color: #F2D95C;
+}
+
+#fourth:hover {
+  color: #8FA636;
+  background-color: #F6F9DC;
+}
+
+#fifth:hover {
+  color: #D94A3D;
+  background-color: #EDEAF3;
+}
+
+/* 正文样式 */
+body {
+  background: fixed url("pics/bg.jpg") center;
+}
+
+main {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+header {
+  font-family: "Gothic", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  color: white;
+  text-shadow:
+    1px 0 3px #D94A3D,
+    1px 1px 3px #D94A3D,
+    1px -1px 3px #D94A3D,
+    -1px 0 3px #D94A3D,
+    -1px 1px 3px #D94A3D,
+    -1px -1px 3px #D94A3D,
+    0 1px 3px #D94A3D,
+    0 -1px 3px #D94A3D;
+}
+
+h2 {
+  font-family: "楷体", "STKaiti", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-size: xx-large;
+}
+
+h2.cursed {
+  color: white;
+  text-shadow:
+    1px 0 5px #E87715,
+    1px 1px 5px #E87715,
+    1px -1px 5px #E87715,
+    -1px 0 5px #E87715,
+    -1px 1px 5px #E87715,
+    -1px -1px 5px #E87715,
+    0 1px 5px #E87715,
+    0 -1px 5px #E87715;
+}
+
+h2.unforgettable {
+  color: white;
+  text-shadow:
+    1px 0 5px #10B0D5,
+    1px 1px 5px #10B0D5,
+    1px -1px 5px #10B0D5,
+    -1px 0 5px #10B0D5,
+    -1px 1px 5px #10B0D5,
+    -1px -1px 5px #10B0D5,
+    0 1px 5px #10B0D5,
+    0 -1px 5px #10B0D5;
+}
+
+h2.created {
+  color: white;
+  text-shadow:
+    1px 0 5px #A33FBF,
+    1px 1px 5px #A33FBF,
+    1px -1px 5px #A33FBF,
+    -1px 0 5px #A33FBF,
+    -1px 1px 5px #A33FBF,
+    -1px -1px 5px #A33FBF,
+    0 1px 5px #A33FBF,
+    0 -1px 5px #A33FBF;
+}
+
+h2.sin {
+  color: white;
+  text-shadow:
+    1px 0 5px #BCBF56,
+    1px 1px 5px #BCBF56,
+    1px -1px 5px #BCBF56,
+    -1px 0 5px #BCBF56,
+    -1px 1px 5px #BCBF56,
+    -1px -1px 5px #BCBF56,
+    0 1px 5px #BCBF56,
+    0 -1px 5px #BCBF56;
+}
+
+h2.labyrinth {
+  color: white;
+  text-shadow:
+    1px 0 5px #BF0628,
+    1px 1px 5px #BF0628,
+    1px -1px 5px #BF0628,
+    -1px 0 5px #BF0628,
+    -1px 1px 5px #BF0628,
+    -1px -1px 5px #BF0628,
+    0 1px 5px #BF0628,
+    0 -1px 5px #BF0628;
+}
+
+.cg-middle {
+  margin: auto;
+  width: 80%;
+  border: none;
+  box-shadow: none;
+  transition: none;
+}
+
+/* 响应式布局 */
+@media (max-width: 900px) {
+  .cg-middle {
+    width: 100%;
+  }
+}
