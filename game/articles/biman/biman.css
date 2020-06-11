@@ -49,17 +49,18 @@ main {
 }
 
 header {
+  font-size: x-large;
   font-family: "Gothic", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
   color: white;
   text-shadow:
-    1px 0 3px #D94A3D,
-    1px 1px 3px #D94A3D,
-    1px -1px 3px #D94A3D,
-    -1px 0 3px #D94A3D,
-    -1px 1px 3px #D94A3D,
-    -1px -1px 3px #D94A3D,
-    0 1px 3px #D94A3D,
-    0 -1px 3px #D94A3D;
+    1px 0 5px #BF0628,
+    1px 1px 5px #BF0628,
+    1px -1px 5px #BF0628,
+    -1px 0 5px #BF0628,
+    -1px 1px 5px #BF0628,
+    -1px -1px 5px #BF0628,
+    0 1px 5px #BF0628,
+    0 -1px 5px #BF0628;
 }
 
 h2 {
