@@ -1,0 +1,127 @@
+/* 侧边栏样式 */
+aside {
+  background: linear-gradient(white 50%, #E6E6E6 50%) center/100% 0.4rem;
+  border: none;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 1px 5px 1px grey;
+}
+
+.rating {
+  background-color: #F0F1F2;
+  box-shadow: inset 0 0 1px black;
+  z-index: 1;
+}
+
+.rating:hover {
+  color: white;
+}
+
+.bar {
+  background-color: #D9B0C6;
+}
+
+#cg {
+  width: 85%;
+}
+
+#music {
+  width: 80%;
+}
+
+#sys {
+  width: 80%;
+}
+
+#story {
+  width: 90%;
+}
+
+#total {
+  width: 88%;
+}
+
+/* 正文样式 */
+body {
+  background: fixed url("pics/bg/main.png") center/cover no-repeat;
+}
+
+main {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+header {
+  font-size: x-large;
+  letter-spacing: 0.3rem;
+  font-family: "Medici", "STXihei", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  color: #030000;
+  text-shadow:
+    1px 0 5px #B33B10,
+    1px 1px 5px #B33B10,
+    1px -1px 5px #B33B10,
+    -1px 0 5px #B33B10,
+    -1px 1px 5px #B33B10,
+    -1px -1px 5px #B33B10,
+    0 1px 5px #B33B10,
+    0 -1px 5px #B33B10;
+}
+
+h2 {
+  font-family: "Microsoft YaHei", "SimHei", "STKaiti", "Source Han Sans", sans-serif;
+  text-shadow:
+    1px 0 1px white,
+    1px 1px 1px white,
+    1px -1px 1px white,
+    -1px 0 1px white,
+    -1px 1px 1px white,
+    -1px -1px 1px white,
+    0 1px 1px white,
+    0 -1px 1px white;
+}
+
+.nemu {
+  color: Magenta;
+}
+
+.rinne {
+  color: blue;
+}
+
+.others {
+  color: green;
+}
+
+/* 边栏样式 */
+.side-pic {
+  position: fixed;
+  bottom: 5%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+
+.side-pic picture {
+  height: 60%;
+  transition: opacity 0.3s;
+}
+
+.side-pic picture img {
+  height: 100%;
+}
+
+.side-pic div {
+  margin: 0 2rem;
+  width: 90%;
+  max-width: 60rem;
+  flex-shrink: 0;
+}
+
+/* 响应式布局 */
+@media (max-width: 900px) {
+  .cg-middle {
+    width: 100%;
+  }
+}

@@ -96,6 +96,13 @@ main {
   line-height: 2;
 }
 
+main.outline {
+  margin: 1rem auto;
+  left: 0;
+  width: 90%;
+  max-width: 60rem;
+}
+
 h1 {
   margin: 0;
 }
@@ -112,6 +119,12 @@ main a::after {
   width: 0.8rem;
   height: 0.8rem;
   background: no-repeat center/contain url("../../images/external.svg");
+}
+
+/* 分割线样式 */
+hr {
+  width: 80%;
+  margin: 2.5rem auto;
 }
 
 /* 引文样式 */
@@ -202,7 +215,8 @@ blockquote {
 .cg-middle {
   display: block;
   margin: 1rem auto;
-  width: 70%;
+  width: 60%;
+  max-width: 40vw;
   border: 0.5rem solid white;
   box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
   transform-origin: center;
@@ -247,5 +261,6 @@ figcaption {
 
   .cg-middle {
     width: 90%;
+    max-width: none;
   }
 }
