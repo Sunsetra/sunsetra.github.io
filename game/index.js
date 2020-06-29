@@ -34,6 +34,7 @@ function main() {
     }, 500);
   });
 
+  /* 定义文章框架行为及显示 */
   const articleEntry = document.querySelectorAll('tbody td:nth-child(5n+4) img, tbody td:nth-child(5n+5) img');
   articleEntry.forEach((entry) => {
     entry.addEventListener('click', (event) => {
@@ -47,6 +48,14 @@ function main() {
         viewer.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
         viewer.style.opacity = '1';
       }, 20);
+    });
+  });
+
+  /* 阻止点击链接时的冒泡 */
+  const anchors = document.querySelectorAll('a');
+  anchors.forEach((anchor) => {
+    anchor.addEventListener('click', (event) => {
+      event.stopPropagation();
     });
   });
 }

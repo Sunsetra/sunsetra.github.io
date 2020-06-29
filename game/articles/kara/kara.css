@@ -1,0 +1,88 @@
+/* 侧边栏样式 */
+aside {
+  background-color: #DCDBD2;
+  border: none;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 1px 5px 1px grey;
+  color: #747780;
+}
+
+.rating {
+  background-color: white;
+  z-index: 1;
+}
+
+#first:hover {
+  background-color: #B3B3B2;
+  color: white;
+}
+
+/* 正文样式 */
+body {
+  background-color: #F2F2F2;
+}
+
+main {
+  background-color: #D9D8D2;
+  border-radius: 0;
+}
+
+h2 {
+  font-family: "楷体", "STKaiti", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+h2.kara {
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-image: linear-gradient(to bottom, black, #E01C02);
+}
+
+h3 {
+  font-family: "楷体", "STKaiti", "Source Han Sans", "Microsoft YaHei", "SimHei", sans-serif;
+  font-size: 1.5rem;
+}
+
+h4 {
+  margin: 0;
+}
+
+.branch {
+  color: FireBrick;
+}
+
+/* 文章分节样式 */
+article {
+  display: none;
+  height: 0;
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+/* 选择肢样式 */
+.selector-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.selector {
+  width: 100%;
+  max-width: 34rem;
+  height: 4rem;
+  margin: 0.5rem auto;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  border: 2px solid black;
+  background: no-repeat url("pics/unselect.png") center/cover;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+
+.selector:hover {
+  background: no-repeat url("pics/selected.png") center/cover;
+}
