@@ -12,8 +12,8 @@ function rand(min, max) {
 }
 
 /**
- * CG样式美化：旋转角度0-2度
- * CG格式要求规范：
+ * CG样式美化：旋转随机角度
+ * CG格式规范：
  * ------------------------------------------------
  * <figure>
  *   <picture class="cg-middle">
@@ -35,7 +35,7 @@ function randPicRotate() {
 
 /**
  * 文章滚动时样式美化：背景变化、侧边立绘变化
- * 文章格式要求规范：
+ * 文章格式规范：
  * -------------------------------------------------
  * <main [class="outline"]>
  *   <article data-route="(prologue|epilogue|chapter-*|end-*)" [data-chara="left right" data-bgcolor="*" data-bgimage="*"]></article>
@@ -147,7 +147,7 @@ function addScrollEventListener() {
 
 /**
  * 设置选择肢监听器
- * 选择肢格式要求规范：
+ * 选择肢格式规范：
  * -------------------------------------------------
  * <div class="selector-wrapper">
  *   <div class="selector" data-select="*">*</div>
