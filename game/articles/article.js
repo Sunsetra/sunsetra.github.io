@@ -40,10 +40,10 @@ function randPicRotate() {
  * <main [class="outline"]>
  *   <article data-route="(prologue|epilogue|chapter-*|end-*)" [data-chara="left right" data-bgcolor="*" data-bgimage="*"]></article>
  * </main>
- * ------------------------------------------------
+ * -------------------------------------------------
  * 1. 文章不需要侧边导航栏时，在main元素中增加class="outline"；
- * 2. 双侧立绘文件名须以chara_(l/r).(webp/png)格式命名；
- * 3. data-chara处填写该章节所需的左右立绘名chara，先左后右，不需要明确立绘文件名的l/r，可选；
+ * 2. 双侧立绘文件须转换为webp或png格式；
+ * 3. data-chara处填写该章节所需的左右立绘文件名（不带扩展名），先左后右，可选；
  * 4. data-bgcolor、data-bgimage处分别填写该章节所需的背景色和背景图，可选。
  */
 function addScrollEventListener() {
@@ -84,11 +84,11 @@ function addScrollEventListener() {
               while (leftPic.firstChild) { leftPic.removeChild(leftPic.firstChild); }
 
               const leftSource = document.createElement('source');
-              leftSource.srcset = `pics/side/${ lNameNew }_l.webp`;
+              leftSource.srcset = `pics/side/${ lNameNew }.webp`;
               leftSource.type = 'image/webp';
 
               const leftImg = document.createElement('img');
-              leftImg.src = `pics/side/${ lNameNew }_l.png`;
+              leftImg.src = `pics/side/${ lNameNew }.png`;
 
               leftPic.appendChild(leftSource);
               leftPic.appendChild(leftImg);
@@ -103,11 +103,11 @@ function addScrollEventListener() {
               while (rightPic.firstChild) { rightPic.removeChild(rightPic.firstChild); }
 
               const rightSource = document.createElement('source');
-              rightSource.srcset = `pics/side/${ rNameNew }_r.webp`;
+              rightSource.srcset = `pics/side/${ rNameNew }.webp`;
               rightSource.type = 'image/webp';
 
               const rightImg = document.createElement('img');
-              rightImg.src = `pics/side/${ rNameNew }_r.png`;
+              rightImg.src = `pics/side/${ rNameNew }.png`;
 
               rightPic.appendChild(rightSource);
               rightPic.appendChild(rightImg);
